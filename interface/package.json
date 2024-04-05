@@ -1,0 +1,33 @@
+{
+  "name": "example-with-tailwindcss",
+  "type": "module",
+  "scripts": {
+    "dev": "vinxi dev",
+    "build": "vinxi build",
+    "start": "vinxi start"
+  },
+  "dependencies": {
+    "@butterfail/tailwindcss-inverted-radius": "^0.1.1",
+    "@minht11/solid-virtual-container": "^0.2.1",
+    "@solid-primitives/event-listener": "^2.3.3",
+    "@solid-primitives/scheduled": "^1.4.3",
+    "@solid-primitives/scroll": "^2.0.23",
+    "@solid-primitives/storage": "^3.0.0",
+    "@solidjs/router": "^0.13.1",
+    "@solidjs/start": "^1.0.0-rc.0",
+    "autoprefixer": "^10.4.14",
+    "openapi-typescript-codegen": "^0.28.0",
+    "postcss": "^8.4.26",
+    "solid-js": "^1.8.16",
+    "tailwindcss": "^3.3.3",
+    "valibot": "^0.30.0",
+    "vinxi": "^0.3.10"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "openapi-zod-client": "^1.16.2",
+    "typed-openapi": "^0.4.1"
+  }
+}
