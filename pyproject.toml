@@ -7,6 +7,7 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.12"
+pangloss-core = {git = "https://github.com/richardhadden/pangloss-core.git"}
 
 
 [build-system]

@@ -28,6 +28,7 @@ import { useUserLogin } from "~/contexts/users";
 import LoginForm from "~/components/LoginForm";
 import { ControlBar } from "~/components/ControlBar";
 import { useWindowScrollPosition } from "@solid-primitives/scroll";
+import { t } from "~/contexts/translation";
 
 const debounce = <F extends (...args: any[]) => any>(
   func: F,
@@ -222,15 +223,16 @@ export default function EntityList() {
   return (
     <>
       <ControlBar
-        entityType={params.EntityType}
+        // @ts-ignore
+        entityType={t(`${params.EntityType}.__model.verbose_name_plural`)}
         controlBarCentre={
           <>
             <input
               type="text"
               oninput={(e) => updateSearchParams(e.currentTarget.value)}
               value={searchParams.q || ""}
-              placeholder="Search..."
-              class="min-w-96 outline-none p-3 h-14 bg-slate-200 border-x-[0.5px] border-x-white"
+              placeholder={`${t("interface.search")}...`}
+              class="min-w-96 outline-none p-3 h-14 bg-slate-200 border-x-[0.5px] border-x-white focus:bg-slate-100 focus:shadow-2xl"
             ></input>
             <Show
               when={data() && data().count && data().count > 0}
@@ -247,17 +249,20 @@ export default function EntityList() {
           </>
         }
       />
-      <section>
+      <section class="pl-16 pr-32 mt-10">
         <Suspense fallback={<h1>Loading!</h1>}>
           <Show when={data()?.results}>
             <For each={data()?.results}>
               {(item) => (
-                <button class="w-full m-2 mb-4 bg-slate-300  flex rounded-sm group hover:scale-y-105 cursor-pointer focus:scale-y-105 outline-none">
-                  <div class="bg-blue-700/20 uppercase font-semibold text-slate-50 text-xs flex flex-col justify-center items-start p-3 rounded-l-sm group-hover:bg-slate-800 group-focus:bg-slate-800">
-                    {item.realType}
+                <button
+                  onMouseLeave={(e) => e.currentTarget.blur()}
+                  class="truncate line-clamp-1 text-ellipsis w-full m-2 mb-4 h-10 flex rounded-sm group cursor-pointer  outline-non transition-none duration-75 active:scale-y-[99.5%] active:scale-x-[99.5%] hover:shadow-md active:shadow-inner hover:shadow-neutral-300"
+                >
+                  <div class="bg-slate-600 rounded-l-sm border-r-white border-r-[0.5px]  uppercase font-semibold text-slate-50 text-xs flex flex-col justify-center items-start p-3 group-hover:bg-slate-700 group-focus:bg-slate-700 group-active:bg-slate-500">
+                    {t(`${item.realType}.__model.verbose_name`)}
                   </div>
-                  <div class="w-full truncate pl-6 pr-6 p-2 flex flex-col justify-center items-start bg-blue-500 text-white rounded-r-sm group-hover:bg-indigo-800 transition-all duration-75 group-focus:bg-indigo-600">
-                    {item.label} {item.uid}
+                  <div class="w-full truncate line-clamp-1 text-ellipsis pl-6 pr-6 p-2 block text-left text-base bg-neutral-300 text-pretty font-normal text-neutral-950 rounded-r-sm group-hover:bg-neutral-400 transition-all duration-75 group-focus:bg-neutral-400 group-active:bg-neutral-200 group-active:text-neutral-600">
+                    {item.label}
                   </div>
                 </button>
               )}
@@ -266,10 +271,11 @@ export default function EntityList() {
             <Show when={data()?.nextUrl}>
               <div class="flex justify-center mt-12 mb-6">
                 <button
+                  onMouseLeave={(e) => e.currentTarget.blur()}
                   onClick={getNextPage}
                   class="inline w-fit px-6 py-4 text-md uppercase font-semibold text-white bg-green-700 rounded-sm hover:bg-green-800 active:bg-green-600 cursor-pointer transition-all hover:shadow-2xl hover:shadow-green-900/50 hover:scale-105 duration-75 active:scale-95 outline-none focus:scale-105 focus:shadow-2xl focus:shadow-green-900/50"
                 >
-                  Get more results
+                  {t("interface.getMoreResults")}
                 </button>
               </div>
             </Show>

@@ -8,10 +8,11 @@ import {
 import { createStore } from "solid-js/store";
 import { cookieStorage } from "@solid-primitives/storage";
 import LoginForm from "~/components/LoginForm";
+import { t } from "~/contexts/translation";
 
 export type UserStatusState = {
   readonly isLoggedIn: boolean;
-  readonly loggedInUserName: string;
+  readonly loggedInUserName: string | null;
   readonly accessingAuthorisedRoute: boolean;
 };
 export type UserStatusContextValue = [
@@ -45,19 +46,18 @@ export const UserProvider: ParentComponent<{
 }> = (props) => {
   const [state, setState] = createStore({
     isLoggedIn: !!cookie.getItem("logged_in_user_name"),
-    loggedInUserName: cookie.getItem("logged_in_user_name") || "Not Logged In",
+    loggedInUserName: cookie.getItem("logged_in_user_name") || null,
     accessingAuthorisedRoute: false,
   });
 
   const setLoggedIn = () =>
     setState({
       isLoggedIn: !!cookie.getItem("logged_in_user_name"),
-      loggedInUserName:
-        cookie.getItem("logged_in_user_name") || "Not Logged In",
+      loggedInUserName: cookie.getItem("logged_in_user_name") || null,
     });
   const logOut = async () => {
     cache.clear();
-    setState({ isLoggedIn: false, loggedInUserName: "Not Logged In" });
+    setState({ isLoggedIn: false, loggedInUserName: null });
     await fetch("http://localhost:8000/api/users/logout", {
       credentials: "include",
     });
