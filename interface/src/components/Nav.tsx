@@ -25,7 +25,7 @@ export default function Nav() {
   const [user, { logOut }] = useUserLogin();
 
   return (
-    <nav class="select-none rounded-r-sm  bg-slate-600 drop-shadow-2xl  shadow-2xl shadow-slate-950 flex flex-col h-screen w-96 -left-80  hover:-left-0 fixed transition-all duration-200 z-20 group ">
+    <nav class="select-none rounded-r-sm  bg-slate-600   shadow-2xl shadow-slate-950 flex flex-col h-screen w-96 -left-80  hover:-left-0 fixed transition-all duration-200 z-20 group ">
       <div class="flex justify-center text-white bg-slate-950 h-14 items-center transition-all duration-200 select-none">
         <IoMenuSharp
           size={32}

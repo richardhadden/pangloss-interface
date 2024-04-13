@@ -15,7 +15,7 @@ export default function App() {
             <div class="w-screen flex justify-center h-24">
               <div
                 id="controlBar"
-                class="fixed  w-9/12 shadow-2xl bg-slate-300 shadow-slate-500  rounded-b-sm  select-none"
+                class="fixed border-white/40 border-b-[px] border-x-[0.5px] w-9/12 shadow-2xl  bg-slate-300 shadow-slate-500  rounded-b-sm  select-none"
               />
             </div>
             <div class="ml-16 p-8">

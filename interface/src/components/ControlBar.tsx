@@ -1,6 +1,6 @@
 import { Show, JSXElement, type Component } from "solid-js";
 import { Portal } from "solid-js/web";
-import { EntityTypes } from "~/testTypes";
+import { EntityTypes } from "~/apiClient";
 
 export type ControlBarProps = {
   entityType?: string;
@@ -11,7 +11,7 @@ export function ControlBar<Component>(props: ControlBarProps) {
     <Portal mount={document.getElementById("controlBar") as HTMLDivElement}>
       <div class="h-full w-full flex">
         <Show when={props.entityType}>
-          <div class="h-14 uppercase font-semibold py-1 px-6 bg-slate-700 text-emerald-50 rounded-bl-sm flex flex-col justify-center  border-r-[0.5px] border-r-white">
+          <div class="h-14 uppercase font-semibold py-1 px-6 shadow-2xl shadow-slate-700/90 bg-slate-700 text-emerald-50 rounded-bl-sm flex flex-col justify-center  border-r-[0.5px] border-r-white">
             {props.entityType}
           </div>
         </Show>
@@ -24,7 +24,7 @@ export function ControlBar<Component>(props: ControlBarProps) {
           </div>
         </Show>
 
-        <button class="aspect-square bg-green-600 text-orange-50 w-14 last-of-type:rounded-br-sm hover:bg-orange-800 active:bg-orange-700 hover:scale-105 hover:shadow-2xl active:scale-95">
+        <button class="aspect-square bg-green-600 text-orange-50 w-14 last-of-type:rounded-br-sm hover:bg-orange-800 active:bg-orange-700 hover:shadow-orange-600/90 shadow-2xl active:shadow-orange-300/90 shadow-green-600/90 hover:shadow-2xl active:scale-95 active:rounded-sm active:last-of-type:rounded-sm">
           X
         </button>
       </div>

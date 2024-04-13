@@ -1,3 +1,7 @@
+import pathlib
+import os
+
+from rich import print
 from typer import Typer
 
 from pangloss_core.cli.main import Project
@@ -11,4 +15,13 @@ cli = Typer(name="interface")
 
 @cli.command()
 def build_frontend_types(project: Project):
-    build_frontend_type_file()
+    interface_path = os.path.join(
+        pathlib.Path(os.path.realpath(__file__)).parent.parent,
+        pathlib.Path("interface/"),
+    )
+    print(
+        f"Creating Interface configuration file for Project [green bold]{project}[/green bold] at path",
+        interface_path,
+        "\n\n",
+    )
+    build_frontend_type_file(str(project), interface_path)

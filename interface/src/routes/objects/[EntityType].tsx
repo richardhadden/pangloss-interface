@@ -5,14 +5,10 @@ import {
   useLocation,
   useSearchParams,
   type Location,
-  type CachedFunction,
   createAsync,
-  redirect,
   useBeforeLeave,
 } from "@solidjs/router";
 
-import { Portal } from "solid-js/web";
-import { getRequestEvent } from "solid-js/web";
 import {
   Suspense,
   For,
@@ -23,7 +19,8 @@ import {
   createEffect,
 } from "solid-js";
 
-import { apiClient, type EntityTypes, type ListReturnTypes } from "~/testTypes";
+import { apiClient } from "~/apiClient";
+import type { ListReturnTypes, EntityTypes } from "../../../ProjectConfig";
 import { useUserLogin } from "~/contexts/users";
 import LoginForm from "~/components/LoginForm";
 import { ControlBar } from "~/components/ControlBar";
@@ -122,7 +119,6 @@ async function fetchData<K extends keyof ListReturnTypes>(
   entityType: K,
   location: Location
 ): Promise<ListReturnTypes[K]> {
-  //"use server";
   const data = await apiClient.list(entityType, location.search);
 
   return data;
@@ -232,7 +228,7 @@ export default function EntityList() {
               oninput={(e) => updateSearchParams(e.currentTarget.value)}
               value={searchParams.q || ""}
               placeholder={`${t("interface.search")}...`}
-              class="min-w-96 outline-none p-3 h-14 bg-slate-200 border-x-[0.5px] border-x-white focus:bg-slate-100 focus:shadow-2xl"
+              class="min-w-96 outline-none p-3 h-14 bg-slate-200 border-x-[0.5px] border-x-white focus:bg-slate-100 focus:shadow-2xl shadow-2xl shadow-slate-200/90 focus:shadow-slate-400/90"
             ></input>
             <Show
               when={data() && data().count && data().count > 0}

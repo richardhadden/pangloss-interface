@@ -27,3 +27,5 @@ gitignore
 # System Files
 .DS_Store
 Thumbs.db
+
+CURRENT_PROJECT_CONFIG.ts
