@@ -9,6 +9,7 @@ and builds a CURRENT_PROJECT_CONFIG.ts in the interface/src directory
 import datetime
 import io
 import inspect
+import json
 import types
 import typing
 import os
@@ -24,6 +25,7 @@ from pangloss_core.model_setup.base_node_definitions import BaseNodeReference
 from pangloss_core.models import RelationTo, RelationConfig, BaseNode, RelationPropertiesModel
 from pangloss_core.indexes import IndexAnnotation
 from pangloss_core.model_setup.model_manager import ModelManager
+from pangloss_core.model_setup.build_model_hierarchy import build_model_hierarchy, build_top_level_classes_list
 
 if typing.TYPE_CHECKING:
     from pangloss_core.models import BaseNode
@@ -135,6 +137,51 @@ This configuration file will be used when building the interface.
         f.write(f"""export const ValidatorsByModelName = {{
             {",\n".join(f"{model.__name__}: {model.__name__}Validator" for model in ModelManager._registered_models)}
         }};\n\n""")
+        
+        f.write("""export type ModelHierarchy = {
+                    [key: string]: {} | ModelHierarchy
+        };\n\n""")
+        
+        for model in ModelManager._registered_models:
+            f.write(f"const {model.__name__}Hierarchy: ModelHierarchy = {json.dumps(build_model_hierarchy(model))};\n\n")
+            
+            
+        f.write(f"""export const ModelHierarchies = {{{
+            ",\t\n".join(f"{model.__name__}: {model.__name__}Hierarchy" for model in ModelManager._registered_models)
+        }}};\n\n
+        """)
+        
+        f.write(f"export const TopLevelModels = [{", ".join(f'"{c}"' for c in build_top_level_classes_list())}];\n\n")
+        
+        f.write("""
+                type ConfigObject = {
+                    abstract: boolean,
+                    create: boolean,
+                    edit: boolean,
+                    delete: boolean,
+                    search: boolean
+                }\n\n
+                """)
+        
+        for model in ModelManager._registered_models:
+            f.write(f"""export const {model.__name__}Config: ConfigObject = {{""")
+            abstract = getattr(model, "__abstract__", "False")
+            f.write(f"abstract: {"true" if abstract else "false"},")
+            create = getattr(model, "__create__", "False")
+            f.write(f"create: {"true" if create else "false"},")
+            edit = getattr(model, "__edit__", "False")
+            f.write(f"edit: {"true" if edit else "false"},")
+            delete = getattr(model, "__delete__", "False")
+            f.write(f"delete: {"true" if delete else "false"},")
+            search = getattr(model, "__search__", "False")
+            f.write(f"search: {"true" if search else "false"},")
+            f.write("};\n\n")
+        
+        f.write(f"""export const ModelConfigs = {{{
+            ",\t\n".join(f"{model.__name__}: {model.__name__}Config" for model in ModelManager._registered_models)
+        }}};\n\n
+        """)   
+        
     
     print("[blue bold]Running Prettier formatter on generated file to make it nice...[/blue bold]")
     os.system(f"bunx prettier {FILE_PATH} --write")

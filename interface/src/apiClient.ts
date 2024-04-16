@@ -17,6 +17,7 @@ const getCookieValue = (
 };
 
 async function getRequest(url: URL): Promise<object | APIError> {
+  console.log("Data fetch...")
   const [users, { setAccessingAuthorisedRoute, logOut }] = useUserLogin();
   if (isServer) {
     const requestEvent = getRequestEvent();
@@ -42,13 +43,14 @@ async function getRequest(url: URL): Promise<object | APIError> {
 
     const data = await response.json();
     return data;
-    
+
   } else {
     const response = await fetch(url, {
       method: "get",
       credentials: "include",
     });
     if (response.status === 401) {
+      console.log("not authed")
       setAccessingAuthorisedRoute(true);
       logOut();
 
@@ -60,7 +62,7 @@ async function getRequest(url: URL): Promise<object | APIError> {
   }
 }
 
-type APIError = {
+export type APIError = {
   error: true,
   message: string,
   statusCode: 400 | 401 | 404

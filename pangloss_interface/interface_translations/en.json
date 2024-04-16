@@ -1,0 +1,18 @@
+{
+    "icon": "🇬🇧",
+    "log_in": "Log In",
+    "log_out": "Log Out",
+    "language": "Language",
+    "search": "Search",
+    "getMoreResults": "Get More Results",
+    "username": "Username",
+    "password": "Password",
+    "log_in_required": "Log In Required",
+    "not_logged_in": "Not Logged In",
+    "incorrect_username_or_password": "Incorrect Username or Password",
+    "username_or_password_missing": "Username or Password Missing",
+    "something_went_wrong_try_again": "Something went wrong. Try again",
+    "home_page": "Home",
+    "about_page": "About",
+    "models": "Models"
+}

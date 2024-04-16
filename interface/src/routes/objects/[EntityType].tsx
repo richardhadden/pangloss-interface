@@ -19,7 +19,7 @@ import {
   createEffect,
 } from "solid-js";
 
-import { apiClient } from "~/apiClient";
+import { apiClient, type APIError } from "~/apiClient";
 import type { ListReturnTypes, EntityTypes } from "../../../ProjectConfig";
 import { useUserLogin } from "~/contexts/users";
 import LoginForm from "~/components/LoginForm";
@@ -118,9 +118,8 @@ function refetchableData<A extends any[], R>(
 async function fetchData<K extends keyof ListReturnTypes>(
   entityType: K,
   location: Location
-): Promise<ListReturnTypes[K]> {
+): Promise<ListReturnTypes[K] | APIError> {
   const data = await apiClient.list(entityType, location.search);
-
   return data;
 }
 
@@ -141,7 +140,8 @@ export default function EntityList() {
   const [data, refetch, revert, useRefetch, update] = refetchableData(() =>
     fetchData(params.EntityType as EntityTypes, location)
   );
-  const scroll = useWindowScrollPosition();
+  useBeforeLeave((e) => revert());
+
   onMount(() => {
     console.log(data());
     if (data()?.detail === "Not authenticated") {
@@ -151,71 +151,34 @@ export default function EntityList() {
   });
 
   const [searchParams, setSearchParams] = useSearchParams();
-  const [currentSearchParams, setCurrentSearchParams] = createSignal(
-    searchParams?.q || "arse"
-  );
-
-  const [throttledSetSearchParams] = throttle((value) => {
-    setSearchParams({ q: value });
-    revert();
-  }, 0);
+  const [nextUrl, setNextUrl] = createSignal();
 
   const updateSearchParams = (value: string) => {
-    setCurrentSearchParams(value);
-    throttledSetSearchParams(value);
-    setGotPages([]);
+    setSearchParams({ q: value });
+    //throttledSetSearchParams(value);
   };
-
-  createEffect(() => {
-    const eol = document.getElementById("endOfList");
-    if (eol) {
-      //
-      //console.log(scroll.y, eol.offsetTop);
-      if (scroll.y + 1200 > eol.offsetTop) {
-        //const [t] = throttle(getNextPage, 3000);
-        //t();
-      }
-    }
-  });
-
-  //createEffect(() => console.log("data", data()));
-
-  const [nextUrl, setNextUrl] = createSignal();
-  const [gotPages, setGotPages] = createSignal([]);
-
-  const extraItemsArrayLength = () => {
-    const l = data()?.count - data()?.results.length;
-    if (l <= 0) {
-      return 0;
-    }
-    return l;
-  };
-
-  useBeforeLeave((e) => revert());
 
   const getNextPage = async () => {
     if (data()) {
-      const searchParams = new URLSearchParams(location.search);
-      const Q = searchParams.get("q") || "";
-
       const next = nextUrl() || data().nextUrl;
-      //console.log(next, gotPages());
-      if (!gotPages().includes(next)) {
-        console.log(next);
-        setGotPages([...gotPages(), next]);
-        //console.log("getting", next);
-        const response = await fetch(next, {
-          method: "get",
-          credentials: "include",
-        });
-        const newData = await response.json();
 
-        update({ ...data(), results: [...data().results, ...newData.results] });
-        useRefetch();
-        setNextUrl(newData.nextUrl);
+      const response = await fetch(next, {
+        method: "get",
+        credentials: "include",
+      });
+      if (response.status === 401) {
+        setAccessingAuthorisedRoute(true);
+        logOut();
+        return;
       }
+      const newData = await response.json();
+
+      update({ ...data(), results: [...data().results, ...newData.results] });
+      useRefetch();
+      setNextUrl(newData.nextUrl);
     }
   };
+
   return (
     <>
       <ControlBar

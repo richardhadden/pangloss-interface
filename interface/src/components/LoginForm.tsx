@@ -77,7 +77,7 @@ export default function LoginForm(props: LoginFormProps) {
             {t("interface.password")}
           </label>
           <input
-            class="col-span-3 block w-10/12 bg-slate-300 outline-none p-3 rounded-sm border-transparent border transition-all duration-75 focus:border-white  focus:shadow-2xl focus:bg-slate-50 group-hover:scale-y-110 focus:scale-y-110"
+            class="col-span-3 font-mono block w-10/12 bg-slate-300 outline-none p-3 rounded-sm border-transparent border transition-all duration-75 focus:border-white  focus:shadow-2xl focus:bg-slate-50 group-hover:scale-y-110 focus:scale-y-110"
             name="password"
             id="password"
             type="password"

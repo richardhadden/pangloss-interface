@@ -241,11 +241,10 @@ const FactoidValidator = v.object({
   citation: v.array(v.any()),
   statements: v.array(
     v.union([
-      v.lazy(() => BirthValidator),
-      v.lazy(() => MakeJamValidator),
-      v.lazy(() => DeathValidator),
-      v.lazy(() => ActivityValidator),
       v.lazy(() => NamingValidator),
+      v.lazy(() => MakeJamValidator),
+      v.lazy(() => BirthValidator),
+      v.lazy(() => DeathValidator),
       v.lazy(() => OrderValidator),
     ]),
   ),
@@ -315,6 +314,9 @@ const MakeJamValidator = v.object({
   realType: v.literal("MakeJam"),
   subjectOfStatement: v.array(PersonReferenceValidator),
   when: v.union([v.string([v.isoDate()]), v.null_()]),
+  carriedOutBy: v.array(
+    v.union([OrganisationReferenceValidator, PersonReferenceValidator]),
+  ),
 });
 
 type Order = {
@@ -352,4 +354,224 @@ export const ValidatorsByModelName = {
   Activity: ActivityValidator,
   MakeJam: MakeJamValidator,
   Order: OrderValidator,
+};
+
+export type ModelHierarchy = {
+  [key: string]: {} | ModelHierarchy;
+};
+
+const ZoteroEntryHierarchy: ModelHierarchy = {};
+
+const EntityHierarchy: ModelHierarchy = { Person: {}, Organisation: {} };
+
+const PersonHierarchy: ModelHierarchy = {};
+
+const OrganisationHierarchy: ModelHierarchy = {};
+
+const SourceHierarchy: ModelHierarchy = {};
+
+const CitationHierarchy: ModelHierarchy = {};
+
+const FactoidHierarchy: ModelHierarchy = {};
+
+const StatementHierarchy: ModelHierarchy = {
+  TemporalStatement: {
+    Birth: {},
+    Death: {},
+    Activity: { MakeJam: {} },
+    Order: {},
+  },
+  Naming: {},
+};
+
+const TemporalStatementHierarchy: ModelHierarchy = {
+  Birth: {},
+  Death: {},
+  Activity: { MakeJam: {} },
+  Order: {},
+};
+
+const NamingHierarchy: ModelHierarchy = {};
+
+const BirthHierarchy: ModelHierarchy = {};
+
+const DeathHierarchy: ModelHierarchy = {};
+
+const ActivityHierarchy: ModelHierarchy = { MakeJam: {} };
+
+const MakeJamHierarchy: ModelHierarchy = {};
+
+const OrderHierarchy: ModelHierarchy = {};
+
+export const ModelHierarchies = {
+  ZoteroEntry: ZoteroEntryHierarchy,
+  Entity: EntityHierarchy,
+  Person: PersonHierarchy,
+  Organisation: OrganisationHierarchy,
+  Source: SourceHierarchy,
+  Citation: CitationHierarchy,
+  Factoid: FactoidHierarchy,
+  Statement: StatementHierarchy,
+  TemporalStatement: TemporalStatementHierarchy,
+  Naming: NamingHierarchy,
+  Birth: BirthHierarchy,
+  Death: DeathHierarchy,
+  Activity: ActivityHierarchy,
+  MakeJam: MakeJamHierarchy,
+  Order: OrderHierarchy,
+};
+
+export const TopLevelModels = [
+  "ZoteroEntry",
+  "Entity",
+  "Source",
+  "Citation",
+  "Factoid",
+  "Statement",
+];
+
+type ConfigObject = {
+  abstract: boolean;
+  create: boolean;
+  edit: boolean;
+  delete: boolean;
+  search: boolean;
+};
+
+export const ZoteroEntryConfig: ConfigObject = {
+  abstract: false,
+  create: false,
+  edit: false,
+  delete: false,
+  search: true,
+};
+
+export const EntityConfig: ConfigObject = {
+  abstract: true,
+  create: true,
+  edit: true,
+  delete: true,
+  search: true,
+};
+
+export const PersonConfig: ConfigObject = {
+  abstract: false,
+  create: true,
+  edit: true,
+  delete: true,
+  search: true,
+};
+
+export const OrganisationConfig: ConfigObject = {
+  abstract: false,
+  create: true,
+  edit: true,
+  delete: true,
+  search: true,
+};
+
+export const SourceConfig: ConfigObject = {
+  abstract: false,
+  create: true,
+  edit: true,
+  delete: true,
+  search: true,
+};
+
+export const CitationConfig: ConfigObject = {
+  abstract: false,
+  create: false,
+  edit: false,
+  delete: false,
+  search: false,
+};
+
+export const FactoidConfig: ConfigObject = {
+  abstract: false,
+  create: true,
+  edit: true,
+  delete: true,
+  search: true,
+};
+
+export const StatementConfig: ConfigObject = {
+  abstract: true,
+  create: true,
+  edit: true,
+  delete: true,
+  search: true,
+};
+
+export const TemporalStatementConfig: ConfigObject = {
+  abstract: true,
+  create: true,
+  edit: true,
+  delete: true,
+  search: true,
+};
+
+export const NamingConfig: ConfigObject = {
+  abstract: false,
+  create: true,
+  edit: true,
+  delete: true,
+  search: true,
+};
+
+export const BirthConfig: ConfigObject = {
+  abstract: false,
+  create: true,
+  edit: true,
+  delete: true,
+  search: true,
+};
+
+export const DeathConfig: ConfigObject = {
+  abstract: false,
+  create: true,
+  edit: true,
+  delete: true,
+  search: true,
+};
+
+export const ActivityConfig: ConfigObject = {
+  abstract: true,
+  create: true,
+  edit: true,
+  delete: true,
+  search: true,
+};
+
+export const MakeJamConfig: ConfigObject = {
+  abstract: false,
+  create: true,
+  edit: true,
+  delete: true,
+  search: true,
+};
+
+export const OrderConfig: ConfigObject = {
+  abstract: false,
+  create: true,
+  edit: true,
+  delete: true,
+  search: true,
+};
+
+export const ModelConfigs = {
+  ZoteroEntry: ZoteroEntryConfig,
+  Entity: EntityConfig,
+  Person: PersonConfig,
+  Organisation: OrganisationConfig,
+  Source: SourceConfig,
+  Citation: CitationConfig,
+  Factoid: FactoidConfig,
+  Statement: StatementConfig,
+  TemporalStatement: TemporalStatementConfig,
+  Naming: NamingConfig,
+  Birth: BirthConfig,
+  Death: DeathConfig,
+  Activity: ActivityConfig,
+  MakeJam: MakeJamConfig,
+  Order: OrderConfig,
 };
