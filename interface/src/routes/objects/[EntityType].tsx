@@ -5,26 +5,16 @@ import {
   useLocation,
   useSearchParams,
   type Location,
-  createAsync,
-  useBeforeLeave,
+  useIsRouting,
 } from "@solidjs/router";
-
-import {
-  Suspense,
-  For,
-  createSignal,
-  createResource,
-  onMount,
-  Show,
-  createEffect,
-} from "solid-js";
+import { createRefetchableAsync } from "../../utils/createRefetchableAsync";
+import { Suspense, For, onMount, Show } from "solid-js";
 
 import { apiClient, type APIError } from "~/apiClient";
 import type { ListReturnTypes, EntityTypes } from "../../../ProjectConfig";
 import { useUserLogin } from "~/contexts/users";
-import LoginForm from "~/components/LoginForm";
+import { LoginOverlay } from "~/components/LoginForm";
 import { ControlBar } from "~/components/ControlBar";
-import { useWindowScrollPosition } from "@solid-primitives/scroll";
 import { t } from "~/contexts/translation";
 
 const debounce = <F extends (...args: any[]) => any>(
@@ -45,42 +35,6 @@ const debounce = <F extends (...args: any[]) => any>(
 
 const BASE_URL = "http://localhost:8000";
 
-const throttle = <R, A extends any[]>(
-  fn: (...args: A) => R,
-  delay: number
-): [(...args: A) => R | undefined, () => void] => {
-  let wait = false;
-  let timeout: undefined | number;
-  let cancelled = false;
-
-  return [
-    (...args: A) => {
-      if (cancelled) return undefined;
-      if (wait) return undefined;
-
-      const val = fn(...args);
-
-      wait = true;
-
-      timeout = window.setTimeout(() => {
-        wait = false;
-      }, delay);
-
-      return val;
-    },
-    () => {
-      cancelled = true;
-      clearTimeout(timeout);
-    },
-  ];
-};
-
-/* function fetchDataCache(entityType: EntityTypes, location: Location) {
-  return cache(async () => {
-    fetchData(entityType, location);
-  }, entityType + location.search)();
-} */
-
 const fetchDataCache = <A extends any[], R>(
   f: (...args: A) => R,
   ...args: A
@@ -92,28 +46,6 @@ const fetchDataCache = <A extends any[], R>(
     f(...args);
   }, args.map((arg) => JSON.stringify(arg)).join(""));
 };
-
-function refetchableData<A extends any[], R>(
-  func: () => Promise<R>
-): [() => Awaited<R>, () => void, () => void, () => void, (val: any) => void] {
-  const [refetched, setRefetched] = createSignal(false);
-  const [refetchedData, setRefetchedData] = createSignal();
-  const asyncData = createAsync(func);
-  const refetch = async () => {
-    const data = (await func()) as Awaited<typeof func>;
-    if (data) {
-      setRefetchedData(data);
-      setRefetched(true);
-    }
-  };
-  return [
-    () => (refetched() ? refetchedData() : asyncData()) as Awaited<R>,
-    refetch,
-    () => setRefetched(false),
-    () => setRefetched(true),
-    (val: any) => setRefetchedData(val),
-  ];
-}
 
 async function fetchData<K extends keyof ListReturnTypes>(
   entityType: K,
@@ -136,31 +68,32 @@ export default function EntityList() {
   const [user, { setAccessingAuthorisedRoute, logOut }] = useUserLogin();
   const params: { EntityType: EntityTypes } = useParams();
   const location = useLocation();
+  const isRouting = useIsRouting();
 
-  const [data, refetch, revert, useRefetch, update] = refetchableData(() =>
+  const [data, { refetch, mutate }] = createRefetchableAsync(() =>
     fetchData(params.EntityType as EntityTypes, location)
   );
-  useBeforeLeave((e) => revert());
+
+  async function doRefetch() {
+    await refetch();
+  }
 
   onMount(() => {
-    console.log(data());
-    if (data()?.detail === "Not authenticated") {
+    if ((data() as APIError)?.statusCode === 401) {
       logOut();
       setAccessingAuthorisedRoute(true);
     }
   });
 
   const [searchParams, setSearchParams] = useSearchParams();
-  const [nextUrl, setNextUrl] = createSignal();
 
   const updateSearchParams = (value: string) => {
     setSearchParams({ q: value });
-    //throttledSetSearchParams(value);
   };
 
   const getNextPage = async () => {
-    if (data()) {
-      const next = nextUrl() || data().nextUrl;
+    if (data() !== undefined) {
+      const next = (data() as ListReturnTypes[EntityTypes])?.nextUrl;
 
       const response = await fetch(next, {
         method: "get",
@@ -173,51 +106,60 @@ export default function EntityList() {
       }
       const newData = await response.json();
 
-      update({ ...data(), results: [...data().results, ...newData.results] });
-      useRefetch();
-      setNextUrl(newData.nextUrl);
+      mutate({
+        ...data(),
+        ...newData,
+        results: [
+          ...(data() as ListReturnTypes[EntityTypes]).results,
+          ...newData.results,
+        ],
+      });
     }
   };
 
   return (
     <>
-      <ControlBar
-        // @ts-ignore
-        entityType={t(`${params.EntityType}.__model.verbose_name_plural`)}
-        controlBarCentre={
-          <>
-            <input
-              type="text"
-              oninput={(e) => updateSearchParams(e.currentTarget.value)}
-              value={searchParams.q || ""}
-              placeholder={`${t("interface.search")}...`}
-              class="min-w-96 outline-none p-3 h-14 bg-slate-200 border-x-[0.5px] border-x-white focus:bg-slate-100 focus:shadow-2xl shadow-2xl shadow-slate-200/90 focus:shadow-slate-400/90"
-            ></input>
-            <Show
-              when={data() && data().count && data().count > 0}
-              fallback={
-                <div class="text-red-800/90 text-sm uppercase font-semibold select-none ml-4 min-w-20">
-                  0
-                </div>
-              }
-            >
-              <div class="text-slate-600 text-sm uppercase font-semibold select-none ml-4 min-w-20">
-                {data()?.count}
-              </div>
-            </Show>
-          </>
-        }
-      />
       <section class="pl-16 pr-32 mt-10">
         <Suspense fallback={<h1>Loading!</h1>}>
-          <Show when={data()?.results}>
-            <For each={data()?.results}>
+          <ControlBar
+            // @ts-ignore
+            entityType={t(`${params.EntityType}.__model.verbose_name_plural`)}
+            controlBarCentre={
+              <>
+                <input
+                  type="text"
+                  oninput={(e) => updateSearchParams(e.currentTarget.value)}
+                  value={searchParams.q || ""}
+                  placeholder={`${t("interface.search")}...`}
+                  class="min-w-96 outline-none p-3 h-14 bg-slate-200 border-x-[0.5px] border-x-white focus:bg-slate-100 focus:shadow-2xl shadow-2xl shadow-slate-200/90 focus:shadow-slate-400/90"
+                ></input>
+                <Show
+                  when={
+                    data() &&
+                    (data() as ListReturnTypes[EntityTypes]).count &&
+                    (data() as ListReturnTypes[EntityTypes]).count > 0
+                  }
+                  fallback={
+                    <div class="text-red-800/90 text-sm uppercase font-semibold select-none ml-4 min-w-20">
+                      0
+                    </div>
+                  }
+                >
+                  <div class="text-slate-600 text-sm uppercase font-semibold select-none ml-4 min-w-20">
+                    {(data() as ListReturnTypes[EntityTypes])?.count}
+                  </div>
+                </Show>
+              </>
+            }
+          />
+          <Show when={(data() as ListReturnTypes[EntityTypes])?.results}>
+            <For each={(data() as ListReturnTypes[EntityTypes])?.results}>
               {(item) => (
                 <button
                   onMouseLeave={(e) => e.currentTarget.blur()}
                   class="truncate line-clamp-1 text-ellipsis w-full m-2 mb-4 h-10 flex rounded-sm group cursor-pointer  outline-non transition-none duration-75 active:scale-y-[99.5%] active:scale-x-[99.5%] hover:shadow-md active:shadow-inner hover:shadow-neutral-300"
                 >
-                  <div class="bg-slate-600 rounded-l-sm border-r-white border-r-[0.5px]  uppercase font-semibold text-slate-50 text-xs flex flex-col justify-center items-start p-3 group-hover:bg-slate-700 group-focus:bg-slate-700 group-active:bg-slate-500">
+                  <div class="bg-slate-600 rounded-l-sm border-r-white border-r-[0.5px] uppercase font-semibold text-slate-50 text-xs flex flex-col justify-center items-start p-3 group-hover:bg-slate-700 group-focus:bg-slate-700 group-active:bg-slate-500">
                     {t(`${item.realType}.__model.verbose_name`)}
                   </div>
                   <div class="w-full truncate line-clamp-1 text-ellipsis pl-6 pr-6 p-2 block text-left text-base bg-neutral-300 text-pretty font-normal text-neutral-950 rounded-r-sm group-hover:bg-neutral-400 transition-all duration-75 group-focus:bg-neutral-400 group-active:bg-neutral-200 group-active:text-neutral-600">
@@ -227,7 +169,7 @@ export default function EntityList() {
               )}
             </For>
             <div id="endOfList" />
-            <Show when={data()?.nextUrl}>
+            <Show when={(data() as ListReturnTypes[EntityTypes])?.nextUrl}>
               <div class="flex justify-center mt-12 mb-6">
                 <button
                   onMouseLeave={(e) => e.currentTarget.blur()}
@@ -240,11 +182,7 @@ export default function EntityList() {
             </Show>
           </Show>
           <Show when={!user.isLoggedIn && user.accessingAuthorisedRoute}>
-            <div class="absolute w-screen h-screen bg-slate-400/50 top-0 left-0 z-10 flex justify-center items-center backdrop-blur-sm">
-              <div class="bg-slate-200 rounded-sm shadow-2xl w-4/12">
-                <LoginForm onLoginCallback={refetch} />
-              </div>
-            </div>
+            <LoginOverlay onLoginCallback={doRefetch} />
           </Show>
         </Suspense>
       </section>

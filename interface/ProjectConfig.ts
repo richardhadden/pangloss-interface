@@ -135,7 +135,7 @@ export type EntityTypes =
   | "MakeJam"
   | "Order";
 
-type GenericListReturnType<T> = {
+export type GenericListReturnType<T> = {
   results: T[];
   count: number;
   page: number;

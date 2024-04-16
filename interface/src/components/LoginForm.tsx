@@ -1,17 +1,21 @@
-import { A } from "@solidjs/router";
-import Counter from "~/components/Counter";
-import * as api from "../../newSchema";
-
 import type { JSX } from "solid-js";
 import { Show, createSignal } from "solid-js";
-import { EventHandler } from "vinxi/http";
-import { ApiError } from "../../newSchema";
-import { redirect, useNavigate } from "@solidjs/router";
+
 import { useUserLogin, logInUser } from "~/contexts/users";
 import { t } from "~/contexts/translation";
 
+export function LoginOverlay(props: LoginFormProps) {
+  return (
+    <div class="absolute w-screen h-screen bg-slate-400/50 top-0 left-0 z-10 flex justify-center items-center backdrop-blur-sm">
+      <div class="bg-slate-200 rounded-sm shadow-2xl w-4/12">
+        <LoginForm onLoginCallback={props.onLoginCallback} />
+      </div>
+    </div>
+  );
+}
+
 type LoginFormProps = { onLoginCallback?: () => void };
-export default function LoginForm(props: LoginFormProps) {
+export function LoginForm(props: LoginFormProps) {
   const [user, { setLoggedIn, logOut: setLoggedOut }] = useUserLogin();
 
   const handleInput:
@@ -61,12 +65,10 @@ export default function LoginForm(props: LoginFormProps) {
             {t("interface.username")}
           </label>
           <input
-            //class="block w-full bg-slate-100 hover:border-b-indigo-400 hover:rounded-b-none outline-none p-3 rounded-sm border-b-[1.5px] border-b-transparent focus:duration-100 focus:border-b-indigo-700 focus:rounded-b-none transition-all focus:bg-slate-200 duration-75 focus:shadow-sm"
             class="col-span-3 font-mono block w-10/12 bg-slate-300 outline-none p-3 rounded-sm border-transparent border transition-all duration-75 focus:border-white  focus:shadow-2xl focus:bg-slate-50 group-hover:scale-y-110 focus:scale-y-110"
             name="username"
             id="username"
             type="text"
-            //placeholder="user name"
           />
         </div>
         <div class="w-full group  items-center space-x-6 grid grid-cols-4">
@@ -81,7 +83,6 @@ export default function LoginForm(props: LoginFormProps) {
             name="password"
             id="password"
             type="password"
-            //placeholder="password"
           />
         </div>
 

@@ -5,38 +5,45 @@ import { createResource, sharedConfig, untrack, type Accessor, type Setter } fro
 import { createStore, reconcile, unwrap, type ReconcileOptions } from "solid-js/store";
 import { isServer } from "solid-js/web";
 
-export function createAsync<T>(
+export function createRefetchableAsync<T>(
   fn: (prev: T) => Promise<T>,
   options: {
     name?: string;
     initialValue: T;
     deferStream?: boolean;
   }
-): Accessor<T>;
-export function createAsync<T>(
+): [Accessor<T | undefined>, {refetch: () => void, mutate: (data: T) => void} ]
+export function createRefetchableAsync<T>(
   fn: (prev: T | undefined) => Promise<T>,
   options?: {
     name?: string;
     initialValue?: T;
     deferStream?: boolean;
   }
-): Accessor<T | undefined>;
-export function createAsync<T>(
+): [Accessor<T | undefined>, {refetch: () => void, mutate: (data: T) => void} ]
+export function createRefetchableAsync<T>(
   fn: (prev: T | undefined) => Promise<T>,
   options?: {
     name?: string;
     initialValue?: T;
     deferStream?: boolean;
   }
-): Accessor<T | undefined> {
+): [Accessor<T | undefined>, {refetch: () => void, mutate: (data: T) => void} ] {
   let resource: () => T;
+  let mutate;
   let prev = () => !resource || (resource as any).state === "unresolved" ? undefined : (resource as any).latest;
-  [resource] = createResource(
-    () => subFetch(fn, untrack(prev)),
+  [resource, {mutate}] = createResource(
+    () => {
+      return subFetch(fn, untrack(prev))},
     v => v,
     options as any
   );
-  return () => resource();
+  const refetch = async () => {
+    const data = await subFetch(fn, untrack(prev)) as Exclude<T, Function> | ((prev: T) => T);
+    mutate(data)
+  }
+
+  return [() => resource(), {refetch, mutate}];
 }
 
 export function createAsyncStore<T>(

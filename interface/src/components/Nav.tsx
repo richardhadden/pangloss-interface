@@ -1,7 +1,7 @@
-import { Show, createEffect, For, JSXElement, createSignal } from "solid-js";
+import { Show, For, JSXElement, createSignal } from "solid-js";
 import { useLocation } from "@solidjs/router";
 import { useUserLogin } from "~/contexts/users";
-import { useNavigate, A } from "@solidjs/router";
+import { useNavigate } from "@solidjs/router";
 import {
   t,
   locale,
@@ -38,9 +38,9 @@ export default function Nav() {
       <nav
         onMouseEnter={() => setShowNavBar(true)}
         onMouseLeave={() => setShowNavBar(false)}
-        class="select-none rounded-r-sm  bg-slate-500   shadow-2xl shadow-slate-950 flex flex-col h-screen w-96 -left-80  group-[.navbar-open]:-left-0 fixed transition-all duration-200 z-20 "
+        class="overflow-y-scroll select-none rounded-r-sm  bg-slate-500   shadow-2xl shadow-slate-950 flex flex-col h-screen w-96 -left-80  group-[.navbar-open]:-left-0 fixed transition-all duration-200 z-20 "
       >
-        <div class="flex justify-center text-white bg-slate-950 h-14 items-center transition-all duration-200 select-none">
+        <div class="flex justify-center text-white bg-slate-950 h-14 items-center transition-all duration-200 select-none min-h-14">
           <IoMenuSharp
             size={32}
             class="text-slate-300 group-[.navbar-open]:opacity-30 group-[.navbar-open]:rotate-90 transition-all duration-200 absolute right-4 group-[.navbar-open]:right-3 top-3 "
@@ -50,7 +50,7 @@ export default function Nav() {
           </span>{" "}
           <span class="font-extralight">Managing Maximilian</span>
         </div>
-        <div class="flex justify-center text-white group-[.navbar-open]:bg-slate-900 h-14  items-center relative">
+        <div class="flex justify-center text-white group-[.navbar-open]:bg-slate-900 h-14 min-h-14  items-center relative">
           <OcPersonfill3 color="white" class="mr-5" />{" "}
           <span class="font-extralight mr-8">
             <Show
@@ -73,13 +73,13 @@ export default function Nav() {
           >
             <button
               onClick={logOut}
-              class="bg-red-900 hover:shadow-xl hover:bg-red-800 active:scale-95 active:shadow-none p-2 aspect-square absolute right-0 h-14 group-[.navbar-open]:flex opacity-0 group-[.navbar-open]:opacity-100 justify-center items-center hidden"
+              class="bg-red-900 hover:shadow-xl hover:bg-red-800 active:scale-95 active:shadow-none p-2 aspect-square absolute right-0 h-full group-[.navbar-open]:flex opacity-0 group-[.navbar-open]:opacity-100 justify-center items-center hidden"
             >
               <IoLogOutSharp size={28} class="block" />
             </button>
           </Show>
         </div>
-        <div class="flex justify-center h-14 group-[.navbar-open]:bg-slate-800">
+        <div class="flex justify-center h-14 group-[.navbar-open]:bg-slate-800 min-h-14">
           <div class="flex items-center">
             <span class="text-white uppercase text-xs font-semibold mr-4">
               {t("interface.language")}
@@ -113,7 +113,7 @@ export default function Nav() {
             </MarginLink>
           </li>
         </ul>
-        <div class="flex justify-center text-white bg-slate-950 h-14 items-center transition-all duration-200 select-none mt-0 opacity-0 group-[.navbar-open]:opacity-100 border-b-[0.25px] border-slate-400/50">
+        <div class="flex justify-center text-white bg-slate-950 h-14 min-h-14 items-center transition-all duration-200 select-none mt-0 opacity-0 group-[.navbar-open]:opacity-100 border-b-[0.25px] border-slate-400/50">
           <span class="uppercase font-semibold text-xs mr-4 relative top-[0px]">
             {t("interface.models")}
           </span>{" "}
@@ -128,22 +128,6 @@ export default function Nav() {
               />
             )}
           </For>
-
-          {/*<li>
-          <MarginLink href="/objects/ZoteroEntry" small={true}>
-            {t("ZoteroEntry.__model.verbose_name_plural")}
-          </MarginLink>
-        </li>
-        <li>
-          <MarginLink href="/objects/Person" small={true}>
-            {t("Person.__model.verbose_name_plural")}
-          </MarginLink>
-        </li>
-        <li>
-          <MarginLink href="/objects/Something" small={true}>
-            Something
-          </MarginLink>
-          </li>*/}
         </ul>
       </nav>
     </div>
