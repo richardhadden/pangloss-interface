@@ -62,6 +62,9 @@ def build_typescript_item(model):
 already_built_reference_types = set()
 extra_reference_types_to_write = {}
 
+already_built_reference_typescript_types = set()
+extra_reference_typescript_types_to_write = {}
+
 def write_item_to_file(f: io.TextIOBase, model, model_valibot_object):
     
     # Checks for mention of the current model validator in its own fields (i.e. self-referencing model)
@@ -74,10 +77,12 @@ def write_item_to_file(f: io.TextIOBase, model, model_valibot_object):
             ",".join(f"\n\t{name}: {decl}" for name, decl in model_valibot_object.items()) 
             }}});""")
     else:
+       
         f.write(f"type {model.__name__} = v.Output<typeof {model.__name__}Validator>;\n")
         f.write(f"""const {model.__name__}Validator = v.object({{{
             ",".join(f"\n\t{name}: {decl}" for name, decl in model_valibot_object.items()) 
             }}});""")
+        
     
     f.write("\n\n")
 
@@ -87,6 +92,7 @@ def build_frontend_type_file(project_name: str, interface_path):
     
     base_class_valibot_models = {}
     already_built_reference_types.update(model.Reference for model in ModelManager._registered_models)
+    already_built_reference_typescript_types.update(model.Reference for model in ModelManager._registered_models)
     
     for model in ModelManager._registered_models:
         model_valibot_object = build_valibot_item_for_model(model)
@@ -127,12 +133,22 @@ This configuration file will be used when building the interface.
         f.write(f"""export type ListReturnTypes = {{
     {",".join(f"{model.__name__}: GenericListReturnType<{model.__name__}Reference>" for model in ModelManager._registered_models)}
         }};\n\n""")
-            
+        
         for model, model_valibot_object in extra_reference_types_to_write.items():
             write_item_to_file(f, model, model_valibot_object)
         
+       
+        
         for model, model_valibot_object in base_class_valibot_models.items():
             write_item_to_file(f, model, model_valibot_object)
+        
+        for model in ModelManager._registered_models: 
+            typescript_object = build_typescript_item(model.View)
+            f.write(f"type {model.__name__}View = {{{";\n\t".join(f"{name}: {decl}" for name, decl in typescript_object.items())}}};\n\n")    
+            
+        f.write(f"""export type EntityViewTypes = {{
+    {",".join(f"{model.__name__}: {model.__name__}View" for model in ModelManager._registered_models)}
+        }};\n\n""")
             
         f.write(f"""export const ValidatorsByModelName = {{
             {",\n".join(f"{model.__name__}: {model.__name__}Validator" for model in ModelManager._registered_models)}
@@ -141,6 +157,11 @@ This configuration file will be used when building the interface.
         f.write("""export type ModelHierarchy = {
                     [key: string]: {} | ModelHierarchy
         };\n\n""")
+        
+        print(extra_reference_typescript_types_to_write)
+        for model, typescript_object in extra_reference_typescript_types_to_write.items():
+            if model not in extra_reference_types_to_write: # If here, it means already written as valibot object
+                f.write(f"type {model.__name__} = {{{",\n\t".join(f"{name}: {decl}" for name, decl in typescript_object.items())}}};\n")
         
         for model in ModelManager._registered_models:
             f.write(f"const {model.__name__}Hierarchy: ModelHierarchy = {json.dumps(build_model_hierarchy(model))};\n\n")
@@ -243,9 +264,14 @@ def typescript_primitive_types(t) -> str:
         case {"type": c} if issubclass(c, BaseNode):
             return c.__name__
         case {"type": c } if issubclass(c, BaseNodeReference):
+            #print(c)
+            if c not in already_built_reference_typescript_types:
+                print(c)
+                already_built_reference_typescript_types.add(c)
+                extra_reference_typescript_types_to_write[c] = build_typescript_item(c)
             return f"{c.__name__}"
         case _:
-            return "v.any()"
+            return "string"
             return "Missing!"
 
 
