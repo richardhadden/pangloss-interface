@@ -5,6 +5,8 @@ import { createResource, sharedConfig, untrack, type Accessor, type Setter } fro
 import { createStore, reconcile, unwrap, type ReconcileOptions } from "solid-js/store";
 import { isServer } from "solid-js/web";
 
+import { cache } from "@solidjs/router";
+
 export function createRefetchableAsync<T>(
   fn: (prev: T) => Promise<T>,
   options: {
@@ -146,3 +148,18 @@ function subFetch<T>(fn: (prev: T | undefined) => Promise<T>, prev: T | undefine
     Promise = ogPromise;
   }
 }
+
+export const fetchDataCache = <A extends any[], R>(
+  f: (...args: A) => R,
+  ...args: A
+): ((...args: never[]) => Promise<void>) & {
+  keyFor: () => string;
+  key: string;
+} => {
+  return cache(
+    async () => {
+      f(...args);
+    },
+    args.map((arg) => JSON.stringify(arg)).join("")
+  );
+};

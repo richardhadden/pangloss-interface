@@ -10,11 +10,13 @@ export default function Home() {
 
   return (
     <main class="text-center mx-auto text-gray-700 p-4">
-      <h1 class="max-6-xs text-6xl text-sky-700 font-semibold uppercase my-16">
-        Pangloss <br /> the totally unfinished framework for building
-        prosopographcial networks
+      <h1 class="text-6xl text-slate-950 font-semibold uppercase mt-16 mb-4 tracking-widest">
+        Pangloss
       </h1>
-      <span>Hi!</span>
+      <h3>Prosopography And Networks Graph-Labyrinth Orientation-System 🔆</h3>
+      <h2 class="text-4xl text-slate-900 font-thin mt-16">
+        Managing Maximilian
+      </h2>
     </main>
   );
 }

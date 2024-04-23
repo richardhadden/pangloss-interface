@@ -135,7 +135,7 @@ export type EntityTypes =
   | "MakeJam"
   | "Order";
 
-export type GenericListReturnType<T> = {
+type GenericListReturnType<T> = {
   results: T[];
   count: number;
   page: number;
@@ -242,10 +242,10 @@ const FactoidValidator = v.object({
   statements: v.array(
     v.union([
       v.lazy(() => NamingValidator),
-      v.lazy(() => MakeJamValidator),
-      v.lazy(() => BirthValidator),
       v.lazy(() => DeathValidator),
+      v.lazy(() => BirthValidator),
       v.lazy(() => OrderValidator),
+      v.lazy(() => MakeJamValidator),
     ]),
   ),
 });
@@ -325,7 +325,7 @@ type Order = {
   realType: "Order";
   subjectOfStatement: Array<PersonReference>;
   when: string | null;
-  thingOrdered: Array<MakeJam | Order>;
+  thingOrdered: Array<Order | MakeJam>;
 };
 const OrderValidator: v.BaseSchema<Order> = v.object({
   uid: v.union([v.string([v.uuid()]), v.null_()]),
@@ -334,9 +334,224 @@ const OrderValidator: v.BaseSchema<Order> = v.object({
   subjectOfStatement: v.array(PersonReferenceValidator),
   when: v.union([v.string([v.isoDate()]), v.null_()]),
   thingOrdered: v.array(
-    v.union([v.lazy(() => MakeJamValidator), v.lazy(() => OrderValidator)]),
+    v.union([v.lazy(() => OrderValidator), v.lazy(() => MakeJamValidator)]),
   ),
 });
+
+type ZoteroEntryView = {
+  createdWhen: string;
+  modifiedWhen: string;
+  createdBy: string;
+  modifiedBy: string;
+  isReferenceFor: Array<FactoidReference | CitationReference> | null;
+  realType: "ZoteroEntry";
+  uid: string | null;
+  label: string;
+  zoteroKey: string;
+  zoteroGroupId: number;
+  zoteroGroupName: string;
+  zoteroVersion: number;
+  zoteroUrl: string;
+  csljson: string;
+  bib: string;
+  citation: string;
+};
+
+type EntityView = {
+  createdWhen: string;
+  modifiedWhen: string;
+  createdBy: string;
+  modifiedBy: string;
+  realType: "Entity";
+  uid: string | null;
+  label: string;
+};
+
+type PersonView = {
+  createdWhen: string;
+  modifiedWhen: string;
+  createdBy: string;
+  modifiedBy: string;
+  isSubjectOfStatement: Array<
+    | OrderReference
+    | StatementReference
+    | MakeJamReference
+    | NamingReference
+    | ActivityReference
+    | TemporalStatementReference
+  > | null;
+  hasBirthEvent: Array<BirthReference> | null;
+  hasDeathEvent: Array<Person__has_death_event__DeathReference> | null;
+  carriedOutActivity: Array<ActivityReference | MakeJamReference> | null;
+  realType: "Person";
+  uid: string | null;
+  label: string;
+};
+
+type OrganisationView = {
+  createdWhen: string;
+  modifiedWhen: string;
+  createdBy: string;
+  modifiedBy: string;
+  carriedOutActivity: Array<ActivityReference | MakeJamReference> | null;
+  realType: "Organisation";
+  uid: string | null;
+  label: string;
+};
+
+type SourceView = {
+  createdWhen: string;
+  modifiedWhen: string;
+  createdBy: string;
+  modifiedBy: string;
+  realType: "Source";
+  uid: string | null;
+  label: string;
+  title: string;
+};
+
+type CitationView = {
+  createdWhen: string;
+  modifiedWhen: string;
+  createdBy: string;
+  modifiedBy: string;
+  realType: "Citation";
+  uid: string | null;
+  label: string;
+  reference: Array<ZoteroEntryReference>;
+  scope: string | null;
+};
+
+type FactoidView = {
+  createdWhen: string;
+  modifiedWhen: string;
+  createdBy: string;
+  modifiedBy: string;
+  realType: "Factoid";
+  uid: string | null;
+  label: string;
+  citation: Array<string>;
+  statements: Array<Naming | Death | Birth | Order | MakeJam>;
+};
+
+type StatementView = {
+  createdWhen: string;
+  modifiedWhen: string;
+  createdBy: string;
+  modifiedBy: string;
+  realType: "Statement";
+  uid: string | null;
+  label: string;
+  subjectOfStatement: Array<PersonReference>;
+};
+
+type TemporalStatementView = {
+  createdWhen: string;
+  modifiedWhen: string;
+  createdBy: string;
+  modifiedBy: string;
+  realType: "TemporalStatement";
+  uid: string | null;
+  label: string;
+  subjectOfStatement: Array<PersonReference>;
+  when: string | null;
+};
+
+type NamingView = {
+  createdWhen: string;
+  modifiedWhen: string;
+  createdBy: string;
+  modifiedBy: string;
+  realType: "Naming";
+  uid: string | null;
+  label: string;
+  subjectOfStatement: Array<PersonReference>;
+  firstName: string;
+  lastName: string;
+};
+
+type BirthView = {
+  createdWhen: string;
+  modifiedWhen: string;
+  createdBy: string;
+  modifiedBy: string;
+  realType: "Birth";
+  uid: string | null;
+  label: string;
+  when: string | null;
+  personBorn: Array<PersonReference>;
+};
+
+type DeathView = {
+  createdWhen: string;
+  modifiedWhen: string;
+  createdBy: string;
+  modifiedBy: string;
+  realType: "Death";
+  uid: string | null;
+  label: string;
+  when: string | null;
+  personBorn: Array<Death__person_born__PersonReference>;
+};
+
+type ActivityView = {
+  createdWhen: string;
+  modifiedWhen: string;
+  createdBy: string;
+  modifiedBy: string;
+  realType: "Activity";
+  uid: string | null;
+  label: string;
+  subjectOfStatement: Array<PersonReference>;
+  when: string | null;
+  carriedOutBy: Array<OrganisationReference | PersonReference>;
+};
+
+type MakeJamView = {
+  createdWhen: string;
+  modifiedWhen: string;
+  createdBy: string;
+  modifiedBy: string;
+  wasOrderedIn: Array<OrderReference> | null;
+  realType: "MakeJam";
+  uid: string | null;
+  label: string;
+  subjectOfStatement: Array<PersonReference>;
+  when: string | null;
+  carriedOutBy: Array<OrganisationReference | PersonReference>;
+};
+
+type OrderView = {
+  createdWhen: string;
+  modifiedWhen: string;
+  createdBy: string;
+  modifiedBy: string;
+  wasOrderedIn: Array<OrderReference> | null;
+  realType: "Order";
+  uid: string | null;
+  label: string;
+  subjectOfStatement: Array<PersonReference>;
+  when: string | null;
+  thingOrdered: Array<Order | MakeJam>;
+};
+
+export type EntityViewTypes = {
+  ZoteroEntry: ZoteroEntryView;
+  Entity: EntityView;
+  Person: PersonView;
+  Organisation: OrganisationView;
+  Source: SourceView;
+  Citation: CitationView;
+  Factoid: FactoidView;
+  Statement: StatementView;
+  TemporalStatement: TemporalStatementView;
+  Naming: NamingView;
+  Birth: BirthView;
+  Death: DeathView;
+  Activity: ActivityView;
+  MakeJam: MakeJamView;
+  Order: OrderView;
+};
 
 export const ValidatorsByModelName = {
   ZoteroEntry: ZoteroEntryValidator,
@@ -360,6 +575,12 @@ export type ModelHierarchy = {
   [key: string]: {} | ModelHierarchy;
 };
 
+type Person__has_death_event__DeathReference = {
+  uid: string;
+  label: string;
+  realType: "Death";
+  relationProperties: string;
+};
 const ZoteroEntryHierarchy: ModelHierarchy = {};
 
 const EntityHierarchy: ModelHierarchy = { Person: {}, Organisation: {} };
@@ -496,65 +717,65 @@ export const FactoidConfig: ConfigObject = {
 
 export const StatementConfig: ConfigObject = {
   abstract: true,
-  create: true,
-  edit: true,
-  delete: true,
+  create: false,
+  edit: false,
+  delete: false,
   search: true,
 };
 
 export const TemporalStatementConfig: ConfigObject = {
   abstract: true,
-  create: true,
-  edit: true,
-  delete: true,
+  create: false,
+  edit: false,
+  delete: false,
   search: true,
 };
 
 export const NamingConfig: ConfigObject = {
   abstract: false,
-  create: true,
-  edit: true,
-  delete: true,
+  create: false,
+  edit: false,
+  delete: false,
   search: true,
 };
 
 export const BirthConfig: ConfigObject = {
   abstract: false,
-  create: true,
-  edit: true,
-  delete: true,
+  create: false,
+  edit: false,
+  delete: false,
   search: true,
 };
 
 export const DeathConfig: ConfigObject = {
   abstract: false,
-  create: true,
-  edit: true,
-  delete: true,
+  create: false,
+  edit: false,
+  delete: false,
   search: true,
 };
 
 export const ActivityConfig: ConfigObject = {
   abstract: true,
-  create: true,
-  edit: true,
-  delete: true,
+  create: false,
+  edit: false,
+  delete: false,
   search: true,
 };
 
 export const MakeJamConfig: ConfigObject = {
   abstract: false,
-  create: true,
-  edit: true,
-  delete: true,
+  create: false,
+  edit: false,
+  delete: false,
   search: true,
 };
 
 export const OrderConfig: ConfigObject = {
   abstract: false,
-  create: true,
-  edit: true,
-  delete: true,
+  create: false,
+  edit: false,
+  delete: false,
   search: true,
 };
 

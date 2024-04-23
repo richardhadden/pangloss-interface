@@ -164,7 +164,10 @@ function ModelMenuObject<Component>(props: ModelMenuObjectProps) {
               ModelConfigs[props.modelName].create
             }
           >
-            <a class="bg-green-700 group-hover/button:hover:bg-green-900 group-hover/button:bg-green-800 group-hover/hutton:active:bg-green-600  h-10 aspect-square active:scale-[92%] cursor-pointer flex items-center justify-center text-green-50 transition-colors duration-75">
+            <a
+              href={`/objects/${props.modelName}/new`}
+              class="bg-green-700 group-hover/button:hover:bg-green-900 group-hover/button:bg-green-800 group-hover/hutton:active:bg-green-600  h-10 aspect-square active:scale-[92%] cursor-pointer flex items-center justify-center text-green-50 transition-colors duration-75"
+            >
               <IoCreateSharp />
             </a>
           </Show>

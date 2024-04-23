@@ -1,7 +1,7 @@
 import { getRequestEvent, isServer } from "solid-js/web";
 import { useUserLogin } from "./contexts/users";
 
-import { ListReturnTypes } from "../ProjectConfig";
+import { EntityViewTypes, ListReturnTypes } from "../ProjectConfig";
 
 
 
@@ -16,7 +16,7 @@ const getCookieValue = (
   }
 };
 
-async function getRequest(url: URL): Promise<object | APIError> {
+async function getRequest(url: URL): Promise<object | undefined> {
   console.log("Data fetch...")
   const [users, { setAccessingAuthorisedRoute, logOut }] = useUserLogin();
   if (isServer) {
@@ -54,7 +54,7 @@ async function getRequest(url: URL): Promise<object | APIError> {
       setAccessingAuthorisedRoute(true);
       logOut();
 
-      return {error: true, message: "Not Authorised", statusCode: 401}
+      return undefined; //{error: true, message: "Not Authorised", statusCode: 401}
     }
 
     const data = await response.json();
@@ -68,19 +68,32 @@ export type APIError = {
   statusCode: 400 | 401 | 404
 }
 
+
+
 function createApiClient(BASE_URL: string) {
   async function list<K extends keyof ListReturnTypes>(
     entityType: K,
     searchParamsString: string
-  ): Promise<ListReturnTypes[K] | APIError> {
+  ): Promise<ListReturnTypes[K] | undefined> {
     const url = new URL(`${BASE_URL}/${entityType}`);
     url.search = new URLSearchParams(searchParamsString).toString();
     const data = await getRequest(url);
-    return data as ListReturnTypes[K] | APIError;
+    return data as ListReturnTypes[K] | undefined;
+  }
+
+  async function view<K extends keyof EntityViewTypes>(
+    entityType: K,
+    uid: string
+  ): Promise<EntityViewTypes[K] | undefined> {
+    //console.log(v.string([v.uuid()])._parse(uid))
+    const url = new URL(`${BASE_URL}/${entityType}/${uid}`)
+    const data = await getRequest(url);
+    return data as EntityViewTypes[K] | undefined;
+
   }
 
   return {
-    list,
+    list, view
   };
 }
 
