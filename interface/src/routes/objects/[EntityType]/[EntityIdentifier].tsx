@@ -1,8 +1,10 @@
 import { RouteDefinition, useParams } from "@solidjs/router";
+
 import { useUserLogin } from "~/contexts/users";
 import {
   type EntityViewTypes,
   type EntityTypes,
+  ValidatorsByModelName,
 } from "../../../../ProjectConfig";
 import { Show, Suspense } from "solid-js";
 import { LoginOverlay } from "~/components/LoginForm";
@@ -12,11 +14,10 @@ import {
   createRefetchableAsync,
   fetchDataCache,
 } from "~/utils/createRefetchableAsync";
-import { APIError, apiClient } from "~/apiClient";
+import { apiClient } from "~/apiClient";
 import { ViewItem } from "~/components/ViewItem";
-import { IoCreateSharp, IoPencilSharp, IoPersonSharp } from "solid-icons/io";
-import { AiOutlineClockCircle } from "solid-icons/ai";
-import { keyof } from "valibot";
+
+import { Title } from "@solidjs/meta";
 import { ViewModifiedDetails } from "~/components/ViewModifyDetails";
 
 async function fetchData<K extends keyof EntityViewTypes>(
@@ -47,8 +48,12 @@ export default function () {
       params.EntityIdentifier as string
     )
   );
+
   return (
     <>
+      <Title>
+        {t(`${params.EntityType}.__model.verbose_name`) + " | Pangloss"}
+      </Title>
       <ControlBar
         entityType={t(`${params.EntityType}.__model.verbose_name`)}
         centralSectionPosition="left"

@@ -12,6 +12,7 @@ import {
   fetchDataCache,
 } from "../../../utils/createRefetchableAsync";
 import { Suspense, For, onMount, Show } from "solid-js";
+import { Title } from "@solidjs/meta";
 
 import { apiClient, type APIError } from "~/apiClient";
 import type { ListReturnTypes, EntityTypes } from "../../../../ProjectConfig";
@@ -19,7 +20,6 @@ import { useUserLogin } from "~/contexts/users";
 import { LoginOverlay } from "~/components/LoginForm";
 import { ControlBar } from "~/components/ControlBar";
 import { t } from "~/contexts/translation";
-import { Loading } from "~/components/Loading";
 
 const debounce = <F extends (...args: any[]) => any>(
   func: F,
@@ -70,13 +70,12 @@ export default function EntityList() {
     await refetch();
   }
 
-  onMount(() => {
-    setAccessingAuthorisedRoute(false);
+  /* onMount(() => {
     if ((data() as APIError)?.statusCode === 401) {
       logOut();
       setAccessingAuthorisedRoute(true);
     }
-  });
+  }); */
 
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -112,6 +111,9 @@ export default function EntityList() {
 
   return (
     <>
+      <Title>
+        {t(`${params.EntityType}.__model.verbose_name_plural`)} | Pangloss
+      </Title>
       <ControlBar
         entityType={t(`${params.EntityType}.__model.verbose_name_plural`)}
         newEntityUrl={`/objects/${params.EntityType}/new`}
@@ -146,13 +148,7 @@ export default function EntityList() {
         }
       />
       <section class="pl-16 pr-32 mt-10">
-        <Suspense
-          fallback={
-            <div class="flex justify-center">
-              <Loading />
-            </div>
-          }
-        >
+        <Suspense fallback={<h1>Loading!</h1>}>
           <Show when={data()}>
             {(data) => (
               <>
@@ -173,7 +169,6 @@ export default function EntityList() {
                   )}
                 </For>
                 <div id="endOfList" />
-
                 <Show when={data().nextUrl}>
                   <div class="flex justify-center mt-12 mb-6">
                     <button

@@ -78,6 +78,7 @@ function createApiClient(BASE_URL: string) {
     const url = new URL(`${BASE_URL}/${entityType}`);
     url.search = new URLSearchParams(searchParamsString).toString();
     const data = await getRequest(url);
+    console.log(data);
     return data as ListReturnTypes[K] | undefined;
   }
 

@@ -195,7 +195,7 @@ This configuration file will be used when building the interface.
             delete = getattr(model, "__delete__", "False")
             f.write(f"delete: {"true" if delete else "false"},")
             search = getattr(model, "__search__", "False")
-            f.write(f"search: {"true" if search else "false"},")
+            f.write(f"search: {"true" if search else "false"},")            
             f.write("};\n\n")
         
         f.write(f"""export const ModelConfigs = {{{

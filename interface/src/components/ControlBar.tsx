@@ -64,7 +64,7 @@ export function ControlBar<Component>(props: ControlBarProps) {
         <Show when={props.editUrl}>
           <a
             href={props.editUrl}
-            class="aspect-square flex items-center justify-center bg-green-600 text-green-50 w-16 last-of-type:rounded-br-sm hover:bg-green-800 active:bg-green-700 hover:shadow-green-600/90 shadow-2xl active:shadow-green-300/90 shadow-green-600/90 hover:shadow-2xl active:scale-95 active:rounded-sm active:last-of-type:rounded-sm"
+            class="aspect-square h-14 flex items-center justify-center bg-green-600 text-green-50 last-of-type:rounded-br-sm hover:bg-green-800 active:bg-green-700 hover:shadow-green-600/90 shadow-2xl active:shadow-green-300/90 shadow-green-600/90 hover:shadow-2xl active:scale-95 active:rounded-sm active:last-of-type:rounded-sm"
           >
             <IoPencilSharp size={22} class="relative -top-[1px] -right-[2px]" />
           </a>

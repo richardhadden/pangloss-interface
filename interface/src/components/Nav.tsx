@@ -1,7 +1,8 @@
 import { Show, For, JSXElement, createSignal } from "solid-js";
 import { useLocation } from "@solidjs/router";
 import { useUserLogin } from "~/contexts/users";
-import { useNavigate } from "@solidjs/router";
+import { useNavigate, A } from "@solidjs/router";
+
 import {
   t,
   locale,
