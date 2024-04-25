@@ -241,11 +241,11 @@ const FactoidValidator = v.object({
   citation: v.array(v.any()),
   statements: v.array(
     v.union([
+      v.lazy(() => DeathValidator),
       v.lazy(() => OrderValidator),
       v.lazy(() => NamingValidator),
-      v.lazy(() => BirthValidator),
-      v.lazy(() => DeathValidator),
       v.lazy(() => MakeJamValidator),
+      v.lazy(() => BirthValidator),
     ]),
   ),
 });
@@ -303,7 +303,7 @@ const ActivityValidator = v.object({
   subjectOfStatement: v.array(PersonReferenceValidator),
   when: v.union([v.string([v.isoDate()]), v.null_()]),
   carriedOutBy: v.array(
-    v.union([PersonReferenceValidator, OrganisationReferenceValidator]),
+    v.union([OrganisationReferenceValidator, PersonReferenceValidator]),
   ),
 });
 
@@ -315,7 +315,7 @@ const MakeJamValidator = v.object({
   subjectOfStatement: v.array(PersonReferenceValidator),
   when: v.union([v.string([v.isoDate()]), v.null_()]),
   carriedOutBy: v.array(
-    v.union([PersonReferenceValidator, OrganisationReferenceValidator]),
+    v.union([OrganisationReferenceValidator, PersonReferenceValidator]),
   ),
 });
 
@@ -325,7 +325,7 @@ type Order = {
   realType: "Order";
   subjectOfStatement: Array<PersonReference>;
   when: string | null;
-  thingOrdered: Array<Order | MakeJam>;
+  thingOrdered: Array<MakeJam | Order>;
 };
 const OrderValidator: v.BaseSchema<Order> = v.object({
   uid: v.union([v.string([v.uuid()]), v.null_()]),
@@ -334,7 +334,7 @@ const OrderValidator: v.BaseSchema<Order> = v.object({
   subjectOfStatement: v.array(PersonReferenceValidator),
   when: v.union([v.string([v.isoDate()]), v.null_()]),
   thingOrdered: v.array(
-    v.union([v.lazy(() => OrderValidator), v.lazy(() => MakeJamValidator)]),
+    v.union([v.lazy(() => MakeJamValidator), v.lazy(() => OrderValidator)]),
   ),
 });
 
@@ -373,12 +373,12 @@ type PersonView = {
   createdBy: string;
   modifiedBy: string;
   isSubjectOfStatement: Array<
-    | NamingReference
-    | OrderReference
-    | MakeJamReference
     | ActivityReference
-    | StatementReference
+    | NamingReference
+    | MakeJamReference
     | TemporalStatementReference
+    | StatementReference
+    | OrderReference
   > | null;
   hasBirthEvent: Array<BirthReference> | null;
   hasDeathEvent: Array<Person__has_death_event__DeathReference> | null;
@@ -431,7 +431,7 @@ type FactoidView = {
   uid: string | null;
   label: string;
   citation: Array<string>;
-  statements: Array<Order | Naming | Birth | Death | MakeJam>;
+  statements: Array<Death | Order | Naming | MakeJam | Birth>;
 };
 
 type StatementView = {
@@ -504,7 +504,7 @@ type ActivityView = {
   label: string;
   subjectOfStatement: Array<PersonReference>;
   when: string | null;
-  carriedOutBy: Array<PersonReference | OrganisationReference>;
+  carriedOutBy: Array<OrganisationReference | PersonReference>;
 };
 
 type MakeJamView = {
@@ -518,7 +518,7 @@ type MakeJamView = {
   label: string;
   subjectOfStatement: Array<PersonReference>;
   when: string | null;
-  carriedOutBy: Array<PersonReference | OrganisationReference>;
+  carriedOutBy: Array<OrganisationReference | PersonReference>;
 };
 
 type OrderView = {
@@ -532,7 +532,7 @@ type OrderView = {
   label: string;
   subjectOfStatement: Array<PersonReference>;
   when: string | null;
-  thingOrdered: Array<Order | MakeJam>;
+  thingOrdered: Array<MakeJam | Order>;
 };
 
 export type EntityViewTypes = {
@@ -651,132 +651,248 @@ export const TopLevelModels = [
   "Statement",
 ];
 
-type ConfigObject = {
+export type FieldDefinition = {
+  value?: boolean;
+  outgoingRelation?: boolean;
+  incomingRelation?: boolean;
+  createInline?: boolean;
+  editInline?: boolean;
+};
+
+type FieldsObject<T> = {
+  [Property in keyof T]?: FieldDefinition;
+};
+
+type ConfigObject<T> = {
   abstract: boolean;
   create: boolean;
   edit: boolean;
   delete: boolean;
   search: boolean;
+  fields: FieldsObject<T>;
 };
-
-export const ZoteroEntryConfig: ConfigObject = {
+export const ZoteroEntryConfig: ConfigObject<EntityViewTypes["ZoteroEntry"]> = {
   abstract: false,
   create: false,
   edit: false,
   delete: false,
   search: true,
+  fields: {
+    uid: { value: true },
+    label: { value: true },
+    zoteroKey: { value: true },
+    zoteroGroupId: { value: true },
+    zoteroGroupName: { value: true },
+    zoteroVersion: { value: true },
+    zoteroUrl: { value: true },
+    csljson: { value: true },
+    bib: { value: true },
+    citation: { value: true },
+    createdBy: { value: true },
+    createdWhen: { value: true },
+    modifiedBy: { value: true },
+    modifiedWhen: { value: true },
+    isReferenceFor: { incomingRelation: true },
+  },
 };
 
-export const EntityConfig: ConfigObject = {
+export const EntityConfig: ConfigObject<EntityViewTypes["Entity"]> = {
   abstract: true,
   create: true,
   edit: true,
   delete: true,
   search: true,
+  fields: { uid: { value: true }, label: { value: true } },
 };
 
-export const PersonConfig: ConfigObject = {
+export const PersonConfig: ConfigObject<EntityViewTypes["Person"]> = {
   abstract: false,
   create: true,
   edit: true,
   delete: true,
   search: true,
+  fields: {
+    uid: { value: true },
+    label: { value: true },
+    isSubjectOfStatement: { incomingRelation: true },
+    hasBirthEvent: { incomingRelation: true },
+    hasDeathEvent: { incomingRelation: true },
+    carriedOutActivity: { incomingRelation: true },
+  },
 };
 
-export const OrganisationConfig: ConfigObject = {
+export const OrganisationConfig: ConfigObject<EntityViewTypes["Organisation"]> =
+  {
+    abstract: false,
+    create: true,
+    edit: true,
+    delete: true,
+    search: true,
+    fields: {
+      uid: { value: true },
+      label: { value: true },
+      carriedOutActivity: { incomingRelation: true },
+    },
+  };
+
+export const SourceConfig: ConfigObject<EntityViewTypes["Source"]> = {
   abstract: false,
   create: true,
   edit: true,
   delete: true,
   search: true,
+  fields: {
+    uid: { value: true },
+    label: { value: true },
+    title: { value: true },
+  },
 };
 
-export const SourceConfig: ConfigObject = {
-  abstract: false,
-  create: true,
-  edit: true,
-  delete: true,
-  search: true,
-};
-
-export const CitationConfig: ConfigObject = {
+export const CitationConfig: ConfigObject<EntityViewTypes["Citation"]> = {
   abstract: false,
   create: false,
   edit: false,
   delete: false,
   search: false,
+  fields: {
+    uid: { value: true },
+    label: { value: true },
+    reference: { outgoingRelation: true },
+    scope: { value: true },
+  },
 };
 
-export const FactoidConfig: ConfigObject = {
+export const FactoidConfig: ConfigObject<EntityViewTypes["Factoid"]> = {
   abstract: false,
   create: true,
   edit: true,
   delete: true,
   search: true,
+  fields: {
+    uid: { value: true },
+    label: { value: true },
+    citation: {},
+    statements: { outgoingRelation: true, createInline: true },
+  },
 };
 
-export const StatementConfig: ConfigObject = {
+export const StatementConfig: ConfigObject<EntityViewTypes["Statement"]> = {
   abstract: true,
   create: false,
   edit: false,
   delete: false,
   search: true,
+  fields: {
+    uid: { value: true },
+    label: { value: true },
+    subjectOfStatement: { outgoingRelation: true },
+  },
 };
 
-export const TemporalStatementConfig: ConfigObject = {
+export const TemporalStatementConfig: ConfigObject<
+  EntityViewTypes["TemporalStatement"]
+> = {
   abstract: true,
   create: false,
   edit: false,
   delete: false,
   search: true,
+  fields: {
+    uid: { value: true },
+    label: { value: true },
+    subjectOfStatement: { outgoingRelation: true },
+    when: { value: true },
+  },
 };
 
-export const NamingConfig: ConfigObject = {
+export const NamingConfig: ConfigObject<EntityViewTypes["Naming"]> = {
   abstract: false,
   create: false,
   edit: false,
   delete: false,
   search: true,
+  fields: {
+    uid: { value: true },
+    label: { value: true },
+    subjectOfStatement: { outgoingRelation: true },
+    firstName: { value: true },
+    lastName: { value: true },
+  },
 };
 
-export const BirthConfig: ConfigObject = {
+export const BirthConfig: ConfigObject<EntityViewTypes["Birth"]> = {
   abstract: false,
   create: false,
   edit: false,
   delete: false,
   search: true,
+  fields: {
+    uid: { value: true },
+    label: { value: true },
+    when: { value: true },
+    personBorn: { outgoingRelation: true },
+  },
 };
 
-export const DeathConfig: ConfigObject = {
+export const DeathConfig: ConfigObject<EntityViewTypes["Death"]> = {
   abstract: false,
   create: false,
   edit: false,
   delete: false,
   search: true,
+  fields: {
+    uid: { value: true },
+    label: { value: true },
+    when: { value: true },
+    personBorn: { outgoingRelation: true },
+  },
 };
 
-export const ActivityConfig: ConfigObject = {
+export const ActivityConfig: ConfigObject<EntityViewTypes["Activity"]> = {
   abstract: true,
   create: false,
   edit: false,
   delete: false,
   search: true,
+  fields: {
+    uid: { value: true },
+    label: { value: true },
+    subjectOfStatement: { outgoingRelation: true },
+    when: { value: true },
+    carriedOutBy: { outgoingRelation: true },
+  },
 };
 
-export const MakeJamConfig: ConfigObject = {
+export const MakeJamConfig: ConfigObject<EntityViewTypes["MakeJam"]> = {
   abstract: false,
   create: false,
   edit: false,
   delete: false,
   search: true,
+  fields: {
+    uid: { value: true },
+    label: { value: true },
+    subjectOfStatement: { outgoingRelation: true },
+    when: { value: true },
+    carriedOutBy: { outgoingRelation: true },
+    wasOrderedIn: { incomingRelation: true },
+  },
 };
 
-export const OrderConfig: ConfigObject = {
+export const OrderConfig: ConfigObject<EntityViewTypes["Order"]> = {
   abstract: false,
   create: false,
   edit: false,
   delete: false,
   search: true,
+  fields: {
+    uid: { value: true },
+    label: { value: true },
+    subjectOfStatement: { outgoingRelation: true },
+    when: { value: true },
+    thingOrdered: { outgoingRelation: true, createInline: true },
+    wasOrderedIn: { incomingRelation: true },
+  },
 };
 
 export const ModelConfigs = {

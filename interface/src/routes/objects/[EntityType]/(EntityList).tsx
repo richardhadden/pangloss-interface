@@ -113,10 +113,10 @@ export default function EntityList() {
   return (
     <>
       <Title>
-        {t(`${params.EntityType}.__model.verbose_name_plural`)} | Pangloss
+        {t(`${params.EntityType}.__model.verboseNamePlural`)} | Pangloss
       </Title>
       <ControlBar
-        entityType={t(`${params.EntityType}.__model.verbose_name_plural`)}
+        entityType={t(`${params.EntityType}.__model.verboseNamePlural`)}
         newEntityUrl={`/objects/${params.EntityType}/new`}
         controlBarCentre={
           <Suspense>
@@ -161,7 +161,7 @@ export default function EntityList() {
                       class="truncate line-clamp-1 text-ellipsis w-full m-2 mb-4 h-10 flex rounded-sm group cursor-pointer  outline-non transition-none duration-75 active:scale-y-[99.5%] active:scale-x-[99.5%] hover:shadow-md active:shadow-inner hover:shadow-neutral-300"
                     >
                       <div class="bg-slate-600 rounded-l-sm border-r-white border-r-[0.5px] uppercase font-semibold text-slate-50 text-xs flex flex-col justify-center items-start p-3 group-hover:bg-slate-700 group-focus:bg-slate-700 group-active:bg-slate-500">
-                        {t(`${item.realType}.__model.verbose_name`)}
+                        {t(`${item.realType}.__model.verboseName`)}
                       </div>
                       <div class="w-full truncate line-clamp-1 text-ellipsis pl-6 pr-6 p-2 block text-left text-base bg-neutral-300 text-pretty font-normal text-neutral-950 rounded-r-sm group-hover:bg-neutral-400 transition-all duration-75 group-focus:bg-neutral-400 group-active:bg-neutral-200 group-active:text-neutral-600">
                         {item.label}

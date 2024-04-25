@@ -46,6 +46,51 @@ field_types.int = int
 field_types.float = float
 
 
+
+def generate_config_object(model: "type[BaseNode]"):
+    template = """"""
+    template += f"""export const {model.__name__}Config: ConfigObject<EntityViewTypes["{model.__name__}"]> = {{"""
+    abstract = getattr(model, "__abstract__", "False")
+    template += f"abstract: {"true" if abstract else "false"},"
+    create = getattr(model, "__create__", "False")
+    template += f"create: {"true" if create else "false"},"
+    edit = getattr(model, "__edit__", "False")
+    template += f"edit: {"true" if edit else "false"},"
+    delete = getattr(model, "__delete__", "False")
+    template += f"delete: {"true" if delete else "false"},"
+    search = getattr(model, "__search__", "False")
+    template += f"search: {"true" if search else "false"},"        
+    
+    if model.model_fields:
+        template += "fields: {"
+        for field_name, field in model.model_fields.items():
+            if field_name == "real_type":
+                continue
+            template += f"{camelize(field_name)}: {{"
+            if field_name in model.property_fields:
+                template += "value: true,"
+            if field_name in model.outgoing_relations:
+                template += "outgoingRelation: true,"
+                if model.outgoing_relations[field_name].relation_config.create_inline:
+                    template += "createInline: true,"
+        
+            template += "},"
+        
+        for field_name, field_definition in model.incoming_relations.items():
+            template += f"{camelize(field_name)}: {{"
+           
+            template += "incomingRelation: true,"
+           
+        
+            template += "},"
+            
+        template += "},"
+    
+    
+    template += "};\n\n" 
+    return template
+
+
 def build_valibot_item_for_model(model):
     valibot_objects = {}
     for field_name, field in model.model_fields.items():
@@ -175,28 +220,31 @@ This configuration file will be used when building the interface.
         f.write(f"export const TopLevelModels = [{", ".join(f'"{c}"' for c in build_top_level_classes_list())}];\n\n")
         
         f.write("""
-                type ConfigObject = {
-                    abstract: boolean,
-                    create: boolean,
-                    edit: boolean,
-                    delete: boolean,
-                    search: boolean
-                }\n\n
+                export type FieldDefinition = {
+                    value?: boolean;
+                    outgoingRelation?: boolean;
+                    incomingRelation?: boolean;
+                    createInline?: boolean;
+                    editInline?: boolean;
+                };
+
+                type FieldsObject<T> = {
+                    [Property in keyof T]?: FieldDefinition 
+                }
+
+                type ConfigObject<T> = {
+                    abstract: boolean;
+                    create: boolean;
+                    edit: boolean;
+                    delete: boolean;
+                    search: boolean;
+                    fields: FieldsObject<T>;
+                };
                 """)
         
         for model in ModelManager._registered_models:
-            f.write(f"""export const {model.__name__}Config: ConfigObject = {{""")
-            abstract = getattr(model, "__abstract__", "False")
-            f.write(f"abstract: {"true" if abstract else "false"},")
-            create = getattr(model, "__create__", "False")
-            f.write(f"create: {"true" if create else "false"},")
-            edit = getattr(model, "__edit__", "False")
-            f.write(f"edit: {"true" if edit else "false"},")
-            delete = getattr(model, "__delete__", "False")
-            f.write(f"delete: {"true" if delete else "false"},")
-            search = getattr(model, "__search__", "False")
-            f.write(f"search: {"true" if search else "false"},")            
-            f.write("};\n\n")
+            f.write(generate_config_object(model))
+            
         
         f.write(f"""export const ModelConfigs = {{{
             ",\t\n".join(f"{model.__name__}: {model.__name__}Config" for model in ModelManager._registered_models)

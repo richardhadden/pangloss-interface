@@ -2,6 +2,7 @@ from collections import defaultdict
 import os
 import json
 from icecream import ic
+from humps import camelize
 
 
 def infinite_defaultdict():
@@ -34,8 +35,11 @@ def build_frontend_translations(
     FILE_PATH = os.path.join(interface_path, "ProjectTranslation.ts")
     with open(FILE_PATH, "w") as f:
         for lang, lang_dict in lang_dicts.items():
+            camelized_lang_dict = {
+                key: camelize(value) for key, value in lang_dict.items()
+            }
             f.write(
-                f"""const {lang.lower()}_dict{": Dict" if lang != "en" else ""} = {json.dumps(lang_dict, ensure_ascii=False)};\n"""
+                f"""const {lang.lower()}_dict{": Dict" if lang != "en" else ""} = {json.dumps(camelized_lang_dict, ensure_ascii=False)};\n"""
             )
 
         f.write("\n\ntype Dict = typeof en_dict;")

@@ -78,7 +78,7 @@ function createApiClient(BASE_URL: string) {
     const url = new URL(`${BASE_URL}/${entityType}`);
     url.search = new URLSearchParams(searchParamsString).toString();
     const data = await getRequest(url);
-    console.log(data);
+    
     return data as ListReturnTypes[K] | undefined;
   }
 
@@ -89,6 +89,7 @@ function createApiClient(BASE_URL: string) {
     //console.log(v.string([v.uuid()])._parse(uid))
     const url = new URL(`${BASE_URL}/${entityType}/${uid}`)
     const data = await getRequest(url);
+    console.log(data);
     return data as EntityViewTypes[K] | undefined;
 
   }

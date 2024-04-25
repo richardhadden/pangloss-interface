@@ -66,7 +66,7 @@ export default function Nav() {
             <span class="font-extralight mr-8">
               <Show
                 when={user.isLoggedIn && user.loggedInUserName}
-                fallback={t("interface.not_logged_in")}
+                fallback={t("interface.notLoggedIn")}
               >
                 {user.loggedInUserName}
               </Show>
@@ -75,7 +75,10 @@ export default function Nav() {
               when={user.isLoggedIn}
               fallback={
                 <button
-                  onClick={() => setShowLoginOverlay(true)}
+                  onClick={() => {
+                    setShowLoginOverlay(true);
+                    setShowNavBar(false);
+                  }}
                   class="bg-green-900 hover:shadow-xl hover:bg-green-800 active:scale-95 active:shadow-none p-2 aspect-square absolute right-0 h-14 group-[.navbar-open]:flex opacity-0 group-[.navbar-open]:opacity-100 justify-center items-center hidden"
                 >
                   <IoLogInSharp size={28} class="block mr-1" />
@@ -115,12 +118,12 @@ export default function Nav() {
           <ul class="group-[.navbar-open]:block hidden">
             <li>
               <MarginLink href="/" small>
-                {t("interface.home_page")}
+                {t("interface.homePage")}
               </MarginLink>
             </li>
             <li>
               <MarginLink href="/about" small>
-                {t("interface.about_page")}
+                {t("interface.aboutPage")}
               </MarginLink>
             </li>
           </ul>
@@ -168,7 +171,7 @@ function ModelMenuObject<Component>(props: ModelMenuObjectProps) {
             href={`/objects/${props.modelName}`}
             style={`padding-left: ${props.indent + 1}rem`}
           >
-            {t(`${props.modelName}.__model.verbose_name_plural`)}
+            {t(`${props.modelName}.__model.verboseNamePlural`)}
           </a>
           <Show
             when={
@@ -177,6 +180,7 @@ function ModelMenuObject<Component>(props: ModelMenuObjectProps) {
             }
           >
             <a
+              onClick={() => setShowNavBar(false)}
               href={`/objects/${props.modelName}/new`}
               class="bg-green-700 group-hover/button:hover:bg-green-900 group-hover/button:bg-green-800 group-hover/button:active:bg-green-600  h-10 aspect-square active:scale-[92%] cursor-pointer flex items-center justify-center text-green-50 transition-colors duration-75"
             >

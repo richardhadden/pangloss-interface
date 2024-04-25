@@ -15,10 +15,12 @@ import {
   fetchDataCache,
 } from "~/utils/createRefetchableAsync";
 import { apiClient } from "~/apiClient";
-import { ViewItem } from "~/components/ViewItem";
+import { ViewItems } from "~/components/ViewItems";
 
 import { Title } from "@solidjs/meta";
 import { ViewModifiedDetails } from "~/components/ViewModifyDetails";
+
+import { ModelConfigs } from "../../../../ProjectConfig";
 
 async function fetchData<K extends keyof EntityViewTypes>(
   entityType: K,
@@ -52,12 +54,16 @@ export default function () {
   return (
     <>
       <Title>
-        {t(`${params.EntityType}.__model.verbose_name`) + " | Pangloss"}
+        {t(`${params.EntityType}.__model.verboseName`) + " | Pangloss"}
       </Title>
       <ControlBar
-        entityType={t(`${params.EntityType}.__model.verbose_name`)}
+        entityType={t(`${params.EntityType}.__model.verboseName`)}
         centralSectionPosition="left"
-        editUrl={data() && `/objects/${data()?.realType}/${data()?.uid}/edit`}
+        editUrl={
+          data() && ModelConfigs[data()?.realType as EntityTypes].edit
+            ? `/objects/${data()?.realType}/${data()?.uid}/edit`
+            : undefined
+        }
         controlBarCentre={
           <Suspense>
             <Show when={data()}>
@@ -81,11 +87,14 @@ export default function () {
           </Suspense>
         }
       />
-      <section class="pl-16 pr-32 mt-10">
+      <section class="pl-10 pr-10 mt-10">
         <Suspense fallback={<h1>Loading!</h1>}>
           <Show when={data() as EntityViewTypes[EntityTypes]}>
             {(data) => (
-              <ViewItem item={data() as EntityViewTypes[EntityTypes]} />
+              <ViewItems
+                itemType={params.EntityType}
+                item={data() as EntityViewTypes[EntityTypes]}
+              />
             )}
           </Show>
           <Show when={!user.isLoggedIn && user.accessingAuthorisedRoute}>

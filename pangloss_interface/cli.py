@@ -5,6 +5,7 @@ from rich import print
 from typer import Typer
 
 from pangloss_core.cli.main import Project
+from pangloss_core.model_setup.model_manager import ModelManager
 
 from pangloss_interface.frontend_types.build_frontend_types import (
     build_frontend_type_file,
