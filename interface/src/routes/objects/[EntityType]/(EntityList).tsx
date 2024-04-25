@@ -70,12 +70,13 @@ export default function EntityList() {
     await refetch();
   }
 
-  /* onMount(() => {
+  onMount(() => {
+    setAccessingAuthorisedRoute(false);
     if ((data() as APIError)?.statusCode === 401) {
       logOut();
       setAccessingAuthorisedRoute(true);
     }
-  }); */
+  });
 
   const [searchParams, setSearchParams] = useSearchParams();
 

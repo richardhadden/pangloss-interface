@@ -1,4 +1,4 @@
-import { useParams } from "@solidjs/router";
+import { useParams, useNavigate } from "@solidjs/router";
 import { useUserLogin } from "~/contexts/users";
 import { type EntityTypes } from "../../../../ProjectConfig";
 import { Show, onMount } from "solid-js";
@@ -15,6 +15,7 @@ let FAKE_LABEL = `Label for uncreated thing`;
 export default function NewEntity() {
   const [user, { setAccessingAuthorisedRoute }] = useUserLogin();
   const params: { EntityType: EntityTypes } = useParams();
+  const navigate = useNavigate();
 
   onMount(() => {
     setAccessingAuthorisedRoute(true);
@@ -41,7 +42,7 @@ export default function NewEntity() {
       <CreateForm entityType={params.EntityType} />
 
       <Show when={!user.isLoggedIn && user.accessingAuthorisedRoute}>
-        <LoginOverlay />
+        <LoginOverlay onCancel={() => navigate(-1)} />
       </Show>
     </>
   );

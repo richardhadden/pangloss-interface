@@ -241,10 +241,10 @@ const FactoidValidator = v.object({
   citation: v.array(v.any()),
   statements: v.array(
     v.union([
-      v.lazy(() => NamingValidator),
-      v.lazy(() => DeathValidator),
-      v.lazy(() => BirthValidator),
       v.lazy(() => OrderValidator),
+      v.lazy(() => NamingValidator),
+      v.lazy(() => BirthValidator),
+      v.lazy(() => DeathValidator),
       v.lazy(() => MakeJamValidator),
     ]),
   ),
@@ -303,7 +303,7 @@ const ActivityValidator = v.object({
   subjectOfStatement: v.array(PersonReferenceValidator),
   when: v.union([v.string([v.isoDate()]), v.null_()]),
   carriedOutBy: v.array(
-    v.union([OrganisationReferenceValidator, PersonReferenceValidator]),
+    v.union([PersonReferenceValidator, OrganisationReferenceValidator]),
   ),
 });
 
@@ -315,7 +315,7 @@ const MakeJamValidator = v.object({
   subjectOfStatement: v.array(PersonReferenceValidator),
   when: v.union([v.string([v.isoDate()]), v.null_()]),
   carriedOutBy: v.array(
-    v.union([OrganisationReferenceValidator, PersonReferenceValidator]),
+    v.union([PersonReferenceValidator, OrganisationReferenceValidator]),
   ),
 });
 
@@ -343,7 +343,7 @@ type ZoteroEntryView = {
   modifiedWhen: string;
   createdBy: string;
   modifiedBy: string;
-  isReferenceFor: Array<FactoidReference | CitationReference> | null;
+  isReferenceFor: Array<CitationReference | FactoidReference> | null;
   realType: "ZoteroEntry";
   uid: string | null;
   label: string;
@@ -373,11 +373,11 @@ type PersonView = {
   createdBy: string;
   modifiedBy: string;
   isSubjectOfStatement: Array<
-    | OrderReference
-    | StatementReference
-    | MakeJamReference
     | NamingReference
+    | OrderReference
+    | MakeJamReference
     | ActivityReference
+    | StatementReference
     | TemporalStatementReference
   > | null;
   hasBirthEvent: Array<BirthReference> | null;
@@ -431,7 +431,7 @@ type FactoidView = {
   uid: string | null;
   label: string;
   citation: Array<string>;
-  statements: Array<Naming | Death | Birth | Order | MakeJam>;
+  statements: Array<Order | Naming | Birth | Death | MakeJam>;
 };
 
 type StatementView = {
@@ -504,7 +504,7 @@ type ActivityView = {
   label: string;
   subjectOfStatement: Array<PersonReference>;
   when: string | null;
-  carriedOutBy: Array<OrganisationReference | PersonReference>;
+  carriedOutBy: Array<PersonReference | OrganisationReference>;
 };
 
 type MakeJamView = {
@@ -518,7 +518,7 @@ type MakeJamView = {
   label: string;
   subjectOfStatement: Array<PersonReference>;
   when: string | null;
-  carriedOutBy: Array<OrganisationReference | PersonReference>;
+  carriedOutBy: Array<PersonReference | OrganisationReference>;
 };
 
 type OrderView = {

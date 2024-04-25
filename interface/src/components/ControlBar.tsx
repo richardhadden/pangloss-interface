@@ -28,10 +28,10 @@ export function ControlBar<Component>(props: ControlBarProps) {
               "border-r-[0.5px] border-r-white": !(props.pageType === "new"),
               "text-nowrap pr-6":
                 props.entityType !== undefined && props.entityType.length <= 20,
-              "text-wrap":
+              "text-pretty bg-red-500 pr-6":
                 props.entityType !== undefined && props.entityType.length > 20,
             }}
-            class="h-14 text-sm uppercase font-semibold py-1 pl-6 shadow-2xl shadow-slate-700/90 bg-slate-700 text-emerald-50 first-of-type:rounded-bl-sm flex flex-col justify-center  "
+            class="h-14 shrink text-wrap text-sm uppercase font-semibold py-1 pl-6 shadow-2xl shadow-slate-700/90 bg-slate-700 text-emerald-50 first-of-type:rounded-bl-sm flex flex-col justify-center items-center "
           >
             {props.entityType}
           </div>

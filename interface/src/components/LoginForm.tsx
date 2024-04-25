@@ -3,18 +3,22 @@ import { Show, createSignal } from "solid-js";
 
 import { useUserLogin, logInUser } from "~/contexts/users";
 import { t } from "~/contexts/translation";
+import { ImCross } from "solid-icons/im";
 
 export function LoginOverlay(props: LoginFormProps) {
   return (
     <div class="absolute w-screen h-screen bg-slate-400/50 top-0 left-0 z-10 flex justify-center items-center backdrop-blur-sm">
       <div class="bg-slate-200 rounded-sm shadow-2xl w-4/12">
-        <LoginForm onLoginCallback={props.onLoginCallback} />
+        <LoginForm
+          onLoginCallback={props.onLoginCallback}
+          onCancel={props.onCancel}
+        />
       </div>
     </div>
   );
 }
 
-type LoginFormProps = { onLoginCallback?: () => void };
+type LoginFormProps = { onLoginCallback?: () => void; onCancel?: () => void };
 export function LoginForm(props: LoginFormProps) {
   const [user, { setLoggedIn, logOut: setLoggedOut }] = useUserLogin();
 
@@ -46,8 +50,19 @@ export function LoginForm(props: LoginFormProps) {
 
   return (
     <div>
-      <div class="w-full uppercase text-sm font-semibold bg-slate-700 text-slate-50 p-3 rounded-t-sm select-none">
-        {t("interface.log_in_required")}
+      <div class=" bg-slate-700 flex h-10 rounded-t-sm shadow-xl mb-6">
+        <div class="w-full uppercase text-sm font-semibold text-slate-50 p-3 rounded-t-sm select-none flex items-center">
+          {t("interface.log_in_required")}
+        </div>
+        <Show when={props.onCancel}>
+          <div class="grow" />{" "}
+          <button
+            class="h-10 aspect-square shadow-2xl shadow-amber-600/90 bg-amber-700 text-white flex justify-center items-center rounded-tr-sm active:bg-amber-600 active:scale-[92%]"
+            onClick={props.onCancel}
+          >
+            <ImCross size={12} />
+          </button>
+        </Show>
       </div>
       <form
         method="post"
