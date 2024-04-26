@@ -20,13 +20,10 @@ const getCookieValue = (
 
 
 
-
-
 export async function getRequest(url: URL, withPrefetchCache?: boolean): Promise<object | undefined> {
   
   const [users, { setAccessingAuthorisedRoute, logOut }] = useUserLogin();
 
-  let cacheStore: Map<string, any>;
 
   if (isServer) {
     const requestEvent = getRequestEvent();
@@ -54,27 +51,42 @@ export async function getRequest(url: URL, withPrefetchCache?: boolean): Promise
     return data;
 
   } else {
+
     if (PrefetchCache.instance.has(url)) {
-      return PrefetchCache.instance.get(url)
-    }
-    console.log("Data fetch...")
-    const response = await fetch(url, {
-      method: "get",
-      credentials: "include",
-    });
-    if (response.status === 401) {
-      console.log("not authed")
-      setAccessingAuthorisedRoute(true);
-      logOut();
-
-      return undefined; //{error: true, message: "Not Authorised", statusCode: 401}
+      //console.log("Request already started on", url)
+      const cached = PrefetchCache.instance.get(url);
+      const data = await cached;
+      //console.log("Finished request on", url)
+      PrefetchCache.instance.delete(url);
+      return data;
     }
 
-    const data = await response.json();
+    async function getData() {
+      //console.log("Getting", url)
+      const response = await fetch(url, {
+        method: "get",
+        credentials: "include",
+      });
+      
+      if (response.status === 401) {
+        console.log("Not Authorized");
+        setAccessingAuthorisedRoute(true);
+        logOut();
+        return undefined;
+      }
+  
+      const data = await response.json();
+      return data;
+    }
+
     if (withPrefetchCache) {
-      PrefetchCache.instance.set(url, data);
+      const fetcher = getData();
+      PrefetchCache.instance.set(url, fetcher);
     }
-    return data;
+    else {
+      const data = await getData();
+      return data;
+    }
   }
 }
 

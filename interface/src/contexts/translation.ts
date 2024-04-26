@@ -26,10 +26,15 @@ const en_trans = i18n.translator(en_dict);
 export function t(path: Parameters<typeof t_wrapped>[0], args?: Parameters<typeof t_wrapped>[1]): string {
 
     const translation = t_wrapped(path, args);
-    if (translation !== "") {
+
+    if (translation !== undefined) {
         return translation as string;
     }
-    return en_trans(path) as string;
+    const fallback = en_trans(path) as string;
+    if (fallback !== undefined) {
+        return fallback as string;
+    }
+    return `!! ${path.replaceAll(".", " ")}`
 
 }
 

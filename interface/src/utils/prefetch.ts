@@ -3,7 +3,7 @@ import { getRequest } from "~/apiClient";
 declare module "solid-js" {
     namespace JSX {
       interface Directives {
-        prefetch: boolean; // Corresponds to `use:prefetch`
+        prefetch: number | boolean; // Corresponds to `use:prefetch`
       }
     }
   }
@@ -28,12 +28,18 @@ export class PrefetchCache {
         this.cache.delete(key.href);
         }, 15000);
     };
+
+    public delete(key: URL): void {
+        this.cache.delete(key.href);
+    }
 }
 
 export const prefetch = (
     element: HTMLAnchorElement,
     accessor: () => any
   ): void => {
+    const timeoutTime = typeof accessor() === "number" ? accessor() : 300;
+
     let timeout!: ReturnType<typeof setTimeout>;
     element.addEventListener("mouseenter", (e) => {
         timeout = setTimeout(async () => {
@@ -44,9 +50,12 @@ export const prefetch = (
                 )
             );
                 await getRequest(url, true);
-            }, 300);
+            }, timeoutTime);
         });
         element.addEventListener("mouseleave", (e) => {
             clearTimeout(timeout);
+            
         });
     };
+
+

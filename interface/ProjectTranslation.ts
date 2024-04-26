@@ -82,7 +82,7 @@ const en_dict = {
   Person: {
     __model: {
       verboseName: "Person",
-      verboseNamePlural: "People",
+      verboseNamePlural: "Persons",
       description: "",
     },
     label: {
@@ -183,6 +183,11 @@ const en_dict = {
       verboseNamePlural: "Statements",
       description: "",
     },
+    citation: {
+      verboseName: "Citation",
+      verboseNamePlural: "Citations",
+      description: "",
+    },
   },
   Statement: {
     __model: {
@@ -196,8 +201,8 @@ const en_dict = {
       description: "",
     },
     subjectOfStatement: {
-      verboseName: "Subject of Statement",
-      verboseNamePlural: "Subject of Statements",
+      verboseName: "Is Subject of Statement",
+      verboseNamePlural: "Is Subject of Statements",
       description: "",
     },
   },
@@ -212,7 +217,7 @@ const en_dict = {
       verboseNamePlural: "Labels",
       description: "",
     },
-    when: { verboseName: "When", verboseNamePlural: "Whens", description: "" },
+    when: { verboseName: "When", verboseNamePlural: "When", description: "" },
     subjectOfStatement: {
       verboseName: "Subject of Statement",
       verboseNamePlural: "Subject of Statements",
@@ -257,7 +262,7 @@ const en_dict = {
       verboseNamePlural: "Labels",
       description: "",
     },
-    when: { verboseName: "When", verboseNamePlural: "Whens", description: "" },
+    when: { verboseName: "When", verboseNamePlural: "When", description: "" },
     personBorn: {
       verboseName: "Person Born",
       verboseNamePlural: "Person Borns",
@@ -275,7 +280,7 @@ const en_dict = {
       verboseNamePlural: "Labels",
       description: "",
     },
-    when: { verboseName: "When", verboseNamePlural: "Whens", description: "" },
+    when: { verboseName: "When", verboseNamePlural: "When", description: "" },
     personBorn: {
       verboseName: "Person Born",
       verboseNamePlural: "Person Borns",
@@ -293,7 +298,7 @@ const en_dict = {
       verboseNamePlural: "Labels",
       description: "",
     },
-    when: { verboseName: "When", verboseNamePlural: "Whens", description: "" },
+    when: { verboseName: "When", verboseNamePlural: "When", description: "" },
     subjectOfStatement: {
       verboseName: "Subject of Statement",
       verboseNamePlural: "Subject of Statements",
@@ -301,7 +306,7 @@ const en_dict = {
     },
     carriedOutBy: {
       verboseName: "Carried Out By",
-      verboseNamePlural: "Carried Out Bies",
+      verboseNamePlural: "Carried Out By",
       description: "",
     },
   },
@@ -316,10 +321,10 @@ const en_dict = {
       verboseNamePlural: "Labels",
       description: "",
     },
-    when: { verboseName: "When", verboseNamePlural: "Whens", description: "" },
+    when: { verboseName: "When", verboseNamePlural: "When", description: "" },
     wasOrderedIn: {
       verboseName: "Was Ordered In",
-      verboseNamePlural: "Was Ordered Ins",
+      verboseNamePlural: "Was Ordered In",
       description: "",
     },
     subjectOfStatement: {
@@ -329,7 +334,7 @@ const en_dict = {
     },
     carriedOutBy: {
       verboseName: "Carried Out By",
-      verboseNamePlural: "Carried Out Bies",
+      verboseNamePlural: "Carried Out By",
       description: "",
     },
   },
@@ -344,7 +349,7 @@ const en_dict = {
       verboseNamePlural: "Labels",
       description: "",
     },
-    when: { verboseName: "When", verboseNamePlural: "Whens", description: "" },
+    when: { verboseName: "When", verboseNamePlural: "When", description: "" },
     wasOrderedIn: {
       verboseName: "Was Ordered In",
       verboseNamePlural: "Was Ordered Ins",
@@ -382,8 +387,16 @@ const en_dict = {
 };
 const de_dict: Dict = {
   ZoteroEntry: {
-    __model: { verboseName: "", verboseNamePlural: "", description: "" },
-    label: { verboseName: "", verboseNamePlural: "", description: "" },
+    __model: {
+      verboseName: "Zotero-Eintrag",
+      verboseNamePlural: "Zotero-Einträge",
+      description: "",
+    },
+    label: {
+      verboseName: "Label",
+      verboseNamePlural: "Labels",
+      description: "",
+    },
     zoteroKey: { verboseName: "", verboseNamePlural: "", description: "" },
     zoteroGroupId: { verboseName: "", verboseNamePlural: "", description: "" },
     zoteroGroupName: {
@@ -402,126 +415,299 @@ const de_dict: Dict = {
     modifiedWhen: { verboseName: "", verboseNamePlural: "", description: "" },
   },
   Entity: {
-    __model: { verboseName: "", verboseNamePlural: "", description: "" },
-    label: { verboseName: "", verboseNamePlural: "", description: "" },
-  },
-  Person: {
-    __model: { verboseName: "", verboseNamePlural: "", description: "" },
-    label: { verboseName: "", verboseNamePlural: "", description: "" },
-    isSubjectOfStatement: {
-      verboseName: "",
-      verboseNamePlural: "",
+    __model: {
+      verboseName: "Entität",
+      verboseNamePlural: "Entitäten",
       description: "",
     },
-    hasBirthEvent: { verboseName: "", verboseNamePlural: "", description: "" },
-    hasDeathEvent: { verboseName: "", verboseNamePlural: "", description: "" },
+    label: {
+      verboseName: "Label",
+      verboseNamePlural: "Labels",
+      description: "",
+    },
+  },
+  Person: {
+    __model: {
+      verboseName: "Person",
+      verboseNamePlural: "Personen",
+      description: "",
+    },
+    label: {
+      verboseName: "Label",
+      verboseNamePlural: "Labels",
+      description: "",
+    },
+    isSubjectOfStatement: {
+      verboseName: "Ist Gegenstand der Aussage",
+      verboseNamePlural: "Ist Gegenstand von Aussagen",
+      description: "",
+    },
+    hasBirthEvent: {
+      verboseName: "hat Geburt Ereignis",
+      verboseNamePlural: "hat Geburtsereignisse",
+      description: "",
+    },
+    hasDeathEvent: {
+      verboseName: "hat Todesfall",
+      verboseNamePlural: "hat Todesfälle",
+      description: "",
+    },
     carriedOutActivity: {
-      verboseName: "",
-      verboseNamePlural: "",
+      verboseName: "Durchgeführte Aktivität",
+      verboseNamePlural: "Durchgeführte Aktivitäten",
       description: "",
     },
   },
   Organisation: {
-    __model: { verboseName: "", verboseNamePlural: "", description: "" },
-    label: { verboseName: "", verboseNamePlural: "", description: "" },
+    __model: {
+      verboseName: "Organisation",
+      verboseNamePlural: "Organisationen",
+      description: "",
+    },
+    label: {
+      verboseName: "Label",
+      verboseNamePlural: "Labels",
+      description: "",
+    },
     carriedOutActivity: {
-      verboseName: "",
-      verboseNamePlural: "",
+      verboseName: "Durchgeführte Aktivität",
+      verboseNamePlural: "Durchgeführte Aktivitäten",
       description: "",
     },
   },
   Source: {
-    __model: { verboseName: "", verboseNamePlural: "", description: "" },
-    label: { verboseName: "", verboseNamePlural: "", description: "" },
-    title: { verboseName: "", verboseNamePlural: "", description: "" },
+    __model: {
+      verboseName: "Quelle",
+      verboseNamePlural: "Quellen",
+      description: "",
+    },
+    label: {
+      verboseName: "Label",
+      verboseNamePlural: "Labels",
+      description: "",
+    },
+    title: {
+      verboseName: "Titel",
+      verboseNamePlural: "Titel",
+      description: "",
+    },
   },
   Citation: {
-    __model: { verboseName: "", verboseNamePlural: "", description: "" },
-    label: { verboseName: "", verboseNamePlural: "", description: "" },
-    scope: { verboseName: "", verboseNamePlural: "", description: "" },
-    reference: { verboseName: "", verboseNamePlural: "", description: "" },
+    __model: {
+      verboseName: "Zitat",
+      verboseNamePlural: "Zitate",
+      description: "",
+    },
+    label: {
+      verboseName: "Label",
+      verboseNamePlural: "Labels",
+      description: "",
+    },
+    scope: {
+      verboseName: "Suche",
+      verboseNamePlural: "Suche",
+      description: "",
+    },
+    reference: {
+      verboseName: "Referenz",
+      verboseNamePlural: "Referenzen",
+      description: "",
+    },
   },
   Factoid: {
-    __model: { verboseName: "", verboseNamePlural: "", description: "" },
-    label: { verboseName: "", verboseNamePlural: "", description: "" },
-    statements: { verboseName: "", verboseNamePlural: "", description: "" },
+    __model: {
+      verboseName: "Factoid",
+      verboseNamePlural: "Factoids",
+      description: "",
+    },
+    label: {
+      verboseName: "Label",
+      verboseNamePlural: "Label",
+      description: "",
+    },
+    statements: {
+      verboseName: "Aussagen",
+      verboseNamePlural: "Aussagen",
+      description: "",
+    },
+    citation: {
+      verboseName: "Zitat",
+      verboseNamePlural: "Zitaten",
+      description: "",
+    },
   },
   Statement: {
-    __model: { verboseName: "", verboseNamePlural: "", description: "" },
-    label: { verboseName: "", verboseNamePlural: "", description: "" },
+    __model: {
+      verboseName: "Aussage",
+      verboseNamePlural: "Aussagen",
+      description: "",
+    },
+    label: {
+      verboseName: "Label",
+      verboseNamePlural: "Label",
+      description: "",
+    },
     subjectOfStatement: {
-      verboseName: "",
-      verboseNamePlural: "",
+      verboseName: "Gegenstand der Aussage",
+      verboseNamePlural: "Gegenstand von Aussagen",
       description: "",
     },
   },
   TemporalStatement: {
-    __model: { verboseName: "", verboseNamePlural: "", description: "" },
-    label: { verboseName: "", verboseNamePlural: "", description: "" },
-    when: { verboseName: "", verboseNamePlural: "", description: "" },
+    __model: {
+      verboseName: "Zeitliche Aussage",
+      verboseNamePlural: "Zeitliche Aussagen",
+      description: "",
+    },
+    label: {
+      verboseName: "Label",
+      verboseNamePlural: "Labels",
+      description: "",
+    },
+    when: { verboseName: "Wann", verboseNamePlural: "Wann", description: "" },
     subjectOfStatement: {
-      verboseName: "",
-      verboseNamePlural: "",
+      verboseName: "Gegenstand der Aussage",
+      verboseNamePlural: "Gegenstand von Aussagen",
       description: "",
     },
   },
   Naming: {
-    __model: { verboseName: "", verboseNamePlural: "", description: "" },
-    label: { verboseName: "", verboseNamePlural: "", description: "" },
-    firstName: { verboseName: "", verboseNamePlural: "", description: "" },
-    lastName: { verboseName: "", verboseNamePlural: "", description: "" },
+    __model: {
+      verboseName: "Benennung",
+      verboseNamePlural: "Benennungen",
+      description: "",
+    },
+    label: {
+      verboseName: "Labels",
+      verboseNamePlural: "Labels",
+      description: "",
+    },
+    firstName: {
+      verboseName: "Vorname",
+      verboseNamePlural: "Vornamen",
+      description: "",
+    },
+    lastName: {
+      verboseName: "Nachname",
+      verboseNamePlural: "Nachnamen",
+      description: "",
+    },
     subjectOfStatement: {
-      verboseName: "",
-      verboseNamePlural: "",
+      verboseName: "Gegenstand der Aussage",
+      verboseNamePlural: "Gegenstand von Aussagen",
       description: "",
     },
   },
   Birth: {
-    __model: { verboseName: "", verboseNamePlural: "", description: "" },
-    label: { verboseName: "", verboseNamePlural: "", description: "" },
-    when: { verboseName: "", verboseNamePlural: "", description: "" },
-    personBorn: { verboseName: "", verboseNamePlural: "", description: "" },
+    __model: {
+      verboseName: "Geburt",
+      verboseNamePlural: "Geburten",
+      description: "",
+    },
+    label: {
+      verboseName: "Label",
+      verboseNamePlural: "Labels",
+      description: "",
+    },
+    when: { verboseName: "Wann", verboseNamePlural: "Wann", description: "" },
+    personBorn: {
+      verboseName: "geborene Person",
+      verboseNamePlural: "geborene Personen",
+      description: "",
+    },
   },
   Death: {
-    __model: { verboseName: "", verboseNamePlural: "", description: "" },
-    label: { verboseName: "", verboseNamePlural: "", description: "" },
-    when: { verboseName: "", verboseNamePlural: "", description: "" },
-    personBorn: { verboseName: "", verboseNamePlural: "", description: "" },
+    __model: { verboseName: "Tod", verboseNamePlural: "Tode", description: "" },
+    label: {
+      verboseName: "Label",
+      verboseNamePlural: "Labels",
+      description: "",
+    },
+    when: { verboseName: "Wann", verboseNamePlural: "Wann", description: "" },
+    personBorn: {
+      verboseName: "geborene Person",
+      verboseNamePlural: "geborene Personen",
+      description: "",
+    },
   },
   Activity: {
-    __model: { verboseName: "", verboseNamePlural: "", description: "" },
-    label: { verboseName: "", verboseNamePlural: "", description: "" },
-    when: { verboseName: "", verboseNamePlural: "", description: "" },
-    subjectOfStatement: {
-      verboseName: "",
-      verboseNamePlural: "",
+    __model: {
+      verboseName: "Aktivität",
+      verboseNamePlural: "Aktivitäten",
       description: "",
     },
-    carriedOutBy: { verboseName: "", verboseNamePlural: "", description: "" },
+    label: {
+      verboseName: "Label",
+      verboseNamePlural: "Labels",
+      description: "",
+    },
+    when: { verboseName: "Wann", verboseNamePlural: "Wann", description: "" },
+    subjectOfStatement: {
+      verboseName: "Gegenstand der Aussage",
+      verboseNamePlural: "Gegenstand von Aussagen",
+      description: "",
+    },
+    carriedOutBy: {
+      verboseName: "durchgeführt von",
+      verboseNamePlural: "durchgeführt von",
+      description: "",
+    },
   },
   MakeJam: {
-    __model: { verboseName: "", verboseNamePlural: "", description: "" },
-    label: { verboseName: "", verboseNamePlural: "", description: "" },
-    when: { verboseName: "", verboseNamePlural: "", description: "" },
-    wasOrderedIn: { verboseName: "", verboseNamePlural: "", description: "" },
-    subjectOfStatement: {
-      verboseName: "",
-      verboseNamePlural: "",
+    __model: {
+      verboseName: "Herstellung von Kompott",
+      verboseNamePlural: "Herstellungen von Kompott",
       description: "",
     },
-    carriedOutBy: { verboseName: "", verboseNamePlural: "", description: "" },
+    label: {
+      verboseName: "Label",
+      verboseNamePlural: "Labels",
+      description: "",
+    },
+    when: { verboseName: "Wann", verboseNamePlural: "Wann", description: "" },
+    wasOrderedIn: {
+      verboseName: "wurde bestellt in",
+      verboseNamePlural: "wurde bestellt in",
+      description: "",
+    },
+    subjectOfStatement: {
+      verboseName: "Gegenstand der Aussage",
+      verboseNamePlural: "Gegenstanden von Aussagen",
+      description: "",
+    },
+    carriedOutBy: {
+      verboseName: "durchgeführt von",
+      verboseNamePlural: "durchgeführt von",
+      description: "",
+    },
   },
   Order: {
-    __model: { verboseName: "", verboseNamePlural: "", description: "" },
-    label: { verboseName: "", verboseNamePlural: "", description: "" },
-    when: { verboseName: "", verboseNamePlural: "", description: "" },
-    wasOrderedIn: { verboseName: "", verboseNamePlural: "", description: "" },
-    subjectOfStatement: {
-      verboseName: "",
-      verboseNamePlural: "",
+    __model: {
+      verboseName: "Befehl",
+      verboseNamePlural: "Befehlen",
       description: "",
     },
-    thingOrdered: { verboseName: "", verboseNamePlural: "", description: "" },
+    label: {
+      verboseName: "Label",
+      verboseNamePlural: "Labels",
+      description: "",
+    },
+    when: { verboseName: "Wann", verboseNamePlural: "Wann", description: "" },
+    wasOrderedIn: {
+      verboseName: "wurde bestellt in",
+      verboseNamePlural: "wurde bestellt in",
+      description: "",
+    },
+    subjectOfStatement: {
+      verboseName: "Gegenstand der Aussage",
+      verboseNamePlural: "Gegenstanden von Aussagen",
+      description: "",
+    },
+    thingOrdered: {
+      verboseName: "befohlene Tätigkeit",
+      verboseNamePlural: "befohlene Tätigkeit",
+      description: "",
+    },
   },
   interface: {
     icon: "🇦🇹",
@@ -545,8 +731,16 @@ const de_dict: Dict = {
 };
 const fr_dict: Dict = {
   ZoteroEntry: {
-    __model: { verboseName: "", verboseNamePlural: "", description: "" },
-    label: { verboseName: "", verboseNamePlural: "", description: "" },
+    __model: {
+      verboseName: "Entrée Zotero",
+      verboseNamePlural: "Entrées Zotero",
+      description: "",
+    },
+    label: {
+      verboseName: "Label",
+      verboseNamePlural: "Labels",
+      description: "",
+    },
     zoteroKey: { verboseName: "", verboseNamePlural: "", description: "" },
     zoteroGroupId: { verboseName: "", verboseNamePlural: "", description: "" },
     zoteroGroupName: {
@@ -565,126 +759,303 @@ const fr_dict: Dict = {
     modifiedWhen: { verboseName: "", verboseNamePlural: "", description: "" },
   },
   Entity: {
-    __model: { verboseName: "", verboseNamePlural: "", description: "" },
-    label: { verboseName: "", verboseNamePlural: "", description: "" },
-  },
-  Person: {
-    __model: { verboseName: "", verboseNamePlural: "", description: "" },
-    label: { verboseName: "", verboseNamePlural: "", description: "" },
-    isSubjectOfStatement: {
-      verboseName: "",
-      verboseNamePlural: "",
+    __model: {
+      verboseName: "Entité",
+      verboseNamePlural: "Entités",
       description: "",
     },
-    hasBirthEvent: { verboseName: "", verboseNamePlural: "", description: "" },
-    hasDeathEvent: { verboseName: "", verboseNamePlural: "", description: "" },
+    label: {
+      verboseName: "Label",
+      verboseNamePlural: "Labels",
+      description: "",
+    },
+  },
+  Person: {
+    __model: {
+      verboseName: "Personne",
+      verboseNamePlural: "Personnes",
+      description: "",
+    },
+    label: {
+      verboseName: "Label",
+      verboseNamePlural: "Labels",
+      description: "",
+    },
+    isSubjectOfStatement: {
+      verboseName: "Fait l'objet d'une déclaration",
+      verboseNamePlural: "Fait l'objet de déclarations",
+      description: "",
+    },
+    hasBirthEvent: {
+      verboseName: "a un événement de naissance",
+      verboseNamePlural: "a des événements de naissance",
+      description: "",
+    },
+    hasDeathEvent: {
+      verboseName: "a un événement de décès",
+      verboseNamePlural: "a des événements de décès",
+      description: "",
+    },
     carriedOutActivity: {
-      verboseName: "",
-      verboseNamePlural: "",
+      verboseName: "Activité réalisée",
+      verboseNamePlural: "Activités réalisées",
       description: "",
     },
   },
   Organisation: {
-    __model: { verboseName: "", verboseNamePlural: "", description: "" },
-    label: { verboseName: "", verboseNamePlural: "", description: "" },
+    __model: {
+      verboseName: "Organisation",
+      verboseNamePlural: "Organisations",
+      description: "",
+    },
+    label: {
+      verboseName: "Label",
+      verboseNamePlural: "Labels",
+      description: "",
+    },
     carriedOutActivity: {
-      verboseName: "",
-      verboseNamePlural: "",
+      verboseName: "Activité réalisée",
+      verboseNamePlural: "Activités réalisées",
       description: "",
     },
   },
   Source: {
-    __model: { verboseName: "", verboseNamePlural: "", description: "" },
-    label: { verboseName: "", verboseNamePlural: "", description: "" },
-    title: { verboseName: "", verboseNamePlural: "", description: "" },
+    __model: {
+      verboseName: "Source",
+      verboseNamePlural: "Sources",
+      description: "",
+    },
+    label: {
+      verboseName: "Label",
+      verboseNamePlural: "Labels",
+      description: "",
+    },
+    title: {
+      verboseName: "Titre",
+      verboseNamePlural: "Titres",
+      description: "",
+    },
   },
   Citation: {
-    __model: { verboseName: "", verboseNamePlural: "", description: "" },
-    label: { verboseName: "", verboseNamePlural: "", description: "" },
-    scope: { verboseName: "", verboseNamePlural: "", description: "" },
-    reference: { verboseName: "", verboseNamePlural: "", description: "" },
+    __model: {
+      verboseName: "Citation",
+      verboseNamePlural: "Citations",
+      description: "",
+    },
+    label: {
+      verboseName: "Label",
+      verboseNamePlural: "Labels",
+      description: "",
+    },
+    scope: {
+      verboseName: "Étendue",
+      verboseNamePlural: "Étendues",
+      description: "",
+    },
+    reference: {
+      verboseName: "Référence",
+      verboseNamePlural: "Références",
+      description: "",
+    },
   },
   Factoid: {
-    __model: { verboseName: "", verboseNamePlural: "", description: "" },
-    label: { verboseName: "", verboseNamePlural: "", description: "" },
-    statements: { verboseName: "", verboseNamePlural: "", description: "" },
+    __model: {
+      verboseName: "Factoïde",
+      verboseNamePlural: "Factoïdes",
+      description: "",
+    },
+    label: {
+      verboseName: "Label",
+      verboseNamePlural: "Label",
+      description: "",
+    },
+    statements: {
+      verboseName: "Déclarations",
+      verboseNamePlural: "Déclarations",
+      description: "",
+    },
+    citation: {
+      verboseName: "Citation",
+      verboseNamePlural: "Citations",
+      description: "",
+    },
   },
   Statement: {
-    __model: { verboseName: "", verboseNamePlural: "", description: "" },
-    label: { verboseName: "", verboseNamePlural: "", description: "" },
+    __model: {
+      verboseName: "Déclaration",
+      verboseNamePlural: "Déclarations",
+      description: "",
+    },
+    label: {
+      verboseName: "Label",
+      verboseNamePlural: "Label",
+      description: "",
+    },
     subjectOfStatement: {
-      verboseName: "",
-      verboseNamePlural: "",
+      verboseName: "objet de la déclaration",
+      verboseNamePlural: "objet de déclarations",
       description: "",
     },
   },
   TemporalStatement: {
-    __model: { verboseName: "", verboseNamePlural: "", description: "" },
-    label: { verboseName: "", verboseNamePlural: "", description: "" },
-    when: { verboseName: "", verboseNamePlural: "", description: "" },
+    __model: {
+      verboseName: "Déclaration temporelle",
+      verboseNamePlural: "Déclarations temporelles",
+      description: "",
+    },
+    label: {
+      verboseName: "Label",
+      verboseNamePlural: "Labels",
+      description: "",
+    },
+    when: { verboseName: "Quand", verboseNamePlural: "Quand", description: "" },
     subjectOfStatement: {
-      verboseName: "",
-      verboseNamePlural: "",
+      verboseName: "objet de la déclaration",
+      verboseNamePlural: "objet de déclarations",
       description: "",
     },
   },
   Naming: {
-    __model: { verboseName: "", verboseNamePlural: "", description: "" },
-    label: { verboseName: "", verboseNamePlural: "", description: "" },
-    firstName: { verboseName: "", verboseNamePlural: "", description: "" },
-    lastName: { verboseName: "", verboseNamePlural: "", description: "" },
+    __model: {
+      verboseName: "Attribution d'un nom",
+      verboseNamePlural: "Attributions de noms",
+      description: "",
+    },
+    label: {
+      verboseName: "Labels",
+      verboseNamePlural: "Labels",
+      description: "",
+    },
+    firstName: {
+      verboseName: "Prénom",
+      verboseNamePlural: "Prénoms",
+      description: "",
+    },
+    lastName: {
+      verboseName: "Nom de famille",
+      verboseNamePlural: "Noms de famille",
+      description: "",
+    },
     subjectOfStatement: {
-      verboseName: "",
-      verboseNamePlural: "",
+      verboseName: "objet de la déclaration",
+      verboseNamePlural: "objet de déclarations",
       description: "",
     },
   },
   Birth: {
-    __model: { verboseName: "", verboseNamePlural: "", description: "" },
-    label: { verboseName: "", verboseNamePlural: "", description: "" },
-    when: { verboseName: "", verboseNamePlural: "", description: "" },
-    personBorn: { verboseName: "", verboseNamePlural: "", description: "" },
+    __model: {
+      verboseName: "Naissance",
+      verboseNamePlural: "Naissances",
+      description: "",
+    },
+    label: {
+      verboseName: "Label",
+      verboseNamePlural: "Labels",
+      description: "",
+    },
+    when: { verboseName: "Quand", verboseNamePlural: "Quand", description: "" },
+    personBorn: {
+      verboseName: "Personne née",
+      verboseNamePlural: "Personnes nées",
+      description: "",
+    },
   },
   Death: {
-    __model: { verboseName: "", verboseNamePlural: "", description: "" },
-    label: { verboseName: "", verboseNamePlural: "", description: "" },
-    when: { verboseName: "", verboseNamePlural: "", description: "" },
-    personBorn: { verboseName: "", verboseNamePlural: "", description: "" },
+    __model: {
+      verboseName: "Mort",
+      verboseNamePlural: "Morts",
+      description: "",
+    },
+    label: {
+      verboseName: "Label",
+      verboseNamePlural: "Labels",
+      description: "",
+    },
+    when: { verboseName: "Quand", verboseNamePlural: "Quand", description: "" },
+    personBorn: {
+      verboseName: "Personne née",
+      verboseNamePlural: "Personnes nées",
+      description: "",
+    },
   },
   Activity: {
-    __model: { verboseName: "", verboseNamePlural: "", description: "" },
-    label: { verboseName: "", verboseNamePlural: "", description: "" },
-    when: { verboseName: "", verboseNamePlural: "", description: "" },
-    subjectOfStatement: {
-      verboseName: "",
-      verboseNamePlural: "",
+    __model: {
+      verboseName: "Activité",
+      verboseNamePlural: "Activités",
       description: "",
     },
-    carriedOutBy: { verboseName: "", verboseNamePlural: "", description: "" },
+    label: {
+      verboseName: "Label",
+      verboseNamePlural: "Labels",
+      description: "",
+    },
+    when: { verboseName: "Quand", verboseNamePlural: "Quand", description: "" },
+    subjectOfStatement: {
+      verboseName: "objet de la déclaration",
+      verboseNamePlural: "objet de déclarations",
+      description: "",
+    },
+    carriedOutBy: {
+      verboseName: "réalisée par",
+      verboseNamePlural: "réalisée par",
+      description: "",
+    },
   },
   MakeJam: {
-    __model: { verboseName: "", verboseNamePlural: "", description: "" },
-    label: { verboseName: "", verboseNamePlural: "", description: "" },
-    when: { verboseName: "", verboseNamePlural: "", description: "" },
-    wasOrderedIn: { verboseName: "", verboseNamePlural: "", description: "" },
-    subjectOfStatement: {
-      verboseName: "",
-      verboseNamePlural: "",
+    __model: {
+      verboseName: "Fabrication de confiture",
+      verboseNamePlural: "Fabrications de confitures",
       description: "",
     },
-    carriedOutBy: { verboseName: "", verboseNamePlural: "", description: "" },
+    label: {
+      verboseName: "Label",
+      verboseNamePlural: "Labels",
+      description: "",
+    },
+    when: { verboseName: "Quand", verboseNamePlural: "Quand", description: "" },
+    wasOrderedIn: {
+      verboseName: "a été ordonnée dans",
+      verboseNamePlural: "a été ordonnée dans",
+      description: "",
+    },
+    subjectOfStatement: {
+      verboseName: "objet de la déclaration",
+      verboseNamePlural: "objet de déclarations",
+      description: "",
+    },
+    carriedOutBy: {
+      verboseName: "réalisée par",
+      verboseNamePlural: "réalisée par",
+      description: "",
+    },
   },
   Order: {
-    __model: { verboseName: "", verboseNamePlural: "", description: "" },
-    label: { verboseName: "", verboseNamePlural: "", description: "" },
-    when: { verboseName: "", verboseNamePlural: "", description: "" },
-    wasOrderedIn: { verboseName: "", verboseNamePlural: "", description: "" },
-    subjectOfStatement: {
-      verboseName: "",
-      verboseNamePlural: "",
+    __model: {
+      verboseName: "Ordre",
+      verboseNamePlural: "Ordres",
       description: "",
     },
-    thingOrdered: { verboseName: "", verboseNamePlural: "", description: "" },
+    label: {
+      verboseName: "Label",
+      verboseNamePlural: "Labels",
+      description: "",
+    },
+    when: { verboseName: "Quand", verboseNamePlural: "Quand", description: "" },
+    wasOrderedIn: {
+      verboseName: "a été ordonnée dans",
+      verboseNamePlural: "a été ordonnée dans",
+      description: "",
+    },
+    subjectOfStatement: {
+      verboseName: "objet de la déclaration",
+      verboseNamePlural: "objet de déclarations",
+      description: "",
+    },
+    thingOrdered: {
+      verboseName: "Chose commandée",
+      verboseNamePlural: "Choses commandées",
+      description: "",
+    },
   },
   interface: {
     icon: "🇫🇷",

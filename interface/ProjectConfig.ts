@@ -241,11 +241,11 @@ const FactoidValidator = v.object({
   citation: v.array(v.any()),
   statements: v.array(
     v.union([
-      v.lazy(() => OrderValidator),
       v.lazy(() => MakeJamValidator),
       v.lazy(() => DeathValidator),
-      v.lazy(() => NamingValidator),
       v.lazy(() => BirthValidator),
+      v.lazy(() => OrderValidator),
+      v.lazy(() => NamingValidator),
     ]),
   ),
 });
@@ -303,7 +303,7 @@ const ActivityValidator = v.object({
   subjectOfStatement: v.array(PersonReferenceValidator),
   when: v.union([v.string([v.isoDate()]), v.null_()]),
   carriedOutBy: v.array(
-    v.union([PersonReferenceValidator, OrganisationReferenceValidator]),
+    v.union([OrganisationReferenceValidator, PersonReferenceValidator]),
   ),
 });
 
@@ -315,7 +315,7 @@ const MakeJamValidator = v.object({
   subjectOfStatement: v.array(PersonReferenceValidator),
   when: v.union([v.string([v.isoDate()]), v.null_()]),
   carriedOutBy: v.array(
-    v.union([PersonReferenceValidator, OrganisationReferenceValidator]),
+    v.union([OrganisationReferenceValidator, PersonReferenceValidator]),
   ),
 });
 
@@ -325,7 +325,7 @@ type Order = {
   realType: "Order";
   subjectOfStatement: Array<PersonReference>;
   when: string | null;
-  thingOrdered: Array<MakeJam | Order>;
+  thingOrdered: Array<Order | MakeJam>;
 };
 const OrderValidator: v.BaseSchema<Order> = v.object({
   uid: v.union([v.string([v.uuid()]), v.null_()]),
@@ -334,7 +334,7 @@ const OrderValidator: v.BaseSchema<Order> = v.object({
   subjectOfStatement: v.array(PersonReferenceValidator),
   when: v.union([v.string([v.isoDate()]), v.null_()]),
   thingOrdered: v.array(
-    v.union([v.lazy(() => MakeJamValidator), v.lazy(() => OrderValidator)]),
+    v.union([v.lazy(() => OrderValidator), v.lazy(() => MakeJamValidator)]),
   ),
 });
 
@@ -373,12 +373,12 @@ type PersonView = {
   createdBy: string;
   modifiedBy: string;
   isSubjectOfStatement: Array<
-    | TemporalStatementReference
     | ActivityReference
-    | NamingReference
+    | OrderReference
     | MakeJamReference
     | StatementReference
-    | OrderReference
+    | NamingReference
+    | TemporalStatementReference
   > | null;
   hasBirthEvent: Array<BirthReference> | null;
   hasDeathEvent: Array<Person__has_death_event__DeathReference> | null;
@@ -431,7 +431,7 @@ type FactoidView = {
   uid: string | null;
   label: string;
   citation: Array<string>;
-  statements: Array<Order | MakeJam | Death | Naming | Birth>;
+  statements: Array<MakeJam | Death | Birth | Order | Naming>;
 };
 
 type StatementView = {
@@ -504,7 +504,7 @@ type ActivityView = {
   label: string;
   subjectOfStatement: Array<PersonReference>;
   when: string | null;
-  carriedOutBy: Array<PersonReference | OrganisationReference>;
+  carriedOutBy: Array<OrganisationReference | PersonReference>;
 };
 
 type MakeJamView = {
@@ -518,7 +518,7 @@ type MakeJamView = {
   label: string;
   subjectOfStatement: Array<PersonReference>;
   when: string | null;
-  carriedOutBy: Array<PersonReference | OrganisationReference>;
+  carriedOutBy: Array<OrganisationReference | PersonReference>;
 };
 
 type OrderView = {
@@ -532,7 +532,7 @@ type OrderView = {
   label: string;
   subjectOfStatement: Array<PersonReference>;
   when: string | null;
-  thingOrdered: Array<MakeJam | Order>;
+  thingOrdered: Array<Order | MakeJam>;
 };
 
 export type EntityViewTypes = {

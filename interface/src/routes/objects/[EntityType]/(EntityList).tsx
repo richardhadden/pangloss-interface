@@ -171,7 +171,7 @@ export default function EntityList() {
                   {(item) => (
                     <a
                       id={item.uid}
-                      use:prefetch
+                      use:prefetch={1000}
                       href={`/objects/${item.realType}/${item.uid}`}
                       onMouseLeave={(e) => e.currentTarget.blur()}
                       class="truncate line-clamp-1 text-ellipsis w-full m-2 mb-4 h-10 flex rounded-sm group cursor-pointer  outline-non transition-none duration-75 active:scale-y-[99.5%] active:scale-x-[99.5%] hover:shadow-md active:shadow-inner hover:shadow-neutral-300"
