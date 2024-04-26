@@ -241,10 +241,10 @@ const FactoidValidator = v.object({
   citation: v.array(v.any()),
   statements: v.array(
     v.union([
-      v.lazy(() => DeathValidator),
       v.lazy(() => OrderValidator),
-      v.lazy(() => NamingValidator),
       v.lazy(() => MakeJamValidator),
+      v.lazy(() => DeathValidator),
+      v.lazy(() => NamingValidator),
       v.lazy(() => BirthValidator),
     ]),
   ),
@@ -303,7 +303,7 @@ const ActivityValidator = v.object({
   subjectOfStatement: v.array(PersonReferenceValidator),
   when: v.union([v.string([v.isoDate()]), v.null_()]),
   carriedOutBy: v.array(
-    v.union([OrganisationReferenceValidator, PersonReferenceValidator]),
+    v.union([PersonReferenceValidator, OrganisationReferenceValidator]),
   ),
 });
 
@@ -315,7 +315,7 @@ const MakeJamValidator = v.object({
   subjectOfStatement: v.array(PersonReferenceValidator),
   when: v.union([v.string([v.isoDate()]), v.null_()]),
   carriedOutBy: v.array(
-    v.union([OrganisationReferenceValidator, PersonReferenceValidator]),
+    v.union([PersonReferenceValidator, OrganisationReferenceValidator]),
   ),
 });
 
@@ -373,16 +373,16 @@ type PersonView = {
   createdBy: string;
   modifiedBy: string;
   isSubjectOfStatement: Array<
+    | TemporalStatementReference
     | ActivityReference
     | NamingReference
     | MakeJamReference
-    | TemporalStatementReference
     | StatementReference
     | OrderReference
   > | null;
   hasBirthEvent: Array<BirthReference> | null;
   hasDeathEvent: Array<Person__has_death_event__DeathReference> | null;
-  carriedOutActivity: Array<ActivityReference | MakeJamReference> | null;
+  carriedOutActivity: Array<MakeJamReference | ActivityReference> | null;
   realType: "Person";
   uid: string | null;
   label: string;
@@ -393,7 +393,7 @@ type OrganisationView = {
   modifiedWhen: string;
   createdBy: string;
   modifiedBy: string;
-  carriedOutActivity: Array<ActivityReference | MakeJamReference> | null;
+  carriedOutActivity: Array<MakeJamReference | ActivityReference> | null;
   realType: "Organisation";
   uid: string | null;
   label: string;
@@ -431,7 +431,7 @@ type FactoidView = {
   uid: string | null;
   label: string;
   citation: Array<string>;
-  statements: Array<Death | Order | Naming | MakeJam | Birth>;
+  statements: Array<Order | MakeJam | Death | Naming | Birth>;
 };
 
 type StatementView = {
@@ -504,7 +504,7 @@ type ActivityView = {
   label: string;
   subjectOfStatement: Array<PersonReference>;
   when: string | null;
-  carriedOutBy: Array<OrganisationReference | PersonReference>;
+  carriedOutBy: Array<PersonReference | OrganisationReference>;
 };
 
 type MakeJamView = {
@@ -518,7 +518,7 @@ type MakeJamView = {
   label: string;
   subjectOfStatement: Array<PersonReference>;
   when: string | null;
-  carriedOutBy: Array<OrganisationReference | PersonReference>;
+  carriedOutBy: Array<PersonReference | OrganisationReference>;
 };
 
 type OrderView = {
@@ -655,6 +655,7 @@ export type FieldDefinition = {
   value?: boolean;
   outgoingRelation?: boolean;
   incomingRelation?: boolean;
+  embeddedNode?: boolean;
   createInline?: boolean;
   editInline?: boolean;
 };
@@ -771,8 +772,12 @@ export const FactoidConfig: ConfigObject<EntityViewTypes["Factoid"]> = {
   fields: {
     uid: { value: true },
     label: { value: true },
-    citation: {},
-    statements: { outgoingRelation: true, createInline: true },
+    citation: { embeddedNode: true },
+    statements: {
+      outgoingRelation: true,
+      createInline: true,
+      editInline: true,
+    },
   },
 };
 

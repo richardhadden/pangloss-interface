@@ -72,16 +72,20 @@ export default function EntityList() {
 
   onMount(() => {
     setAccessingAuthorisedRoute(false);
-    if ((data() as APIError)?.statusCode === 401) {
-      logOut();
-      setAccessingAuthorisedRoute(true);
-    }
   });
 
   const [searchParams, setSearchParams] = useSearchParams();
 
   const updateSearchParams = (value: string) => {
-    setSearchParams({ q: value });
+    // If no search param, add search param and add to browser history
+    // If already search param, user is typing so replace current history
+    // so back button doesn't work through each typed character
+    if (!searchParams.q) {
+      setSearchParams({ q: value });
+    } else {
+      // TODO: Some slightly improved logic here to not duplicate identical pages
+      setSearchParams({ q: value }, { replace: true });
+    }
   };
 
   const getNextPage = async () => {
@@ -110,6 +114,18 @@ export default function EntityList() {
     }
   };
 
+  const prefetch = (element: Element, accessor: () => any): void => {
+    let timeout!: ReturnType<typeof setTimeout>;
+    element.addEventListener("mouseenter", (e) => {
+      timeout = setTimeout(() => {
+        alert("yo");
+      }, 1000);
+    });
+    element.addEventListener("mouseleave", (e) => {
+      clearTimeout(timeout);
+    });
+  };
+
   return (
     <>
       <Title>
@@ -133,7 +149,15 @@ export default function EntityList() {
                   <Show
                     when={data() && data().count && data().count > 0}
                     fallback={
-                      <div class="text-red-800/90 text-sm uppercase font-semibold select-none ml-4 min-w-20">
+                      <div
+                        classList={{
+                          "text-red-800/90":
+                            data() &&
+                            data().count === 0 &&
+                            searchParams.q !== undefined,
+                        }}
+                        class="text-sm uppercase font-semibold select-none ml-4 min-w-20"
+                      >
                         0
                       </div>
                     }
@@ -156,6 +180,7 @@ export default function EntityList() {
                 <For each={data().results}>
                   {(item) => (
                     <a
+                      use:prefetch
                       href={`/objects/${item.realType}/${item.uid}`}
                       onMouseLeave={(e) => e.currentTarget.blur()}
                       class="truncate line-clamp-1 text-ellipsis w-full m-2 mb-4 h-10 flex rounded-sm group cursor-pointer  outline-non transition-none duration-75 active:scale-y-[99.5%] active:scale-x-[99.5%] hover:shadow-md active:shadow-inner hover:shadow-neutral-300"

@@ -47,7 +47,7 @@ export function LoginForm(props: LoginFormProps) {
   };
 
   const [loginErrorMessage, setLoginErrorMessage] = createSignal("");
-  let usernameInput;
+  let usernameInput!: HTMLInputElement;
 
   onMount(() => usernameInput.focus());
 

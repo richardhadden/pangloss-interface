@@ -73,6 +73,10 @@ def generate_config_object(model: "type[BaseNode]"):
                 template += "outgoingRelation: true,"
                 if model.outgoing_relations[field_name].relation_config.create_inline:
                     template += "createInline: true,"
+                if model.outgoing_relations[field_name].relation_config.edit_inline:
+                    template += "editInline: true,"
+            if field_name in model.embedded_nodes:
+                template += "embeddedNode: true,"
         
             template += "},"
         
@@ -224,6 +228,7 @@ This configuration file will be used when building the interface.
                     value?: boolean;
                     outgoingRelation?: boolean;
                     incomingRelation?: boolean;
+                    embeddedNode?: boolean;
                     createInline?: boolean;
                     editInline?: boolean;
                 };
