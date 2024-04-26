@@ -3,6 +3,7 @@ import { useUserLogin } from "./contexts/users";
 
 import { EntityViewTypes, ListReturnTypes } from "../ProjectConfig";
 
+import { PrefetchCache } from "./utils/prefetch";
 
 
 const getCookieValue = (
@@ -16,9 +17,17 @@ const getCookieValue = (
   }
 };
 
-async function getRequest(url: URL): Promise<object | undefined> {
-  console.log("Data fetch...")
+
+
+
+
+
+export async function getRequest(url: URL, withPrefetchCache?: boolean): Promise<object | undefined> {
+  
   const [users, { setAccessingAuthorisedRoute, logOut }] = useUserLogin();
+
+  let cacheStore: Map<string, any>;
+
   if (isServer) {
     const requestEvent = getRequestEvent();
     const access_token = getCookieValue(
@@ -45,6 +54,10 @@ async function getRequest(url: URL): Promise<object | undefined> {
     return data;
 
   } else {
+    if (PrefetchCache.instance.has(url)) {
+      return PrefetchCache.instance.get(url)
+    }
+    console.log("Data fetch...")
     const response = await fetch(url, {
       method: "get",
       credentials: "include",
@@ -58,6 +71,9 @@ async function getRequest(url: URL): Promise<object | undefined> {
     }
 
     const data = await response.json();
+    if (withPrefetchCache) {
+      PrefetchCache.instance.set(url, data);
+    }
     return data;
   }
 }

@@ -22,6 +22,8 @@ import {
 } from "../../ProjectConfig";
 import { LoginOverlay } from "./LoginForm";
 
+import { prefetch } from "~/utils/prefetch";
+
 const [showNavBar, setShowNavBar] = createSignal(false);
 
 export default function Nav() {
@@ -166,6 +168,7 @@ function ModelMenuObject<Component>(props: ModelMenuObjectProps) {
           //style={`padding-left: ${props.indent}rem;`}
         >
           <a
+            use:prefetch
             onClick={() => setShowNavBar(false)}
             class="bg-slate-700 group-hover/button:hover:bg-slate-900 group-hover/button:bg-slate-800 group-hover/button:active:bg-slate-600 h-10 w-full text-xs  active:scale-x-[98.5%] active:scale-y-[95%] text-white uppercase flex items-center font-semibold first:mt-none transition-colors duration-75"
             href={`/objects/${props.modelName}`}

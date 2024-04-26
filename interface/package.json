@@ -19,6 +19,7 @@
     "@solidjs/start": "^1.0.0-rc.0",
     "autoprefixer": "^10.4.14",
     "date-fns": "^3.6.0",
+    "expiry-map": "^2.0.0",
     "openapi-typescript-codegen": "^0.28.0",
     "postcss": "^8.4.26",
     "prettier": "^3.2.5",

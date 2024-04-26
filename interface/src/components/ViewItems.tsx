@@ -8,7 +8,7 @@ import {
 } from "../../ProjectConfig";
 
 import { t } from "~/contexts/translation";
-import { fallback } from "valibot";
+import { prefetch } from "~/utils/prefetch";
 
 type ViewItemsProps = {
   item: EntityViewTypes[EntityTypes];
@@ -160,6 +160,7 @@ export function ViewItems(props: ViewItemsProps) {
                   >
                     {(fieldItem) => (
                       <a
+                        use:prefetch
                         href={`/objects/${fieldItem.realType}/${fieldItem.uid}`}
                         class="flex rounded-sm group cursor-pointer outline-non transition-none duration-75 active:scale-y-[99.5%] active:scale-x-[99.5%] hover:shadow-md active:shadow-inner hover:shadow-neutral-300"
                       >

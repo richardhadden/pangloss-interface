@@ -14,12 +14,14 @@ import {
 import { Suspense, For, onMount, Show } from "solid-js";
 import { Title } from "@solidjs/meta";
 
-import { apiClient, type APIError } from "~/apiClient";
+import { apiClient, type APIError, getRequest } from "~/apiClient";
 import type { ListReturnTypes, EntityTypes } from "../../../../ProjectConfig";
 import { useUserLogin } from "~/contexts/users";
 import { LoginOverlay } from "~/components/LoginForm";
 import { ControlBar } from "~/components/ControlBar";
 import { t } from "~/contexts/translation";
+
+import { prefetch } from "~/utils/prefetch";
 
 const debounce = <F extends (...args: any[]) => any>(
   func: F,
@@ -114,18 +116,6 @@ export default function EntityList() {
     }
   };
 
-  const prefetch = (element: Element, accessor: () => any): void => {
-    let timeout!: ReturnType<typeof setTimeout>;
-    element.addEventListener("mouseenter", (e) => {
-      timeout = setTimeout(() => {
-        alert("yo");
-      }, 1000);
-    });
-    element.addEventListener("mouseleave", (e) => {
-      clearTimeout(timeout);
-    });
-  };
-
   return (
     <>
       <Title>
@@ -180,6 +170,7 @@ export default function EntityList() {
                 <For each={data().results}>
                   {(item) => (
                     <a
+                      id={item.uid}
                       use:prefetch
                       href={`/objects/${item.realType}/${item.uid}`}
                       onMouseLeave={(e) => e.currentTarget.blur()}
