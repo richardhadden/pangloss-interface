@@ -32,3 +32,7 @@ node_modules
 
 src/generated/*
 !src/generated/generated.txt 
+
+__pycache__/
+pangloss_interface/__pycache__/
+.venv
