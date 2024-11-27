@@ -36,3 +36,5 @@ src/generated/*
 __pycache__/
 pangloss_interface/__pycache__/
 .venv
+
+pangloss
