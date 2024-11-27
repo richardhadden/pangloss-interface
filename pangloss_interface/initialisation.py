@@ -1,0 +1,3 @@
+from pangloss_interface.scripts.create_typescript_types import create_typescript_types
+
+create_typescript_types()

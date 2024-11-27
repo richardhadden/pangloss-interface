@@ -3,14 +3,20 @@ name = "pangloss-interface"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.13"
 dependencies = [
     "typer>=0.13.1",
+    "pangloss",
 ]
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[tool.uv]
+dev-dependencies = [
+    "ruff>=0.8.0",
+]
 
 [tool.uv.sources]
 pangloss = { path = "/Users/richardhadden/Development/pangloss_files/pangloss_modules/pangloss", editable = true }
