@@ -1,4 +1,5 @@
 import datetime
+import inspect
 import os
 import types
 import typing
@@ -18,7 +19,7 @@ from pangloss.model_config.field_definitions import (
     RelationFieldDefinition,
 )
 from pangloss.model_config.model_manager import ModelManager
-from pangloss.model_config.models_base import ReferenceSetBase
+from pangloss.model_config.models_base import EdgeModel, ReferenceViewBase, ViewBase
 from pangloss.models import BaseNode, ReifiedRelation
 
 field_types = types.SimpleNamespace()
@@ -32,6 +33,10 @@ field_types.float = float
 field_types.url = pydantic.HttpUrl
 field_types.datetime = datetime.datetime
 field_types.date = datetime.date
+
+
+class ExtraTypesToCreate:
+    extra_types_to_create = set()
 
 
 def map_literal_types(annotated_type: type) -> str:
@@ -50,8 +55,17 @@ def map_literal_types(annotated_type: type) -> str:
             return 'string & tags.Format<"date-time">'
         case field_types.url:
             return 'string & tags.Format<"url">'
+        case _ if inspect.isclass(annotated_type) and issubclass(
+            annotated_type, EdgeModel
+        ):
+            return annotated_type.__name__
+        case _ if typing.get_origin(annotated_type) == typing.Union:
+            ExtraTypesToCreate.extra_types_to_create.update(
+                typing.get_args(annotated_type)
+            )
+            return f'({" | ".join(replace_brackets(m.__name__) for m in typing.get_args(annotated_type))})'
         case _:
-            return "any"
+            return "TYPEGENERROR!!"
 
 
 def map_validator_types(validator_type: annotated_types.BaseMetadata) -> str | None:
@@ -80,23 +94,38 @@ def replace_brackets(name: str) -> str:
 
 def create_typescript_type_for_model(
     model: type[BaseNode], edit_view: bool = False, edit_set: bool = False
-) -> tuple[str, list[ReferenceSetBase]]:
+) -> str:
+    from pangloss.model_config.model_setup_functions import (
+        initialise_model_field_definitions,
+    )
+
+    initialise_model_field_definitions(model)
     extra_types_to_create = []
     type_strings = []
+
     for field_definition in model.field_definitions:
         if (
             isinstance(field_definition, LiteralFieldDefinition)
             and field_definition.field_name == "type"
         ):
-            type_strings.append(
-                f'type: "{typing.get_args(field_definition.field_annotated_type)[0]}";'
-            )
-            continue
-        elif isinstance(field_definition, MultiKeyFieldDefinition):
-            from pangloss.model_config.model_setup_functions import (
-                initialise_model_field_definitions,
-            )
+            try:
+                type_strings.append(
+                    f'type: "{typing.get_args(field_definition.field_annotated_type)[0]}";'
+                )
+            except Exception:
+                type_strings.append(f'type: "{model.__name__}";')
+        elif (
+            isinstance(field_definition, LiteralFieldDefinition)
+            and field_definition.field_name == "head_uuid"
+        ):
+            type_strings.append('head_uuid?: string & tags.Format<"uuid">;')
+        elif (
+            isinstance(field_definition, LiteralFieldDefinition)
+            and field_definition.field_name == "head_type"
+        ):
+            type_strings.append("head_type?: string")
 
+        elif isinstance(field_definition, MultiKeyFieldDefinition):
             initialise_model_field_definitions(field_definition.field_annotated_type)
 
             typesscript_type = replace_brackets(
@@ -210,6 +239,8 @@ def create_typescript_type_for_model(
                 f"{field_definition.field_name}: {" & ".join([typesscript_type, *validators])};"
             )
 
+    ExtraTypesToCreate.extra_types_to_create.update(extra_types_to_create)
+
     type_modifier = ""
     if edit_view:
         type_modifier = "EditView"
@@ -220,44 +251,99 @@ def create_typescript_type_for_model(
     if edit_set:
         additional_type = "& EditSetBase"
 
-    return (
-        f"""
+    return f"""
 export type {replace_brackets(model.__name__)}{type_modifier} = {{
 \t{"\n\t".join(type_strings)}
 }} {additional_type};
-""",
-        extra_types_to_create,
+"""
+
+
+def create_incoming_relations_partial_type(
+    model: type[BaseNode],
+) -> str:
+    from pangloss.model_config.model_setup_functions import (
+        initialise_model_field_definitions,
     )
+
+    type_strings = []
+    extra_types_to_create = []
+
+    for (
+        incoming_field_name,
+        incoming_relation_definition_set,
+    ) in model.incoming_relation_definitions.items():
+        type_names = []
+        for incoming_relation_definition in incoming_relation_definition_set:
+            if issubclass(
+                incoming_relation_definition.source_concrete_type, ReferenceViewBase
+            ):
+                initialise_model_field_definitions(
+                    incoming_relation_definition.source_concrete_type
+                )
+
+                type_names.append(
+                    f"({incoming_relation_definition.source_concrete_type.__name__})"
+                )
+                extra_types_to_create.append(
+                    incoming_relation_definition.source_concrete_type
+                )
+            elif issubclass(
+                incoming_relation_definition.source_concrete_type, ViewBase
+            ):
+                initialise_model_field_definitions(
+                    incoming_relation_definition.source_concrete_type
+                )
+                type_names.append(
+                    incoming_relation_definition.source_concrete_type.__name__
+                )
+                extra_types_to_create.append(
+                    incoming_relation_definition.source_concrete_type
+                )
+
+        type_strings.append(f"{incoming_field_name}?: ({" | ".join(type_names)})[];")
+
+    ExtraTypesToCreate.extra_types_to_create.update(extra_types_to_create)
+    return f"""
+{{
+  {"\n".join(type_strings)}      
+}}"""
 
 
 def create_typescript_types():
     definition_strings = []
 
     ModelManager.initialise_models()
-    extra_types_to_create = set()
+
     extra_types_already_created = set()
 
     for model in ModelManager.registered_models:
-        string, extra_types = create_typescript_type_for_model(model)
+        string = create_typescript_type_for_model(model)
         definition_strings.append(string)
-        extra_types_to_create.update(extra_types)
 
     for model in ModelManager.registered_models:
-        string, extra_types = create_typescript_type_for_model(model, edit_view=True)
+        string = create_typescript_type_for_model(model, edit_view=True)
         definition_strings.append(string)
-        extra_types_to_create.update(extra_types)
 
     for model in ModelManager.registered_models:
-        string, extra_types = create_typescript_type_for_model(model, edit_set=True)
+        string = create_typescript_type_for_model(model, edit_set=True)
         definition_strings.append(string)
-        extra_types_to_create.update(extra_types)
 
-    while extra_types_to_create:
-        model = extra_types_to_create.pop()
+    for model in ModelManager.registered_models:
+        if model.incoming_relation_definitions:
+            string = create_incoming_relations_partial_type(model)
+            definition_strings.append(
+                f"export type {model.__name__}View = {model.__name__}EditView & {string};"
+            )
+        else:
+            definition_strings.append(
+                f"export type {model.__name__}View = {model.__name__}EditView;"
+            )
+
+    while ExtraTypesToCreate.extra_types_to_create:
+        model = ExtraTypesToCreate.extra_types_to_create.pop()
         if model not in extra_types_already_created:
-            string, extra_types = create_typescript_type_for_model(model)
+            string = create_typescript_type_for_model(model)
             definition_strings.append(string)
-            extra_types_to_create.update(extra_types)
             extra_types_already_created.add(model)
 
     generated_directory = Path(
@@ -301,6 +387,11 @@ def create_typescript_types():
         if model.Meta.edit
     ]
 
+    view_type_strings = [
+        f"{model.__name__}: {model.__name__}View"
+        for model in ModelManager.registered_models
+    ]
+
     file_contents = f"""
 import typia, {{ tags }} from "typia";
 
@@ -332,6 +423,12 @@ export type HeadEditViewBase = {{
   modifiedWhen: string & tags.Format<"date-time">;
 }};
 
+export type ReferenceViewBase = {{
+    label: string;
+    head_uuid: string & tags.Format<"uuid">; 
+    head_type: string;
+}}
+
 export type EditViewBase = {{
   uuid: string & tags.Format<"uuid">;
 }}
@@ -356,11 +453,15 @@ type EditValidatorType = {{
   ) => typia.IValidation<EditSetTypesMap[K]>;
 }};
 
+export type ViewTypesMap = {{
+    {"\n\t".join(view_type_strings)}
+}}
+
+export type ViewableTypesNames = keyof ViewTypesMap;
 
 export const editValidators: EditValidatorType = {{
     {"\n\t".join(edit_validator_strings)}
 }}
-
 """
 
     typescript_file.write_text(file_contents)
