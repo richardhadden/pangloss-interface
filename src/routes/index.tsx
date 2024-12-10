@@ -1,40 +1,28 @@
 import { A } from "@solidjs/router";
 import Counter from "~/components/Counter";
-
-import { validators } from "~/types";
+import { apiClient } from "~/ApiClient";
+import { useUserLogin } from "~/contexts/users";
+import { Show, onMount } from "solid-js";
+import { Title } from "@solidjs/meta";
 
 export default function Home() {
+  const [user, { setAccessingAuthorisedRoute }] = useUserLogin();
+  onMount(() => setAccessingAuthorisedRoute(false));
+
   return (
-    <main class="text-center mx-auto text-gray-700 p-4">
-      <button
-        onclick={() =>
-          console.log(validators["Thing"]({ type: "Thing", name: "as" }))
-        }
-      >
-        Click
-      </button>
-      <h1 class="max-6-xs text-6xl text-sky-700 font-thin uppercase my-16">
-        Hello world!
-      </h1>
-      <Counter />
-      <p class="mt-8">
-        Visit{" "}
-        <a
-          href="https://solidjs.com"
-          target="_blank"
-          class="text-sky-600 hover:underline"
-        >
-          solidjs.com
-        </a>{" "}
-        to learn how to build Solid apps.
-      </p>
-      <p class="my-4">
-        <span>Home</span>
-        {" - "}
-        <A href="/about" class="text-sky-600 hover:underline">
-          About Page
-        </A>{" "}
-      </p>
-    </main>
+    <>
+      <Title>ManMax | Pangloss</Title>
+      <main class="text-center mx-auto text-gray-700 p-4">
+        <h1 class="text-6xl text-slate-950 font-semibold uppercase mt-16 mb-4 tracking-widest">
+          Pangloss
+        </h1>
+        <h3>
+          Prosopography And Networks Graph-Labyrinth Orientation-System 🔆
+        </h3>
+        <h2 class="text-4xl text-slate-900 font-thin mt-16">
+          Managing Maximilian
+        </h2>
+      </main>
+    </>
   );
 }

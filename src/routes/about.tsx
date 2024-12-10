@@ -1,24 +1,26 @@
 import { A } from "@solidjs/router";
+import { onMount } from "solid-js";
 import Counter from "~/components/Counter";
+import { useUserLogin } from "~/contexts/users";
 
 export default function About() {
+  const [user, { setAccessingAuthorisedRoute }] = useUserLogin();
+  onMount(() => setAccessingAuthorisedRoute(false));
   return (
-    <main class="text-center mx-auto text-gray-700 p-4">
-      <h1 class="max-6-xs text-6xl text-sky-700 font-thin uppercase my-16">About Page</h1>
-      <Counter />
-      <p class="mt-8">
-        Visit{" "}
-        <a href="https://solidjs.com" target="_blank" class="text-sky-600 hover:underline">
-          solidjs.com
-        </a>{" "}
-        to learn how to build Solid apps.
+    <main class="text-center mx-auto text-gray-700 p-4 font-thin text-xl space-y-5">
+      <h1 class="max-6-xs text-5xl text-slate-950 font-semibold uppercase my-16">
+        About
+      </h1>
+      <p>
+        <span class="uppercase font-semibold text-slate-950 text-lg">
+          Pangloss
+        </span>{" "}
+        is a Neo4J graph-based framework for building prosopographical
+        databases.
       </p>
-      <p class="my-4">
-        <A href="/" class="text-sky-600 hover:underline">
-          Home
-        </A>
-        {" - "}
-        <span>About Page</span>
+      <p>
+        Here, it is being tested with for basic functionality using the Managing
+        Maximilian project's requirements.
       </p>
     </main>
   );

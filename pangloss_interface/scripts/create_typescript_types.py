@@ -1,5 +1,8 @@
+import dataclasses
 import datetime
+import functools
 import inspect
+import json
 import os
 import types
 import typing
@@ -19,8 +22,16 @@ from pangloss.model_config.field_definitions import (
     RelationFieldDefinition,
 )
 from pangloss.model_config.model_manager import ModelManager
-from pangloss.model_config.models_base import EdgeModel, ReferenceViewBase, ViewBase
+from pangloss.model_config.model_setup_utils import get_all_subclasses
+from pangloss.model_config.models_base import (
+    EdgeModel,
+    MultiKeyField,
+    ReferenceViewBase,
+    ReifiedRelationNode,
+    ViewBase,
+)
 from pangloss.models import BaseNode, ReifiedRelation
+from pangloss_interface.utils import AutocompleteEndpoints
 
 field_types = types.SimpleNamespace()
 field_types.str = str
@@ -309,12 +320,224 @@ def create_incoming_relations_partial_type(
 }}"""
 
 
+"""
+export type FieldDefinition = {
+  metatype: "Value" | "Outgoing" | "Incoming" | "Embedded";
+  type: Any[];
+  createInline?: boolean;
+  editInline?: boolean;
+};"""
+
+
+class ConfigObjectsToCreate:
+    config_objects_to_create = set()
+
+
+def create_validator_descriptions_for_field(
+    validator_type: annotated_types.BaseMetadata,
+) -> dict[str, typing.Any]:
+    match validator_type:
+        case annotated_types.MaxLen(n):
+            return {"maxLength": n}
+        case annotated_types.MinLen(n):
+            return {"minLength": n}
+        case annotated_types.Len(a, b):
+            return {"minLength": a, "maxLength": b}
+        case annotated_types.Gt(n):
+            return {"exclusiveMinimum": n}
+        case annotated_types.Ge(n):
+            return {"minimum": n}
+        case annotated_types.Lt(n):
+            return {"exclusiveMaximum": n}
+        case annotated_types.Le(n):
+            return {"maximum": n}
+        case _:
+            return {}
+
+
+def unpack_validators(validators):
+    return functools.reduce(
+        lambda existing, new: {
+            **existing,
+            **create_validator_descriptions_for_field(new),
+        },
+        validators,
+        {},
+    )
+
+
+def build_model_hierarchy(model: type["BaseNode"]):
+    subclass_hierarchy = {}
+    for subclass in model.__subclasses__():
+        subclass_hierarchy[subclass.__name__] = build_model_hierarchy(subclass)
+    return subclass_hierarchy
+
+
+def build_config_object_string(model: type[BaseNode] | type[MultiKeyField[typing.Any]]):
+    if hasattr(model, "Meta"):
+        model_dict = dataclasses.asdict(getattr(model, "Meta")())
+        model_dict["fields"] = {}
+    else:
+        model_dict = {
+            "abstract": False,
+            "create": True,
+            "edit": True,
+            "delete": True,
+            "fields": {},
+        }
+
+    if issubclass(model, ReifiedRelationNode):
+        model_dict["metatype"] = "ReifiedRelationNode"
+
+    elif issubclass(model, ReifiedRelation):
+        model_dict["metatype"] = "ReifiedRelation"
+
+    elif issubclass(model, MultiKeyField):
+        model_dict["metatype"] = "MultiKeyFieldModel"
+
+    elif issubclass(model, ViewBase):
+        model_dict["metatype"] = "IncomingViaReified"
+
+    elif issubclass(model, EdgeModel):
+        model_dict["metatype"] = "EdgeModel"
+
+    else:
+        model_dict["metatype"] = "BaseNode"
+
+    if issubclass(model, BaseNode):
+        model_dict["typeHierarchy"] = build_model_hierarchy(model)
+
+    for field_definition in model.field_definitions:
+        assert isinstance(
+            field_definition,
+            (
+                LiteralFieldDefinition,
+                ListFieldDefinition,
+                RelationFieldDefinition,
+                MultiKeyFieldDefinition,
+                EmbeddedFieldDefinition,
+            ),
+        )
+        if field_definition.field_metatype == "Literal":
+            model_dict["fields"][field_definition.field_name] = {
+                "metatype": field_definition.field_metatype,
+                "type": field_definition.field_annotated_type.__name__,
+                "validators": unpack_validators(field_definition.validators),
+            }
+        elif field_definition.field_metatype == "List":
+            # Small hack here to determine whether we are dealing with a real list-field
+            # or incoming relation definition
+            if issubclass(model, ViewBase):
+                fd = typing.cast(
+                    RelationFieldDefinition,
+                    [
+                        f
+                        for f in model.base_class.field_definitions
+                        if f.field_name == field_definition.field_name
+                    ][0],
+                )
+                model_dict["fields"][field_definition.field_name] = {
+                    "metatype": "OutgoingRelation",
+                    "type": [
+                        replace_brackets(t.__name__) for t in fd.field_concrete_types
+                    ],
+                }
+            else:
+                model_dict["fields"][field_definition.field_name] = {
+                    "metatype": "ListField",
+                    "type": field_definition.field_annotated_type.__name__,
+                    "validators": unpack_validators(field_definition.validators),
+                }
+
+        elif field_definition.field_metatype == "MultiKeyField":
+            model_dict["fields"][field_definition.field_name] = {
+                "metatype": field_definition.field_metatype,
+                "type": field_definition.field_annotated_type.__name__,
+            }
+            ConfigObjectsToCreate.config_objects_to_create.add(
+                field_definition.field_annotated_type
+            )
+        elif field_definition.field_metatype == "Relation":
+            model_dict["fields"][field_definition.field_name] = {
+                "metatype": "OutgoingRelation",
+                "type": [t.__name__ for t in field_definition.field_concrete_types],
+                "createInline": field_definition.create_inline,
+                "editInline": field_definition.edit_inline,
+                "edgeModel": field_definition.edge_model.__name__
+                if field_definition.edge_model
+                else None,
+                "validators": unpack_validators(field_definition.validators),
+                "defaultType": field_definition.default_type,
+                "autocompleteEndpoint": AutocompleteEndpoints.generate_endpoints(
+                    [
+                        model
+                        for model in field_definition.field_concrete_types
+                        if issubclass(model, BaseNode)
+                    ]
+                ),
+            }
+            ConfigObjectsToCreate.config_objects_to_create.update(
+                [
+                    t
+                    for t in field_definition.field_concrete_types
+                    if not issubclass(t, BaseNode)
+                ],
+            )
+            if field_definition.edge_model:
+                ConfigObjectsToCreate.config_objects_to_create.add(
+                    field_definition.edge_model
+                )
+
+        elif field_definition.field_metatype == "Embedded":
+            model_dict["fields"][field_definition.field_name] = {
+                "metatype": field_definition.field_metatype,
+                "type": [t.__name__ for t in field_definition.field_concrete_types],
+                "validators": unpack_validators(field_definition.validators),
+            }
+
+    if issubclass(model, BaseNode):
+        for (
+            relation_name,
+            relation_definitions,
+        ) in model.incoming_relation_definitions.items():
+            types = []
+            for rd in relation_definitions:
+                if issubclass(rd.source_concrete_type, ReferenceViewBase):
+                    types.append(rd.source_concrete_type.base_class.__name__)
+                else:
+                    types.append(f"{rd.source_concrete_type.__name__}Config")
+                    ConfigObjectsToCreate.config_objects_to_create.add(
+                        rd.source_concrete_type
+                    )
+
+            model_dict["fields"][relation_name] = {
+                "metatype": "IncomingRelation",
+                "type": types,
+            }
+
+    view_type_name = (
+        f"{replace_brackets(model.__name__)}"
+        if issubclass(model, MultiKeyField)
+        else f"{replace_brackets(model.__name__)}"
+    )
+
+    extra_type_ending = "View" if issubclass(model, BaseNode) else ""
+    return (
+        replace_brackets(model.__name__),
+        f"""const {replace_brackets(model.__name__)}Config: ConfigObject<{replace_brackets(view_type_name)}{extra_type_ending}> = {json.dumps(model_dict)};""",
+    )
+
+
 def create_typescript_types():
     definition_strings = []
 
     ModelManager.initialise_models()
 
-    extra_types_already_created = set()
+    types_already_created = set()
+
+    ExtraTypesToCreate.extra_types_to_create.update(
+        [model.ReferenceView for model in ModelManager.registered_models]
+    )
 
     for model in ModelManager.registered_models:
         string = create_typescript_type_for_model(model)
@@ -341,10 +564,10 @@ def create_typescript_types():
 
     while ExtraTypesToCreate.extra_types_to_create:
         model = ExtraTypesToCreate.extra_types_to_create.pop()
-        if model not in extra_types_already_created:
+        if model not in types_already_created:
             string = create_typescript_type_for_model(model)
             definition_strings.append(string)
-            extra_types_already_created.add(model)
+            types_already_created.add(model)
 
     generated_directory = Path(
         os.path.realpath(__file__)
@@ -392,77 +615,164 @@ def create_typescript_types():
         for model in ModelManager.registered_models
     ]
 
+    list_view_type_strings = [
+        f"{model.__name__}: GenericListReturnType<{" | ".join(f"{m.__name__}ReferenceView" for m in [*get_all_subclasses(model), model])}>;"
+        for model in ModelManager.registered_models
+    ]
+
+    config_object_strings = [
+        build_config_object_string(model) for model in ModelManager.registered_models
+    ]
+
+    while ConfigObjectsToCreate.config_objects_to_create:
+        model = ConfigObjectsToCreate.config_objects_to_create.pop()
+        config_object_strings.append(build_config_object_string(model))
+
+    print(AutocompleteEndpoints.endpoints_to_build)
+
     file_contents = f"""
-import typia, {{ tags }} from "typia";
+        import typia, {{ tags }} from "typia";
 
-{"\n".join(definition_strings)}
+        {"\n".join(definition_strings)}
 
-export type CreationTypesMap = {{
-    {"\n\t".join(create_type_strings)}
-}}
+        export type CreationTypesMap = {{
+            {"\n\t".join(create_type_strings)}
+        }}
 
-export type CreateableTypesNames = keyof CreationTypesMap;
+        export type CreateableTypesNames = keyof CreationTypesMap;
 
-type CreationValidatorsType = {{
-  [K in keyof CreationTypesMap]: (
-    input: object
-  ) => typia.IValidation<CreationTypesMap[K]>;
-}};
+        
+        type CreationValidatorsType = {{
+        [K in keyof CreationTypesMap]: (
+            input: object
+        ) => typia.IValidation<CreationTypesMap[K]>;
+        }};
 
-export const creationValidators: CreationValidatorsType = {{
-    {"\n\t".join(create_validator_strings)}
-}}
+        /*
+        export const creationValidators: CreationValidatorsType = {{
+            {"\n\t".join(create_validator_strings)}
+        }}
+        */
 
 
+        export type HeadEditViewBase = {{
+        uuid: string & tags.Format<"uuid">;
+        createdBy: string;
+        createdWhen: string & tags.Format<"date-time">;
+        modifiedBy: string;
+        modifiedWhen: string & tags.Format<"date-time">;
+        }};
 
-export type HeadEditViewBase = {{
-  uuid: string & tags.Format<"uuid">;
-  createdBy: string;
-  createdWhen: string & tags.Format<"date-time">;
-  modifiedBy: string;
-  modifiedWhen: string & tags.Format<"date-time">;
-}};
+        export type ReferenceViewBase = {{
+            label: string;
+            head_uuid: string & tags.Format<"uuid">; 
+            head_type: string;
+        }}
 
-export type ReferenceViewBase = {{
-    label: string;
-    head_uuid: string & tags.Format<"uuid">; 
-    head_type: string;
-}}
+        export type EditViewBase = {{
+        uuid: string & tags.Format<"uuid">;
+        }}
 
-export type EditViewBase = {{
-  uuid: string & tags.Format<"uuid">;
-}}
+        export type EditSetBase = {{
+        uuid: string & tags.Format<"uuid">;
+        }};
 
-export type EditSetBase = {{
-  uuid: string & tags.Format<"uuid">;
-}};
+        export type EditViewTypesMap = {{
+            {"\n\t".join(edit_view_type_strings)}
+        }}
 
-export type EditViewTypesMap = {{
-    {"\n\t".join(edit_view_type_strings)}
-}}
+        export type EditableTypesNames = keyof EditViewTypesMap;
 
-export type EditableTypesNames = keyof EditViewTypesMap;
+        export type EditSetTypesMap = {{
+            {"\n\t".join(edit_set_type_strings)}
+        }}
 
-export type EditSetTypesMap = {{
-    {"\n\t".join(edit_set_type_strings)}
-}}
+       
+        type EditValidatorType = {{
+        [K in keyof EditSetTypesMap]: (
+            input: object
+        ) => typia.IValidation<EditSetTypesMap[K]>;
+        }};
 
-type EditValidatorType = {{
-  [K in keyof EditSetTypesMap]: (
-    input: object
-  ) => typia.IValidation<EditSetTypesMap[K]>;
-}};
+        export type ViewTypesMap = {{
+            {"\n\t".join(view_type_strings)}
+        }}
+        
+        export type HeadViewTypesMap = {{
+            [k in keyof ViewTypesMap]: k & HeadEditViewBase;
+        }};
 
-export type ViewTypesMap = {{
-    {"\n\t".join(view_type_strings)}
-}}
+        export type ViewableTypesNames = keyof ViewTypesMap;
+        /*
+        export const editValidators: EditValidatorType = {{
+            {"\n\t".join(edit_validator_strings)}
+        }}*/
 
-export type ViewableTypesNames = keyof ViewTypesMap;
+        type GenericListReturnType<T> = {{
+            results: T[];
+            count: number;
+            page: number;
+            totalPages: number;
+            nextPage: number;
+            previousPage: number;
+            nextUrl: string;
+            previousUrl: string;
+        }};
 
-export const editValidators: EditValidatorType = {{
-    {"\n\t".join(edit_validator_strings)}
-}}
-"""
+        export type ListTypesMap = {{
+            {"\n\t".join(list_view_type_strings)}
+        }}
+
+        export type ListableTypesNames = keyof ListTypesMap;
+
+        export type FieldDefinition = {{
+            metatype:
+                | "Literal"
+                | "ListField"
+                | "OutgoingRelation"
+                | "IncomingRelation"
+                | "Embedded"
+                | "MultiKeyField";
+            type: string | string[];
+            createInline?: boolean;
+            editInline?: boolean;
+            edgeModel?: string | null;
+            validators?: object;
+            defaultType?: string | null;
+            autocompleteEndpoint?: string;
+        }};
+
+        type FieldsObjects<T> = {{
+            [Property in keyof T]?: FieldDefinition;
+            
+        }} & {{uuid: string;
+            createdBy: string;
+            modifiedBy: string;
+            createdWhen: date;
+            modifiedWhen: date;}};
+
+        type ConfigObject<T> = {{
+            metatype: "BaseNode" | "MultiKeyFieldModel" | "ReifiedRelation" | "ReifiedNode" | "IncomingViaReified" | "EdgeModel";
+            abstract: boolean;
+            create: boolean;
+            edit: boolean;
+            delete: boolean;
+            fields: FieldsObjects<T>;
+            typeHierarchy?: TypeHierarchy | {{}};
+        }};
+        
+        type TypeHierarchy = {{
+            [Property in ViewableTypesNames]: TypeHierarchy | {{}};
+        }};
+
+        {"\n".join(m[1] for m in config_object_strings)}
+
+        export const ModelConfigs = {{
+            {"\n".join(f"{replace_brackets(m[0])}: {f"{replace_brackets(m[0])}Config,"}" for m in config_object_strings)}
+        }}
+        
+        export const TopLevelModels = [{", ".join(f'"{subclass.__name__}"' for subclass in BaseNode.__subclasses__())}]
+    """
 
     typescript_file.write_text(file_contents)
     try:
