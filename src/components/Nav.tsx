@@ -24,15 +24,11 @@ import { LoginOverlay } from "./LoginForm";
 
 import { prefetch } from "~/utils/prefetch";
 
-import { editValidators } from "~/validators";
-
 const [showNavBar, setShowNavBar] = createSignal(false);
 
 export default function Nav() {
   const location = useLocation();
   const nagivate = useNavigate();
-
-  const v = editValidators;
 
   const active = (path: string) =>
     path == location.pathname
@@ -55,7 +51,7 @@ export default function Nav() {
         <nav
           onMouseEnter={() => setShowNavBar(true)}
           onMouseLeave={() => setShowNavBar(false)}
-          class="overflow-y-scroll select-none rounded-r-sm  bg-slate-500   shadow-2xl shadow-slate-950 flex flex-col h-screen w-96 -left-80  group-[.navbar-open]:-left-0 fixed transition-all duration-200 z-20 "
+          class=" select-none rounded-r-sm  bg-slate-500   shadow-2xl shadow-slate-950 flex flex-col h-screen w-96 -left-80  group-[.navbar-open]:-left-0 fixed transition-all duration-200 z-20 "
         >
           <div class="flex justify-center text-white bg-slate-950 h-14 items-center transition-all duration-200 select-none min-h-14">
             <IoMenuSharp
@@ -99,7 +95,7 @@ export default function Nav() {
               </button>
             </Show>
           </div>
-          <div class="flex justify-center h-14 group-[.navbar-open]:bg-slate-800 min-h-14">
+          <div class="flex justify-center h-14 group-[.navbar-open]:bg-slate-800 min-h-14 ">
             <div class="flex items-center">
               <span class="text-white uppercase text-xs font-semibold mr-4">
                 {t("interface.language")}
@@ -138,7 +134,7 @@ export default function Nav() {
               {t("interface.models")}
             </span>{" "}
           </div>
-          <ul class="group-[.navbar-open]:block hidden ">
+          <ul class="group-[.navbar-open]:block hidden">
             <For each={TopLevelModels}>
               {(modelName) => (
                 <ModelMenuObject
@@ -161,7 +157,7 @@ type ModelMenuObjectProps = {
   gapBelow?: boolean;
 };
 function ModelMenuObject<Component>(props: ModelMenuObjectProps) {
-  const showItem = () => true;
+  const showItem = () => ModelConfigs[props.modelName].view;
 
   return (
     <>
@@ -172,7 +168,7 @@ function ModelMenuObject<Component>(props: ModelMenuObjectProps) {
           //style={`padding-left: ${props.indent}rem;`}
         >
           <a
-            use:prefetch
+            //use:prefetch
             onClick={() => setShowNavBar(false)}
             class="bg-slate-700 group-hover/button:hover:bg-slate-900 group-hover/button:bg-slate-800 group-hover/button:active:bg-slate-600 h-10 w-full text-xs  active:scale-x-[98.5%] active:scale-y-[95%] text-white uppercase flex items-center font-semibold first:mt-none transition-colors duration-75"
             href={`/objects/${props.modelName}`}

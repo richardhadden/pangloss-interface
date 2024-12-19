@@ -1,4 +1,3 @@
-import dataclasses
 import datetime
 import functools
 import inspect
@@ -10,6 +9,7 @@ import uuid
 from pathlib import Path
 
 import annotated_types
+import humps
 import pydantic
 from rich import print
 
@@ -48,6 +48,7 @@ field_types.date = datetime.date
 
 class ExtraTypesToCreate:
     extra_types_to_create = set()
+    created_types = set()
 
 
 def map_literal_types(annotated_type: type) -> str:
@@ -55,17 +56,17 @@ def map_literal_types(annotated_type: type) -> str:
         case field_types.str:
             return "string"
         case field_types.uuid:
-            return 'string & tags.Format<"uuid">'
+            return "string"  # & tags.Format<"uuid">'
         case field_types.int:
-            return 'number & tags.Type<"int64">'
+            return "number"  # & tags.Type<"int64">'
         case field_types.float:
-            return 'number & tags.Type<"float">'
+            return "number"  # & tags.Type<"float">'
         case field_types.date:
-            return 'string & tags.Format<"date">'
+            return "string"  # & tags.Format<"date">'
         case field_types.datetime:
-            return 'string & tags.Format<"date-time">'
+            return "string"  # & tags.Format<"date-time">'
         case field_types.url:
-            return 'string & tags.Format<"url">'
+            return "string"  # & tags.Format<"url">'
         case _ if inspect.isclass(annotated_type) and issubclass(
             annotated_type, EdgeModel
         ):
@@ -75,11 +76,15 @@ def map_literal_types(annotated_type: type) -> str:
                 typing.get_args(annotated_type)
             )
             return f'({" | ".join(replace_brackets(m.__name__) for m in typing.get_args(annotated_type))})'
+        case c if inspect.isclass(c):
+            ExtraTypesToCreate.extra_types_to_create.add(c)
+            return replace_brackets(c.__name__)
         case _:
             return "TYPEGENERROR!!"
 
 
 def map_validator_types(validator_type: annotated_types.BaseMetadata) -> str | None:
+    return ""
     match validator_type:
         case annotated_types.MaxLen(n):
             return f"tags.MaxLength<{n}>"
@@ -129,12 +134,12 @@ def create_typescript_type_for_model(
             isinstance(field_definition, LiteralFieldDefinition)
             and field_definition.field_name == "head_uuid"
         ):
-            type_strings.append('head_uuid?: string & tags.Format<"uuid">;')
+            type_strings.append('headUuid?: string & tags.Format<"uuid">;')
         elif (
             isinstance(field_definition, LiteralFieldDefinition)
             and field_definition.field_name == "head_type"
         ):
-            type_strings.append("head_type?: string")
+            type_strings.append("headType?: string")
 
         elif isinstance(field_definition, MultiKeyFieldDefinition):
             initialise_model_field_definitions(field_definition.field_annotated_type)
@@ -150,7 +155,7 @@ def create_typescript_type_for_model(
             ]
 
             type_strings.append(
-                f"{field_definition.field_name}: {" & ".join([typesscript_type, *validators])}"
+                f"{humps.camelize(field_definition.field_name)}: {" & ".join([typesscript_type, *validators])}"
             )
             extra_types_to_create.append(field_definition.field_annotated_type)
 
@@ -164,7 +169,7 @@ def create_typescript_type_for_model(
             ]
 
             type_strings.append(
-                f"{field_definition.field_name}: {" & ".join([typesscript_type, *validators])};"
+                f"{humps.camelize(field_definition.field_name)}: {" & ".join([typesscript_type, *validators])};"
             )
         elif isinstance(field_definition, ListFieldDefinition):
             typesscript_type = (
@@ -177,7 +182,7 @@ def create_typescript_type_for_model(
             ]
 
             type_strings.append(
-                f"{field_definition.field_name}: {" & ".join([typesscript_type, *validators])};"
+                f"{humps.camelize(field_definition.field_name)}: {" & ".join([typesscript_type, *validators])};"
             )
         elif isinstance(field_definition, RelationFieldDefinition):
             related_types = []
@@ -228,7 +233,7 @@ def create_typescript_type_for_model(
             ]
 
             type_strings.append(
-                f"{field_definition.field_name}: {" & ".join([typesscript_type, *validators])};"
+                f"{humps.camelize(field_definition.field_name)}: {" & ".join([typesscript_type, *validators])};"
             )
         elif isinstance(field_definition, EmbeddedFieldDefinition):
             related_types = []
@@ -247,7 +252,7 @@ def create_typescript_type_for_model(
             ]
             typesscript_type = f"({" | ".join(related_types)})[]"
             type_strings.append(
-                f"{field_definition.field_name}: {" & ".join([typesscript_type, *validators])};"
+                f"{humps.camelize(field_definition.field_name)}: {" & ".join([typesscript_type, *validators])};"
             )
 
     ExtraTypesToCreate.extra_types_to_create.update(extra_types_to_create)
@@ -311,7 +316,9 @@ def create_incoming_relations_partial_type(
                     incoming_relation_definition.source_concrete_type
                 )
 
-        type_strings.append(f"{incoming_field_name}?: ({" | ".join(type_names)})[];")
+        type_strings.append(
+            f"{humps.camelize(incoming_field_name)}?: ({" | ".join( replace_brackets(tn) for tn in type_names)})[];"
+        )
 
     ExtraTypesToCreate.extra_types_to_create.update(extra_types_to_create)
     return f"""
@@ -331,6 +338,7 @@ export type FieldDefinition = {
 
 class ConfigObjectsToCreate:
     config_objects_to_create = set()
+    created_objects = set(())
 
 
 def create_validator_descriptions_for_field(
@@ -375,7 +383,11 @@ def build_model_hierarchy(model: type["BaseNode"]):
 
 def build_config_object_string(model: type[BaseNode] | type[MultiKeyField[typing.Any]]):
     if hasattr(model, "Meta"):
-        model_dict = dataclasses.asdict(getattr(model, "Meta")())
+        model_dict = {
+            humps.camelize(k): v
+            for k, v in getattr(model, "Meta").__dict__.items()
+            if not k.startswith("_")
+        }
         model_dict["fields"] = {}
     else:
         model_dict = {
@@ -419,7 +431,7 @@ def build_config_object_string(model: type[BaseNode] | type[MultiKeyField[typing
             ),
         )
         if field_definition.field_metatype == "Literal":
-            model_dict["fields"][field_definition.field_name] = {
+            model_dict["fields"][humps.camelize(field_definition.field_name)] = {
                 "metatype": field_definition.field_metatype,
                 "type": field_definition.field_annotated_type.__name__,
                 "validators": unpack_validators(field_definition.validators),
@@ -436,21 +448,21 @@ def build_config_object_string(model: type[BaseNode] | type[MultiKeyField[typing
                         if f.field_name == field_definition.field_name
                     ][0],
                 )
-                model_dict["fields"][field_definition.field_name] = {
+                model_dict["fields"][humps.camelize(field_definition.field_name)] = {
                     "metatype": "OutgoingRelation",
                     "type": [
                         replace_brackets(t.__name__) for t in fd.field_concrete_types
                     ],
                 }
             else:
-                model_dict["fields"][field_definition.field_name] = {
+                model_dict["fields"][humps.camelize(field_definition.field_name)] = {
                     "metatype": "ListField",
                     "type": field_definition.field_annotated_type.__name__,
                     "validators": unpack_validators(field_definition.validators),
                 }
 
         elif field_definition.field_metatype == "MultiKeyField":
-            model_dict["fields"][field_definition.field_name] = {
+            model_dict["fields"][humps.camelize(field_definition.field_name)] = {
                 "metatype": field_definition.field_metatype,
                 "type": field_definition.field_annotated_type.__name__,
             }
@@ -458,9 +470,12 @@ def build_config_object_string(model: type[BaseNode] | type[MultiKeyField[typing
                 field_definition.field_annotated_type
             )
         elif field_definition.field_metatype == "Relation":
-            model_dict["fields"][field_definition.field_name] = {
+            model_dict["fields"][humps.camelize(field_definition.field_name)] = {
                 "metatype": "OutgoingRelation",
-                "type": [t.__name__ for t in field_definition.field_concrete_types],
+                "type": [
+                    replace_brackets(t.__name__)
+                    for t in field_definition.field_concrete_types
+                ],
                 "createInline": field_definition.create_inline,
                 "editInline": field_definition.edit_inline,
                 "edgeModel": field_definition.edge_model.__name__
@@ -489,7 +504,7 @@ def build_config_object_string(model: type[BaseNode] | type[MultiKeyField[typing
                 )
 
         elif field_definition.field_metatype == "Embedded":
-            model_dict["fields"][field_definition.field_name] = {
+            model_dict["fields"][humps.camelize(field_definition.field_name)] = {
                 "metatype": field_definition.field_metatype,
                 "type": [t.__name__ for t in field_definition.field_concrete_types],
                 "validators": unpack_validators(field_definition.validators),
@@ -503,14 +518,18 @@ def build_config_object_string(model: type[BaseNode] | type[MultiKeyField[typing
             types = []
             for rd in relation_definitions:
                 if issubclass(rd.source_concrete_type, ReferenceViewBase):
-                    types.append(rd.source_concrete_type.base_class.__name__)
+                    types.append(
+                        replace_brackets(rd.source_concrete_type.base_class.__name__)
+                    )
                 else:
-                    types.append(f"{rd.source_concrete_type.__name__}Config")
+                    types.append(
+                        f"{replace_brackets(rd.source_concrete_type.__name__)}"
+                    )
                     ConfigObjectsToCreate.config_objects_to_create.add(
                         rd.source_concrete_type
                     )
 
-            model_dict["fields"][relation_name] = {
+            model_dict["fields"][humps.camelize(relation_name)] = {
                 "metatype": "IncomingRelation",
                 "type": types,
             }
@@ -530,7 +549,6 @@ def build_config_object_string(model: type[BaseNode] | type[MultiKeyField[typing
 
 def create_typescript_types():
     definition_strings = []
-
     ModelManager.initialise_models()
 
     types_already_created = set()
@@ -564,10 +582,12 @@ def create_typescript_types():
 
     while ExtraTypesToCreate.extra_types_to_create:
         model = ExtraTypesToCreate.extra_types_to_create.pop()
-        if model not in types_already_created:
+
+        if model.__name__ not in types_already_created:
             string = create_typescript_type_for_model(model)
             definition_strings.append(string)
-            types_already_created.add(model)
+
+            types_already_created.add(model.__name__)
 
     generated_directory = Path(
         os.path.realpath(__file__)
@@ -579,6 +599,7 @@ def create_typescript_types():
         )
 
     typescript_file = generated_directory.joinpath(Path("types.ts"))
+    validators_file = generated_directory.joinpath(Path("validators.ts"))
 
     create_type_strings = [
         f"{model.__name__}: {model.__name__},"
@@ -597,6 +618,9 @@ def create_typescript_types():
         for model in ModelManager.registered_models
         if model.Meta.edit
     ]
+
+    edit_type_import_string = f'import type {{ {", ".join(f"{model.__name__}EditSet" for model in ModelManager.registered_models
+        if model.Meta.edit)}, EditValidatorType }} from "~/generated/types";'
 
     edit_view_type_strings = [
         f"{model.__name__}: {model.__name__}EditView & HeadEditViewBase,"
@@ -626,9 +650,11 @@ def create_typescript_types():
 
     while ConfigObjectsToCreate.config_objects_to_create:
         model = ConfigObjectsToCreate.config_objects_to_create.pop()
-        config_object_strings.append(build_config_object_string(model))
 
-    print(AutocompleteEndpoints.endpoints_to_build)
+        if model.__name__ not in ConfigObjectsToCreate.created_objects:
+            config_object_strings.append(build_config_object_string(model))
+
+            ConfigObjectsToCreate.created_objects.add(model.__name__)
 
     file_contents = f"""
         import typia, {{ tags }} from "typia";
@@ -688,7 +714,7 @@ def create_typescript_types():
         }}
 
        
-        type EditValidatorType = {{
+        export type EditValidatorType = {{
         [K in keyof EditSetTypesMap]: (
             input: object
         ) => typia.IValidation<EditSetTypesMap[K]>;
@@ -703,10 +729,7 @@ def create_typescript_types():
         }};
 
         export type ViewableTypesNames = keyof ViewTypesMap;
-        /*
-        export const editValidators: EditValidatorType = {{
-            {"\n\t".join(edit_validator_strings)}
-        }}*/
+        
 
         type GenericListReturnType<T> = {{
             results: T[];
@@ -745,19 +768,18 @@ def create_typescript_types():
         type FieldsObjects<T> = {{
             [Property in keyof T]?: FieldDefinition;
             
-        }} & {{uuid: string;
-            createdBy: string;
-            modifiedBy: string;
-            createdWhen: date;
-            modifiedWhen: date;}};
+        }};
 
         type ConfigObject<T> = {{
             metatype: "BaseNode" | "MultiKeyFieldModel" | "ReifiedRelation" | "ReifiedNode" | "IncomingViaReified" | "EdgeModel";
-            abstract: boolean;
+            abstract?: boolean;
             create: boolean;
             edit: boolean;
             delete: boolean;
+            view?: boolean;
+            search?: boolean;
             fields: FieldsObjects<T>;
+            labelField?: string | null;
             typeHierarchy?: TypeHierarchy | {{}};
         }};
         

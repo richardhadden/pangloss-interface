@@ -376,6 +376,10 @@ version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "pangloss" },
+    { name = "patchdiff" },
+    { name = "pluralizer" },
+    { name = "pyhumps" },
+    { name = "titlecase" },
     { name = "typer" },
 ]
 
@@ -387,11 +391,33 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "pangloss", editable = "../pangloss" },
+    { name = "patchdiff", specifier = ">=0.3.4" },
+    { name = "pluralizer", specifier = ">=1.2.0" },
+    { name = "pyhumps", specifier = ">=3.8.0" },
+    { name = "titlecase", specifier = ">=2.4.1" },
     { name = "typer", specifier = ">=0.13.1" },
 ]
 
 [package.metadata.requires-dev]
 dev = [{ name = "ruff", specifier = ">=0.8.0" }]
+
+[[package]]
+name = "patchdiff"
+version = "0.3.4"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/bc/69/b8922aa25ee91663013833daca845c9b7db22dd0293ac3717c7e37e45c97/patchdiff-0.3.4.tar.gz", hash = "sha256:034959a4a6e4143b2f63ae645b221e0617909410ffb3e186b77c643225e233e6", size = 4138 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/71/0b/a08db71cadf50e812a0c1ff221fa7486910caedd3098239b97226fb05a39/patchdiff-0.3.4-py3-none-any.whl", hash = "sha256:109710036e028aa0bac10139997a42b7d69d73d0275eff12455a59f2d6f8f995", size = 4986 },
+]
+
+[[package]]
+name = "pluralizer"
+version = "1.2.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/c4/11/5e3e7af16fe46612265e6cfed0f1c8f49fb0cdb424d314154d5a3b364bac/pluralizer-1.2.0.tar.gz", hash = "sha256:fe3fb8e1e53fabf372e77d8cbebe04b0f8fc7db853aeff50095dbd5628ac39c5", size = 6879 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/68/2c/3e2dd10df7fffa916ceba9eef10f7e90d22cf90acec269914bb63081b1aa/pluralizer-1.2.0-py3-none-any.whl", hash = "sha256:d8f92ffa787661d9e704d1e0d8abc6c6c4bbaae9e790d7c709707eafbe17ed12", size = 7632 },
+]
 
 [[package]]
 name = "pydantic"
@@ -640,6 +666,12 @@ sdist = { url = "https://files.pythonhosted.org/packages/ab/e2/e9a00f0ccb7171841
 wheels = [
     { url = "https://files.pythonhosted.org/packages/a6/a5/c0b6468d3824fe3fde30dbb5e1f687b291608f9473681bbf7dabbf5a87d7/text_unidecode-1.3-py2.py3-none-any.whl", hash = "sha256:1311f10e8b895935241623731c2ba64f4c455287888b18189350b67134a822e8", size = 78154 },
 ]
+
+[[package]]
+name = "titlecase"
+version = "2.4.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/63/17/04d2d3e30e2bc5a3eefa1060b08e3fb628510440f938eaecabbe08976a26/titlecase-2.4.1.tar.gz", hash = "sha256:7d83a277ccbbda11a2944e78a63e5ccaf3d32f828c594312e4862f9a07f635f5", size = 14434 }
 
 [[package]]
 name = "typer"

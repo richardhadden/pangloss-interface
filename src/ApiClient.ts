@@ -1,7 +1,7 @@
 import { getRequestEvent, isServer } from "solid-js/web";
 import { useUserLogin } from "./contexts/users";
 
-import { ListTypesMap, ViewTypesMap } from "./generated/types";
+import { type HeadViewTypesMap, type ListTypesMap } from "./generated/types";
 
 import { PrefetchCache } from "./utils/prefetch";
 
@@ -103,15 +103,14 @@ function createApiClient(BASE_URL: string) {
     return data as ListTypesMap[K] | undefined;
   }
 
-  async function view<K extends keyof ViewTypesMap>(
+  async function view<K extends keyof HeadViewTypesMap>(
     entityType: K,
     uid: string
-  ): Promise<ViewTypesMap[K] | undefined> {
-    //console.log(v.string([v.uuid()])._parse(uid))
+  ): Promise<HeadViewTypesMap[K] | undefined> {
     const url = new URL(`${BASE_URL}/${entityType}/${uid}`);
     const data = await getRequest(url);
     console.log(data);
-    return data as ViewTypesMap[K] | undefined;
+    return data as HeadViewTypesMap[K] | undefined;
   }
 
   return {

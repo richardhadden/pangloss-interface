@@ -4,30 +4,26 @@
   "scripts": {
     "dev": "vinxi dev",
     "build": "vinxi build",
-    "start": "vinxi start",
-    "prepare": "ts-patch install && typia patch"
+    "start": "vinxi start"
   },
   "dependencies": {
-    "@ryoppippi/unplugin-typia": "npm:@jsr/ryoppippi__unplugin-typia",
     "@solid-primitives/i18n": "^2.1.1",
     "@solid-primitives/storage": "^4.2.1",
     "@solidjs/meta": "^0.29.4",
     "@solidjs/router": "^0.15.0",
     "@solidjs/start": "^1.0.10",
-    "autoprefixer": "^10.4.20",
+    "autoprefixer": "^10.4.19",
     "date-fns": "^4.1.0",
-    "postcss": "^8.4.49",
+    "postcss": "^8.4.38",
     "solid-icons": "^1.1.0",
     "solid-js": "^1.9.2",
-    "tailwindcss": "^3.4.16",
-    "typia": "^6.12.1",
+    "tailwindcss": "^3.4.3",
     "vinxi": "^0.4.3"
+  },
+  "overrides": {
+    "vite": "5.4.10"
   },
   "engines": {
     "node": ">=18"
-  },
-  "devDependencies": {
-    "ts-patch": "^3.3.0",
-    "typescript": "^5.6.2"
   }
 }

@@ -12,6 +12,7 @@ export default function Home() {
   return (
     <>
       <Title>ManMax | Pangloss</Title>
+
       <main class="text-center mx-auto text-gray-700 p-4">
         <h1 class="text-6xl text-slate-950 font-semibold uppercase mt-16 mb-4 tracking-widest">
           Pangloss

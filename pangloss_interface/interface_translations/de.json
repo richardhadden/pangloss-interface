@@ -1,0 +1,20 @@
+{
+    "icon": "🇦🇹",
+    "log_in": "Anmelden",
+    "log_out": "Abmelden",
+    "language": "Sprache",
+    "search": "Suchen",
+    "getMoreResults": "Mehr Ergebnisse erzielen",
+    "username": "Benutzername",
+    "password": "Passwort",
+    "log_in_required": "Anmeldung erforderlich",
+    "not_logged_in": "Nicht angemeldet",
+    "incorrect_username_or_password":
+      "Falscher Benutzername oder falsches Passwort",
+    "username_or_password_missing": "Benutzername oder Passwort fehlt",
+    "something_went_wrong_try_again":
+      "Etwas ist schief gelaufen. Versuchen Sie es noch einmal.",
+    "home_page": "Home Page",
+    "about_page": "Uber uns",
+    "models": "Modelle"
+  }

@@ -2,7 +2,7 @@ import { RouteDefinition, useParams } from "@solidjs/router";
 
 import { useUserLogin } from "~/contexts/users";
 import {
-  type ViewTypesMap,
+  type HeadViewTypesMap,
   type ViewableTypesNames,
 } from "../../../generated/types";
 import { Show, Suspense } from "solid-js";
@@ -21,10 +21,10 @@ import { ViewModifiedDetails } from "~/components/ViewModifyDetails";
 
 import { ModelConfigs } from "~/generated/types";
 
-async function fetchData<K extends keyof ViewTypesMap>(
+async function fetchData<K extends keyof HeadViewTypesMap>(
   entityType: K,
   uid: string
-): Promise<ViewTypesMap[K] | undefined> {
+): Promise<HeadViewTypesMap[K] | undefined> {
   const data = await apiClient.view(entityType, uid);
 
   return data;
@@ -50,6 +50,20 @@ export default function () {
     )
   );
 
+  const label = () => {
+    if (ModelConfigs[data().type as ViewableTypesNames].label_field) {
+      return (
+        <div
+          innerHTML={[
+            data()[ModelConfigs[data().type as ViewableTypesNames].label_field],
+          ]}
+        ></div>
+      );
+    }
+
+    return data().label;
+  };
+
   return (
     <>
       <Title>
@@ -59,7 +73,7 @@ export default function () {
         entityType={t(`${params.EntityType}.__model.verboseName`)}
         centralSectionPosition="left"
         editUrl={
-          data() && ModelConfigs[data()?.type as ViewableTypesNames].edit
+          data() && ModelConfigs[params.EntityType].edit
             ? `/objects/${data()?.type}/${data()?.uuid}/edit`
             : undefined
         }
@@ -71,12 +85,11 @@ export default function () {
                   <div
                     class="line-clamp-2 rounded-r-sm pl-6 pr-6  h-14 align-middle flex grow-0 shrink-1 items-center bg-neutral-300 text-black  shadow-2xl shadow-neutral-300/50 border-r-[0.25px] border-r-neutral-400/20"
                     classList={{
-                      "text-sm":
-                        data().label.length > 100 && data().label.length <= 300,
-                      "text-xs": data().label.length > 300,
+                      "text-sm": label().length > 100 && label().length <= 300,
+                      "text-xs": label().length > 300,
                     }}
                   >
-                    <span class="line-clamp-2">{data().label}</span>
+                    <span class="line-clamp-2">{label()}</span>
                   </div>
                   <div class="grow shrink-0" />
                   <ViewModifiedDetails data={data()} />
@@ -88,11 +101,11 @@ export default function () {
       />
       <section class="pl-10 pr-10 mt-10">
         <Suspense fallback={<h1>Loading!</h1>}>
-          <Show when={data() as ViewTypesMap[ViewableTypesNames]}>
+          <Show when={data() as HeadViewTypesMap[ViewableTypesNames]}>
             {(data) => (
               <ViewItems
                 itemType={params.EntityType}
-                item={data() as ViewTypesMap[ViewableTypesNames]}
+                item={data() as HeadViewTypesMap[ViewableTypesNames]}
               />
             )}
           </Show>

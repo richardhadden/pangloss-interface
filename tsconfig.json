@@ -10,20 +10,10 @@
     "allowJs": true,
     "noEmit": true,
     "strict": true,
-    "types": [
-      "vinxi/types/client"
-    ],
+    "types": ["vinxi/types/client"],
     "isolatedModules": true,
     "paths": {
-      "~/*": [
-        "./src/*"
-      ]
-    },
-    "plugins": [
-      {
-        "transform": "typia/lib/transform"
-      }
-    ],
-    "strictNullChecks": true
+      "~/*": ["./src/*"]
+    }
   }
 }

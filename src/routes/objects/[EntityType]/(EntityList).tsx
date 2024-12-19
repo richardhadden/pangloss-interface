@@ -16,11 +16,17 @@ import { Suspense, For, onMount, Show } from "solid-js";
 import { Title } from "@solidjs/meta";
 
 import { apiClient, type APIError, getRequest } from "~/ApiClient";
-import type { ListTypesMap, ListableTypesNames } from "~/generated/types";
+import type {
+  ListTypesMap,
+  ListableTypesNames,
+  ViewableTypesNames,
+} from "~/generated/types";
 import { useUserLogin } from "~/contexts/users";
 import { LoginOverlay } from "~/components/LoginForm";
 import { ControlBar } from "~/components/ControlBar";
 import { t } from "~/contexts/translation";
+
+import { ModelConfigs } from "~/generated/types";
 
 import { prefetch } from "~/utils/prefetch";
 
@@ -181,7 +187,22 @@ export default function EntityList() {
                         {t(`${item.type}.__model.verboseName`)}
                       </div>
                       <div class="w-full truncate line-clamp-1 text-ellipsis pl-6 pr-6 p-2 block text-left text-base bg-neutral-300 text-pretty font-normal text-neutral-950 rounded-r-sm group-hover:bg-neutral-400 transition-all duration-75 group-focus:bg-neutral-400 group-active:bg-neutral-200 group-active:text-neutral-600">
-                        {item.label}
+                        <Show
+                          when={
+                            ModelConfigs[item.type as ViewableTypesNames]
+                              .label_field
+                          }
+                          fallback={item.label}
+                        >
+                          <div
+                            innerHTML={
+                              item[
+                                ModelConfigs[item.type as ViewableTypesNames]
+                                  .label_field
+                              ]
+                            }
+                          ></div>
+                        </Show>
                       </div>
                     </a>
                   )}

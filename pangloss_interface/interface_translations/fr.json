@@ -1,0 +1,19 @@
+{
+    "icon": "🇫🇷",
+    "log_in": "Se connecter",
+    "log_out": "Se déconnecter",
+    "language": "Langue",
+    "search": "Recherce",
+    "getMoreResults": "Obtenir plus de résultats",
+    "username": "Nom d'utilisateur",
+    "password": "Mot de passe",
+    "log_in_required": "Connexion requise",
+    "not_logged_in": "Non connecté",
+    "incorrect_username_or_password": "Nom d'utilisateur ou mot de passe incorrect",
+    "username_or_password_missing": "nom d'utilisateur ou mot de passe manquant",
+    "something_went_wrong_try_again": "Quelque chose n'a pas fonctionné. Réessayez",
+    "home_page": "Accueil",
+    "about_page": "À propos de...",
+    "models": "Modèles"
+
+}
