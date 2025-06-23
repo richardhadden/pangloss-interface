@@ -10,7 +10,7 @@ type TSubtypeHierarchy<Types extends string> = {
   [key in Types]?: TSubtypeHierarchy<Types> | {};
 };
 
-type TMeta<T extends string> = {
+type TMeta<T extends BaseNodeTypes> = {
   baseModel: T;
   supertypes: BaseNodeTypes[];
   traits: TraitTypes[];
@@ -24,6 +24,7 @@ type TMeta<T extends string> = {
   labelField: string | null;
   subtypes: BaseNodeTypes[];
   subtypeHierarchy: TSubtypeHierarchy<BaseNodeTypes>;
+  orderFields: string[];
 };
 
 type TSemanticSpaceMeta<T extends SemanticSpaceTypes> = {
@@ -48,6 +49,11 @@ type TReifiedRelationMeta<T extends ReifiedRelationTypes> = {
   baseModel: T;
 };
 
+type TEdgeModelMeta<T extends EdgeModelTypes> = {
+  metatype: "EdgeModel";
+  baseModel: T;
+};
+
 type TBaseNode<T extends BaseNodeTypes> = {
   meta: TMeta<T>;
   fields: TFields;
@@ -55,6 +61,11 @@ type TBaseNode<T extends BaseNodeTypes> = {
 
 type TSemanticSpace<T extends SemanticSpaceTypes> = {
   meta: TSemanticSpaceMeta<T>;
+  fields: TFields;
+};
+
+type TEdgeModel<T extends EdgeModelTypes> = {
+  meta: TEdgeModelMeta<T>;
   fields: TFields;
 };
 
@@ -214,4 +225,13 @@ export const SemanticSpaceDefinitionMap = {
   {% endfor %}
 }
 
-export const ModelDefinitions = {...ModelDefinitionMap, ...SemanticSpaceDefinitionMap, ...ReifiedRelationsDefinitionMap};
+{% for k, v in edge_model_definitions.items() %}
+const {{k}}: TEdgeModel<"{{k}}"> = {{v}};
+{% endfor %}
+
+export const EdgeModelDefinitionMap = {
+  {% for k, v in edge_model_definitions.items() %}{{k}}: {{k}},
+  {% endfor %}
+}
+
+export const ModelDefinitions = {...ModelDefinitionMap, ...SemanticSpaceDefinitionMap, ...ReifiedRelationsDefinitionMap, ...EdgeModelDefinitionMap};

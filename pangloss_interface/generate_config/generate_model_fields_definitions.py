@@ -43,6 +43,7 @@ from pangloss.model_config.model_setup_functions.utils import (
 from pangloss.models import (
     BaseMeta,
     BaseNode,
+    EdgeModel,
     ReifiedRelation,
     ReifiedRelationNode,
     RootNode,
@@ -430,8 +431,12 @@ def enum_field_to_dict(field_definition: EnumFieldDefinition) -> dict[str, typin
 @field_to_dict.register(MultiKeyFieldDefinition)
 def multikey_field_to_dict(field_definition: MultiKeyFieldDefinition):
     multikey_field: dict[str, typing.Any] = {"metatype": "MultiKeyField", "types": {}}
+
     multikey_field["types"]["value"] = map_types(
         field_definition.multi_key_field_value_type, field_definition.field_name
+    )
+    multikey_field["types"]["value"]["validators"] = validators_to_dict(
+        field_definition.multi_key_field_value_validators
     )
 
     for field_def in field_definition.multi_key_field_type._meta.fields:
@@ -488,7 +493,7 @@ def field_def_to_dict(
     for field_definition in model_field_definitions.values():
         if field_definition.field_name == "type":
             continue
-        fields[field_definition.field_name] = field_to_dict(field_definition)
+        fields[camelize(field_definition.field_name)] = field_to_dict(field_definition)
 
     return fields
 
@@ -498,6 +503,22 @@ def build_subclass_hierarchy(model: type["BaseNode"]):
     for subclass in model.__subclasses__():
         subclass_hierarchy[subclass.__name__] = build_subclass_hierarchy(subclass)
     return subclass_hierarchy
+
+
+def get_order_fields(model: type[BaseNode]):
+    # TODO: Get inherited InterfaceMeta fields and combine the order_fields,
+    # bearing in mind subclassed names
+
+    if getattr(model, "InterfaceMeta", None):
+        order_fields = copy(getattr(model, "InterfaceMeta").order_fields)
+    else:
+        order_fields = []
+
+    for field in model._meta.fields:
+        if field.field_name not in order_fields and field.field_name != "type":
+            order_fields.append(field.field_name)
+
+    return [camelize(f) for f in order_fields]
 
 
 def meta_to_dict(model, meta: BaseMeta) -> dict:
@@ -510,6 +531,7 @@ def meta_to_dict(model, meta: BaseMeta) -> dict:
 
     meta_as_dict = camelize(meta_as_dict)
     meta_as_dict["subtypeHierarchy"] = build_subclass_hierarchy(model)
+    meta_as_dict["orderFields"] = get_order_fields(model)
     return meta_as_dict
 
 
@@ -581,6 +603,17 @@ def semantic_space_meta_to_dict(model, meta: BaseMeta) -> dict:
     return meta_as_dict
 
 
+def edge_model_to_dict(model: type[EdgeModel]):
+    fields = {}
+    for field_name, field in model.__pg_field_definitions__.fields.items():
+        fields[camelize(field_name)] = field_to_dict(field)
+
+    return {
+        "meta": {"baseModel": model.__name__, "metatype": "EdgeModel"},
+        "fields": fields,
+    }
+
+
 env = Environment(
     loader=PackageLoader(
         "pangloss_interface", package_path=str(Path("generate_config", "templates"))
@@ -634,11 +667,22 @@ def generate_model_fields_definitions(model_config_dir_path: Path):
         for k, md in semantic_space_definitions.items()
     }
 
+    edge_model_definitions = {}
+    for model_name, model in ModelManager.edge_models.items():
+        model_definition_as_dict = edge_model_to_dict(model)
+        edge_model_definitions[model_name] = model_definition_as_dict
+
+    edge_model_definitions_json_dict = {
+        k: json.dumps(md, indent=2, ensure_ascii=False)
+        for k, md in edge_model_definitions.items()
+    }
+
     model_definitions_file_path.write_text(
         template.render(
             model_definitions=model_definition_json_dict,
             reified_relation_definitions=reified_relation_definitions_json_dict,
             semantic_space_definitions=semantic_space_definitions_json_dict,
+            edge_model_definitions=edge_model_definitions_json_dict,
         ),
         encoding="utf-8",
     )
