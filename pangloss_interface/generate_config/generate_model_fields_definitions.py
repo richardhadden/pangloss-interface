@@ -1,6 +1,7 @@
 import datetime
 import inspect
 import json
+import os
 import types
 import typing
 from collections.abc import Iterable
@@ -15,6 +16,7 @@ from annotated_types import BaseMetadata
 from humps import camelize
 from jinja2 import Environment, PackageLoader
 from pangloss.model_config.field_definitions import (
+    EmbeddedFieldDefinition,
     EnumFieldDefinition,
     FieldDefinition,
     ListFieldDefinition,
@@ -24,6 +26,7 @@ from pangloss.model_config.field_definitions import (
     RelationFieldDefinition,
     RelationToNodeDefinition,
     RelationToReifiedDefinition,
+    RelationToSemanticSpaceDefinition,
     RelationToTypeVarDefinition,
     TypeParamsToTypeMap,
 )
@@ -31,7 +34,20 @@ from pangloss.model_config.model_manager import ModelManager
 from pangloss.model_config.model_setup_functions.build_pg_model_definition import (
     is_union,
 )
-from pangloss.models import BaseMeta, BaseNode, ReifiedRelation, RootNode
+from pangloss.model_config.model_setup_functions.utils import (
+    generic_get_subclasses,
+    get_all_subclasses,
+    get_concrete_model_types,
+    get_root_semantic_space_subclasses,
+)
+from pangloss.models import (
+    BaseMeta,
+    BaseNode,
+    ReifiedRelation,
+    ReifiedRelationNode,
+    RootNode,
+    SemanticSpace,
+)
 from rich import print
 from ulid import ULID
 
@@ -61,18 +77,6 @@ def map_types(t, field_name: str) -> dict[typing.Literal["type"], str]:
         ) """
 
     match t:
-        case _ if typing.get_origin(t) == typing.Literal:
-            return f'"{typing.get_args(t)[0]}"'
-        case prop_types.uri:
-            return {"type": "string"}
-        case prop_types.generic_alias():
-            return f"({map_types(t.__args__[0], field_name)})[]"
-        case _ if type(t) is types.UnionType:
-            options = [map_types(x, field_name) for x in typing.get_args(t)]
-            return f"{' | '.join(options)}"
-        case prop_types.union():
-            options = [map_types(x, field_name) for x in typing.get_args(t)]
-            return f"{' | '.join(options)}"
         case prop_types.type_alias() if t.__name__ == "ULID":
             return {"type": "string"}
         case prop_types.str:
@@ -125,7 +129,10 @@ def validators_to_dict(validators: Iterable[BaseMetadata]):
 
 def unpack_types(t: type[RootNode] | type[ReifiedRelation]):
     if is_union(t):
-        return [u.__name__ for u in typing.get_args(t)]
+        types = []
+        for u in typing.get_args(t):
+            types.extend(unpack_types(u))
+        return types
     else:
         if inspect.isclass(t) and issubclass(t, ReifiedRelation):
             typeparams = {
@@ -142,40 +149,89 @@ def unpack_types(t: type[RootNode] | type[ReifiedRelation]):
 
             return [
                 {
-                    "type": t.__name__,
-                    "originType": typing.cast(ReifiedRelation, t.__base__).__name__,
+                    "metatype": "RelationToReified"
+                    if issubclass(typing.cast(type, t.__base__), ReifiedRelation)
+                    else "RelationToNode",
+                    "type": typing.cast(ReifiedRelation, t.__base__).__name__,
                     "typeParamsToTypeMap": typeparams,
                 }
             ]
-        return [{"type": t.__name__}]
+        return [{"metatype": "RelationToNode", "type": t.__name__}]
 
 
 def type_params_to_type_map_to_dict(
     type_param_to_type_map: TypeParamsToTypeMap,
-) -> dict[str, str]:
+) -> dict[str, typing.Any]:
     return {
-        "metatype": "RelationToReified"
-        if inspect.isclass(type_param_to_type_map.type)
-        and issubclass(type_param_to_type_map.type, ReifiedRelation)
-        else "RelationToNode",
         "typeParam": type_param_to_type_map.type_param.__name__,
         "types": unpack_types(type_param_to_type_map.type),
     }
 
 
 @singledispatch
-def field_target_to_dict(field_target) -> dict[str, typing.Any]:
-    pass
+def field_target_to_dict(field_target) -> dict[str, typing.Any] | None:
+    print("!!!ERROR - NO FIELD TARGET DEFINITION MATCH!!!", field_target)
+    return None
+
+
+@field_target_to_dict.register(RelationToSemanticSpaceDefinition)
+def relation_to_semantic_space_to_dict(
+    field_target_def: RelationToSemanticSpaceDefinition,
+):
+    types = []
+
+    content_types = set()
+    for t in get_concrete_model_types(
+        field_target_def.annotated_type._meta.fields["contents"].field_annotation
+    ):
+        content_types.add(t.__name__)
+
+    content_type_var = str(
+        field_target_def.annotated_type.__base__._meta.fields[
+            "contents"
+        ].field_annotation
+    )
+
+    for root_type in get_root_semantic_space_subclasses(
+        typing.cast(type[SemanticSpace], field_target_def.annotated_type.__base__)
+    ):
+        t = {
+            "baseType": root_type.__name__,
+            "typeParamsToTypeMap": {
+                content_type_var: {
+                    "typeParam": content_type_var,
+                    "types": [
+                        {"metatype": "RelationToNode", "type": c} for c in content_types
+                    ],
+                }
+            },
+        }
+        types.append(t)
+
+    return {
+        "metatype": "RelationToSemanticSpace",
+        "baseType": typing.cast(
+            type[SemanticSpace], field_target_def.annotated_type.__base__
+        ).__name__,
+        "types": types,
+    }
 
 
 @field_target_to_dict.register(RelationToNodeDefinition)
 def relation_to_node_def_to_dict(
     field_target_def: RelationToNodeDefinition,
 ) -> dict[str, typing.Any]:
-    return {
-        "metatype": "RelationToNode",
-        "type": field_target_def.annotated_type.__name__,
-    }
+    types = []
+    for t in get_concrete_model_types(
+        field_target_def.annotated_type, include_subclasses=True
+    ):
+        types.append(
+            {
+                "metatype": "RelationToNode",
+                "type": t.__name__,
+            }
+        )
+    return types
 
 
 @field_target_to_dict.register(RelationToTypeVarDefinition)
@@ -185,7 +241,7 @@ def relation_to_type_var_definition_to_dict(
     return {
         "metatype": "RelationToTypeVar",
         "type": field_target_def.annotated_type.__name__,
-        "type_var_name": field_target_def.typevar_name,
+        "typeVarName": field_target_def.typevar_name,
     }
 
 
@@ -195,9 +251,8 @@ def relation_to_reified_definition_to_dict(
 ) -> dict[str, typing.Any]:
     return {
         "metatype": "RelationToReified",
-        "type": field_target_def.annotated_type.__name__,
-        "origin_type": field_target_def.origin_type.__name__,
-        "type_params_to_type_map": {
+        "type": field_target_def.origin_type.__name__,
+        "typeParamsToTypeMap": {
             k: type_params_to_type_map_to_dict(v)
             for k, v in field_target_def.type_params_to_type_map.items()
         },
@@ -211,6 +266,8 @@ def field_to_dict(field_definition: FieldDefinition) -> dict[str, typing.Any]:
 
 
 def build_default_search_types(field_definition: RelationFieldDefinition):
+    """Builds a list of types that should be searchable through autocomplete field"""
+
     if drf := field_definition.default_reified_type:
         if isinstance(drf, str):
             drf = ModelManager.reified_relation_models[drf]
@@ -225,18 +282,102 @@ def build_default_search_types(field_definition: RelationFieldDefinition):
         for t in field_definition.relations_to_reified:
             if t.origin_type is drf:
                 types = t.type_params_to_type_map[target_type_param].type
-                if is_union(types):
-                    default_search_types.update(
-                        [u.__name__ for u in typing.get_args(types)]
+                default_search_types.update(
+                    u.__name__
+                    for u in get_concrete_model_types(
+                        types, include_subclasses=True, follow_trait_subclasses=True
                     )
-                else:
-                    default_search_types.add(types.__name__)
+                )
+        relation_to_node_types: set[str] = set()
+        for t in field_definition.relations_to_node:
+            relation_to_node_types.update(
+                u.__name__
+                for u in get_concrete_model_types(
+                    t.annotated_type,
+                    include_subclasses=True,
+                    follow_trait_subclasses=True,
+                )
+            )
+
         return list(
-            default_search_types,
-            *(t.annotated_type.__name__ for t in field_definition.relations_to_node),
+            set(
+                [
+                    *default_search_types,
+                    *relation_to_node_types,
+                ]
+            )
         )
 
-    return [t.annotated_type.__name__ for t in field_definition.relations_to_node]
+    relation_to_node_types = set()
+    for t in field_definition.relations_to_node:
+        relation_to_node_types.update(
+            u.__name__
+            for u in get_concrete_model_types(
+                t.annotated_type, include_subclasses=True, follow_trait_subclasses=True
+            )
+        )
+
+    return list(relation_to_node_types)
+
+
+def build_default_type_on_selection(field_definition: RelationFieldDefinition):
+    """Builds a mapping of the object type that should be created
+    (value) when a type (key) is selected in the autocomplete field"""
+
+    # If a default reified type is set...
+    if drf := field_definition.default_reified_type:
+        # Make sure it is a model, not a string
+        if isinstance(drf, str):
+            drf = ModelManager.reified_relation_models[drf]
+
+        # Find the type param name (T) for the target field
+        target_type_param = str(
+            typing.cast(
+                RelationFieldDefinition, drf._meta.fields["target"]
+            ).field_annotation
+        )
+
+        default_type_on_selection_map = {}
+
+        # Find the allowed types whose base type is the default reified type
+        for t in field_definition.relations_to_reified:
+            if t.origin_type is drf:
+                types = t.type_params_to_type_map[target_type_param].type
+
+                # And unpack the param types as maps from the param type to the reified type
+
+                for v in (
+                    u.__name__
+                    for u in get_concrete_model_types(types, include_subclasses=True)
+                ):
+                    default_type_on_selection_map[v] = t.origin_type.__name__
+
+        # If not set, map any direct relation-to-node types to None
+        for t in field_definition.relations_to_node:
+            for dt in get_concrete_model_types(
+                t.annotated_type, include_subclasses=True
+            ):
+                if dt.__name__ not in default_type_on_selection_map:
+                    default_type_on_selection_map[dt.__name__] = None
+
+        return default_type_on_selection_map
+
+    # If no default reified type is set, just return the relation-to-node types
+    # This will return an empty dict if there is no relation-to-node types; in this case
+    # the autocomplete field will not be shown
+
+    default_type_on_selection_map = {}
+    for t in field_definition.relations_to_node:
+        default_type_on_selection_map.update(
+            {
+                p.__name__: None
+                for p in get_concrete_model_types(
+                    t.annotated_type, include_subclasses=True
+                )
+            }
+        )
+
+    return default_type_on_selection_map
 
 
 @field_to_dict.register(RelationFieldDefinition)
@@ -244,19 +385,31 @@ def relation_field_to_dict(
     field_definition: RelationFieldDefinition,
 ) -> dict[str, typing.Any]:
     relation_field: dict[str, typing.Any] = {"metatype": "RelationField"}
-    relation_field["types"] = [
-        field_target_to_dict(ftd) for ftd in field_definition.field_type_definitions
-    ]
+    relation_field["types"] = []
+    for ftd in field_definition.field_type_definitions:
+        f = field_target_to_dict(ftd)
+        if isinstance(f, list):
+            relation_field["types"].extend(f)
+        else:
+            relation_field["types"].append(f)
+    relation_field["edgeModel"] = (
+        field_definition.edge_model.__name__ if field_definition.edge_model else None
+    )
+    relation_field["createInline"] = field_definition.create_inline
+    relation_field["editInline"] = field_definition.edit_inline
     relation_field["validators"] = validators_to_dict(field_definition.validators)
     relation_field["name"] = camelize(field_definition.field_name)
-    relation_field["relation_labels"] = camelize(list(field_definition.relation_labels))
-    relation_field["reverse_name"] = camelize(field_definition.reverse_name)
-    relation_field["reverse_relation_labels"] = list(
+    relation_field["relationLabels"] = camelize(
+        list(camelize(i) for i in field_definition.relation_labels)
+    )
+    relation_field["reverseName"] = camelize(field_definition.reverse_name)
+    relation_field["reverseRelationLabels"] = list(
         camelize(i) for i in field_definition.reverse_relation_labels
     )
-    relation_field["default_reified_type"] = field_definition.default_reified_type
+    relation_field["defaultReifiedType"] = field_definition.default_reified_type
 
-    relation_field["default_search_types"] = build_default_search_types(
+    relation_field["defaultSearchType"] = build_default_search_types(field_definition)
+    relation_field["defaultTypeOnSelection"] = build_default_type_on_selection(
         field_definition
     )
 
@@ -268,7 +421,7 @@ def relation_field_to_dict(
 def enum_field_to_dict(field_definition: EnumFieldDefinition) -> dict[str, typing.Any]:
     enum_field: dict[str, typing.Any] = {"metatype": "EnumField"}
 
-    enum_field["enum_values"] = [
+    enum_field["enumValues"] = [
         k.value for k in field_definition.field_annotation.__members__.values()
     ]
     return enum_field
@@ -276,15 +429,15 @@ def enum_field_to_dict(field_definition: EnumFieldDefinition) -> dict[str, typin
 
 @field_to_dict.register(MultiKeyFieldDefinition)
 def multikey_field_to_dict(field_definition: MultiKeyFieldDefinition):
-    multikey_field: dict[str, typing.Any] = {"metatype": "MultiKeyField"}
-    multikey_field["value"] = map_types(
+    multikey_field: dict[str, typing.Any] = {"metatype": "MultiKeyField", "types": {}}
+    multikey_field["types"]["value"] = map_types(
         field_definition.multi_key_field_value_type, field_definition.field_name
     )
 
     for field_def in field_definition.multi_key_field_type._meta.fields:
         assert isinstance(field_def, PropertyFieldDefinition)
 
-        multikey_field[field_def.field_name] = {
+        multikey_field["types"][field_def.field_name] = {
             **map_types(field_def.field_annotation, field_def.field_name),
             "validators": validators_to_dict(field_def.validators),
         }
@@ -296,7 +449,7 @@ def multikey_field_to_dict(field_definition: MultiKeyFieldDefinition):
 def list_field_to_dict(field_definition: ListFieldDefinition):
     list_field: dict[typing.Any, typing.Any] = {"metatype": "ListField"}
     list_field["validators"] = validators_to_dict(field_definition.validators)
-    list_field["internal_type_validators"] = validators_to_dict(
+    list_field["internalTypeValidators"] = validators_to_dict(
         field_definition.internal_type_validators
     )
     list_field.update(
@@ -314,6 +467,19 @@ def property_field_to_dict(field: PropertyFieldDefinition):
     }
 
 
+@field_to_dict.register(EmbeddedFieldDefinition)
+def embedded_field_to_dict(field: EmbeddedFieldDefinition):
+    return {
+        "metatype": "EmbeddedField",
+        "types": [
+            t.__name__
+            for t in get_concrete_model_types(
+                field.field_annotation, include_subclasses=True
+            )
+        ],
+    }
+
+
 def field_def_to_dict(
     model: type[BaseNode], model_field_definitions: ModelFieldDefinitions
 ) -> dict:
@@ -327,11 +493,91 @@ def field_def_to_dict(
     return fields
 
 
-def meta_to_dict(meta: BaseMeta) -> dict:
+def build_subclass_hierarchy(model: type["BaseNode"]):
+    subclass_hierarchy = {}
+    for subclass in model.__subclasses__():
+        subclass_hierarchy[subclass.__name__] = build_subclass_hierarchy(subclass)
+    return subclass_hierarchy
+
+
+def meta_to_dict(model, meta: BaseMeta) -> dict:
     meta_as_dict = copy(meta.__dict__)
     meta_as_dict["base_model"] = meta.base_model.__name__
     meta_as_dict["supertypes"] = [m.__name__ for m in meta.supertypes]
+    meta_as_dict["subtypes"] = [m.__name__ for m in get_all_subclasses(model)]
+
     meta_as_dict["traits"] = [m.__name__ for m in meta.traits]
+
+    meta_as_dict = camelize(meta_as_dict)
+    meta_as_dict["subtypeHierarchy"] = build_subclass_hierarchy(model)
+    return meta_as_dict
+
+
+def refied_relation_meta_to_dict(model, meta: BaseMeta) -> dict:
+    meta_as_dict = copy(meta.__dict__)
+    meta_as_dict["base_model"] = meta.base_model.__name__
+    meta_as_dict["metatype"] = (
+        "ReifiedRelationNode"
+        if issubclass(model, ReifiedRelationNode)
+        else "ReifiedRelation"
+    )
+
+    meta_as_dict = camelize(meta_as_dict)
+
+    return meta_as_dict
+
+
+def get_semantic_space_supertypes(model):
+    supertypes = []
+    for m in model.mro():
+        if (
+            getattr(m, "__base__", None)
+            and not m.__base__.__pydantic_generic_metadata__["args"]
+        ):
+            if m.__base__ is SemanticSpace:
+                break
+            supertypes.append(m.__base__.__name__)
+
+    return supertypes
+
+
+def get_semantic_space_subtypes(model):
+    return list(
+        {
+            m.__base__.__name__
+            for m in get_all_subclasses(model)
+            if issubclass(m, SemanticSpace)
+            and getattr(m, "__base__", None)
+            and not m.__pydantic_generic_metadata__["parameters"]
+            and m.__base__ is not model
+        }
+    )
+
+
+def build_semantic_space_subtype_hierarchy(model: type["SemanticSpace"]):
+    subclass_hierarchy = {}
+    for subclass in generic_get_subclasses(model):
+        if (
+            subclass.__base__ is not model
+            and not subclass.__pydantic_generic_metadata__["parameters"]
+        ):
+            subclass_hierarchy[subclass.__base__.__name__] = (
+                build_semantic_space_subtype_hierarchy(subclass)
+            )
+    return subclass_hierarchy
+
+
+def semantic_space_meta_to_dict(model, meta: BaseMeta) -> dict:
+    meta_as_dict = copy(meta.__dict__)
+
+    meta_as_dict["base_model"] = meta.base_model.__name__
+    meta_as_dict["metatype"] = "SemanticSpace"
+    meta_as_dict["supertypes"] = get_semantic_space_supertypes(model)
+    meta_as_dict["subtypes"] = get_semantic_space_subtypes(model)
+
+    meta_as_dict = camelize(meta_as_dict)
+    meta_as_dict["subtypeHierarchy"] = build_semantic_space_subtype_hierarchy(model)
+
     return meta_as_dict
 
 
@@ -349,16 +595,57 @@ def generate_model_fields_definitions(model_config_dir_path: Path):
 
     model_definitions = {}
     for model_name, model in ModelManager.base_models.items():
-        print("========= ", model_name)
-
         model_defintion_as_dict = {
-            "meta": meta_to_dict(model._meta),
+            "meta": meta_to_dict(model, model._meta),
             "fields": field_def_to_dict(model, model._meta.fields),
         }
-        model_definitions[model.__name__] = camelize(model_defintion_as_dict)
+        model_definitions[model.__name__] = model_defintion_as_dict
 
-    model_definitions_json = json.dumps(model_definitions, indent=2, ensure_ascii=False)
+    model_definition_json_dict = {
+        k: json.dumps(md, indent=2, ensure_ascii=False)
+        for k, md in model_definitions.items()
+    }
+
+    reified_relation_definitions = {}
+    for model_name, model in ModelManager.reified_relation_models.items():
+        model_defintion_as_dict = {
+            "meta": refied_relation_meta_to_dict(model, model._meta),
+            "fields": field_def_to_dict(model, model._meta.fields),
+        }
+        reified_relation_definitions[model.__name__] = model_defintion_as_dict
+
+    reified_relation_definitions_json_dict = {
+        k: json.dumps(md, indent=2, ensure_ascii=False)
+        for k, md in reified_relation_definitions.items()
+    }
+
+    semantic_space_definitions = {}
+    for model_name, model in ModelManager.semantic_space_models.items():
+        if not model.__pydantic_generic_metadata__["args"]:
+            print(model_name)
+            model_defintion_as_dict = {
+                "meta": semantic_space_meta_to_dict(model, model._meta),
+                "fields": field_def_to_dict(model, model._meta.fields),
+            }
+            semantic_space_definitions[model_name] = model_defintion_as_dict
+
+    semantic_space_definitions_json_dict = {
+        k: json.dumps(md, indent=2, ensure_ascii=False)
+        for k, md in semantic_space_definitions.items()
+    }
 
     model_definitions_file_path.write_text(
-        template.render(model_definitions=model_definitions_json), encoding="utf-8"
+        template.render(
+            model_definitions=model_definition_json_dict,
+            reified_relation_definitions=reified_relation_definitions_json_dict,
+            semantic_space_definitions=semantic_space_definitions_json_dict,
+        ),
+        encoding="utf-8",
     )
+
+    try:
+        os.system(
+            f"bunx prettier {model_definitions_file_path.absolute()} --write > /dev/null"
+        )
+    except Exception:
+        print("[red]File formatter could not be run[/red]")
