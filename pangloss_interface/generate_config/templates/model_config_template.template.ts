@@ -57,6 +57,7 @@ type TEdgeModelMeta<T extends EdgeModelTypes> = {
 type TBaseNode<T extends BaseNodeTypes> = {
   meta: TMeta<T>;
   fields: TFields;
+  incomingFields: { [key: string]: { types: TRelationFieldDefinition[] } };
 };
 
 type TSemanticSpace<T extends SemanticSpaceTypes> = {
@@ -196,7 +197,6 @@ type TRelationDefinition =
   | IRelationToReified
   | IRelationToSemanticSpace
   | IRelationToTypeVar;
-
 
 {% for k, v in model_definitions.items() %}
 const {{k}}: TBaseNode<"{{k}}"> = {{v}};

@@ -13,6 +13,7 @@ from types import SimpleNamespace
 import annotated_types
 import pydantic
 from annotated_types import BaseMetadata
+from frozendict import deepfreeze
 from humps import camelize
 from jinja2 import Environment, PackageLoader
 from pangloss.model_config.field_definitions import (
@@ -44,10 +45,12 @@ from pangloss.models import (
     BaseMeta,
     BaseNode,
     EdgeModel,
+    ReifiedMeta,
     ReifiedRelation,
     ReifiedRelationNode,
     RootNode,
     SemanticSpace,
+    SemanticSpaceMeta,
 )
 from rich import print
 from ulid import ULID
@@ -486,7 +489,8 @@ def embedded_field_to_dict(field: EmbeddedFieldDefinition):
 
 
 def field_def_to_dict(
-    model: type[BaseNode], model_field_definitions: ModelFieldDefinitions
+    model: type[BaseNode | ReifiedRelation | SemanticSpace],
+    model_field_definitions: ModelFieldDefinitions,
 ) -> dict:
     fields = {}
 
@@ -496,6 +500,37 @@ def field_def_to_dict(
         fields[camelize(field_definition.field_name)] = field_to_dict(field_definition)
 
     return fields
+
+
+def flatten(container):
+    for i in container:
+        if isinstance(i, (list, tuple)):
+            for j in flatten(i):
+                yield j
+        else:
+            yield i
+
+
+def incoming_fields_to_dict(model: type[BaseNode]):
+    incoming_field_defs = {}
+
+    for (
+        field_name,
+        incoming_definition_set,
+    ) in model._meta.fields.reverse_relations.items():
+        incoming_field_defs[field_name] = {"types": []}
+
+        for field_definition in incoming_definition_set:
+            types = set()
+            for t in field_definition.relation_definition.field_type_definitions:
+                type_definitions = field_target_to_dict(t)
+                if isinstance(type_definitions, list):
+                    for td in type_definitions:
+                        types.add(deepfreeze(td))
+                else:
+                    types.add(deepfreeze(type_definitions))
+
+    return incoming_field_defs
 
 
 def build_subclass_hierarchy(model: type["BaseNode"]):
@@ -535,7 +570,7 @@ def meta_to_dict(model, meta: BaseMeta) -> dict:
     return meta_as_dict
 
 
-def refied_relation_meta_to_dict(model, meta: BaseMeta) -> dict:
+def refied_relation_meta_to_dict(model, meta: ReifiedMeta) -> dict:
     meta_as_dict = copy(meta.__dict__)
     meta_as_dict["base_model"] = meta.base_model.__name__
     meta_as_dict["metatype"] = (
@@ -589,7 +624,7 @@ def build_semantic_space_subtype_hierarchy(model: type["SemanticSpace"]):
     return subclass_hierarchy
 
 
-def semantic_space_meta_to_dict(model, meta: BaseMeta) -> dict:
+def semantic_space_meta_to_dict(model, meta: SemanticSpaceMeta) -> dict:
     meta_as_dict = copy(meta.__dict__)
 
     meta_as_dict["base_model"] = meta.base_model.__name__
@@ -631,6 +666,7 @@ def generate_model_fields_definitions(model_config_dir_path: Path):
         model_defintion_as_dict = {
             "meta": meta_to_dict(model, model._meta),
             "fields": field_def_to_dict(model, model._meta.fields),
+            "incomingFields": incoming_fields_to_dict(model),
         }
         model_definitions[model.__name__] = model_defintion_as_dict
 
@@ -655,7 +691,6 @@ def generate_model_fields_definitions(model_config_dir_path: Path):
     semantic_space_definitions = {}
     for model_name, model in ModelManager.semantic_space_models.items():
         if not model.__pydantic_generic_metadata__["args"]:
-            print(model_name)
             model_defintion_as_dict = {
                 "meta": semantic_space_meta_to_dict(model, model._meta),
                 "fields": field_def_to_dict(model, model._meta.fields),
