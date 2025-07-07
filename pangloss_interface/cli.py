@@ -4,8 +4,16 @@ from pathlib import Path
 from typer import Typer
 
 from pangloss_interface.generate_config.generate_config import generate_config_files
+from pangloss_interface.generate_config.generate_translation import (
+    generate_translation_files,
+)
 
 cli = Typer(name="interface")
+
+
+@cli.command("generate-translation-files")
+def gentranslation():
+    generate_translation_files()
 
 
 @cli.command("generate-config")

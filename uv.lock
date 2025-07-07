@@ -617,6 +617,8 @@ dependencies = [
     { name = "frozendict" },
     { name = "jinja2" },
     { name = "pangloss" },
+    { name = "patchdiff" },
+    { name = "pluralizer" },
     { name = "typer" },
 ]
 
@@ -625,7 +627,27 @@ requires-dist = [
     { name = "frozendict", specifier = ">=2.4.6" },
     { name = "jinja2", specifier = ">=3.1.6" },
     { name = "pangloss", editable = "../pangloss" },
+    { name = "patchdiff", specifier = ">=0.3.4" },
+    { name = "pluralizer", specifier = ">=2.0.0" },
     { name = "typer", specifier = ">=0.15.2" },
+]
+
+[[package]]
+name = "patchdiff"
+version = "0.3.4"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/bc/69/b8922aa25ee91663013833daca845c9b7db22dd0293ac3717c7e37e45c97/patchdiff-0.3.4.tar.gz", hash = "sha256:034959a4a6e4143b2f63ae645b221e0617909410ffb3e186b77c643225e233e6", size = 4138, upload-time = "2023-01-19T14:03:06.06Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/71/0b/a08db71cadf50e812a0c1ff221fa7486910caedd3098239b97226fb05a39/patchdiff-0.3.4-py3-none-any.whl", hash = "sha256:109710036e028aa0bac10139997a42b7d69d73d0275eff12455a59f2d6f8f995", size = 4986, upload-time = "2023-01-19T14:03:04.515Z" },
+]
+
+[[package]]
+name = "pluralizer"
+version = "2.0.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/77/b3/bf7fe8341d5eb6b86f9b99d0419efe431b83be105db4d70646138fbadd30/pluralizer-2.0.0.tar.gz", hash = "sha256:3d48412c17397f52fb5b5485cbb5427b687d6e21daca0e65d9dfc16a989ec0c9", size = 13600, upload-time = "2025-06-11T12:31:56.552Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/8e/ef/ac208cfa9d708d246aca64192fca9bd6518618998c4efa8e765ceac34405/pluralizer-2.0.0-py3-none-any.whl", hash = "sha256:282e536f989cc30eeb4db69b63539030b2e50f1c93d737b783a924fe486d8141", size = 7676, upload-time = "2025-06-11T12:31:55.37Z" },
 ]
 
 [[package]]
