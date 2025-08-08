@@ -1,7 +1,8 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
 
 :root {
-  --background-rgb: 214, 219, 220;
+  --background-rgb: 244, 249, 250;
   --foreground-rgb: 0, 0, 0;
 }
 
@@ -13,6 +14,8 @@
 }
 
 body {
-  background: rgb(var(--background-rgb));
+  background: rgb(var(--color-white));
   color: rgb(var(--foreground-rgb));
 }
+
+

@@ -6,11 +6,11 @@ import {
   TraitTypes,
 } from "./model-typescript";
 
-type TSubtypeHierarchy<Types extends string> = {
+export type TSubtypeHierarchy<Types extends string> = {
   [key in Types]?: TSubtypeHierarchy<Types> | {};
 };
 
-type TMeta<T extends BaseNodeTypes> = {
+export type TMeta<T extends BaseNodeTypes> = {
   baseModel: T;
   supertypes: BaseNodeTypes[];
   traits: TraitTypes[];
@@ -27,7 +27,7 @@ type TMeta<T extends BaseNodeTypes> = {
   orderFields: string[];
 };
 
-type TSemanticSpaceMeta<T extends SemanticSpaceTypes> = {
+export type TSemanticSpaceMeta<T extends SemanticSpaceTypes> = {
   metatype: "SemanticSpace";
   baseModel: T;
   supertypes: SemanticSpaceTypes[];
@@ -39,51 +39,51 @@ type TSemanticSpaceMeta<T extends SemanticSpaceTypes> = {
   subtypeHierarchy: TSubtypeHierarchy<SemanticSpaceTypes>;
 };
 
-type TReifiedRelation<T extends ReifiedRelationTypes> = {
+export type TReifiedRelation<T extends ReifiedRelationTypes> = {
   meta: TReifiedRelationMeta<T>;
   fields: TFields;
 };
 
-type TReifiedRelationMeta<T extends ReifiedRelationTypes> = {
+export type TReifiedRelationMeta<T extends ReifiedRelationTypes> = {
   metatype: "ReifiedRelation" | "ReifiedRelationNode";
   baseModel: T;
 };
 
-type TEdgeModelMeta<T extends EdgeModelTypes> = {
+export type TEdgeModelMeta<T extends EdgeModelTypes> = {
   metatype: "EdgeModel";
   baseModel: T;
 };
 
-type TBaseNode<T extends BaseNodeTypes> = {
+export type TBaseNode<T extends BaseNodeTypes> = {
   meta: TMeta<T>;
   fields: TFields;
   incomingFields: { [key: string]: { types: TRelationFieldDefinition[] } };
 };
 
-type TSemanticSpace<T extends SemanticSpaceTypes> = {
+export type TSemanticSpace<T extends SemanticSpaceTypes> = {
   meta: TSemanticSpaceMeta<T>;
   fields: TFields;
 };
 
-type TEdgeModel<T extends EdgeModelTypes> = {
+export type TEdgeModel<T extends EdgeModelTypes> = {
   meta: TEdgeModelMeta<T>;
   fields: TFields;
 };
 
-type TFields = {
+export type TFields = {
   [key: string]: TFieldDefinition;
 };
 
-type TValidators = {
-  Ge?: Number;
-  Le?: Number;
-  Gt?: Number;
-  Lt?: Number;
-  MaxLen?: Number;
-  MinLen?: Number;
+export type TValidators = {
+  Ge?: number;
+  Le?: number;
+  Gt?: number;
+  Lt?: number;
+  MaxLen?: number;
+  MinLen?: number;
 };
 
-type TLiteralFieldTypes =
+export type TLiteralFieldTypes =
   | "int"
   | "string"
   | "float"
@@ -92,19 +92,19 @@ type TLiteralFieldTypes =
   | "date"
   | "datetime";
 
-type TLiteralFieldDefinition = {
+export type TLiteralFieldDefinition = {
   metatype: "LiteralField";
   type: TLiteralFieldTypes;
   validators: TValidators;
 };
 
-type TRelationFieldDefinition = {
+export type TRelationFieldDefinition = {
   metatype: "RelationField";
   types: TRelationDefinition[];
   edgeModel: EdgeModelTypes | null;
   createInline: boolean;
   editInline: boolean;
-  validators: {};
+  validators: TValidators;
   name: string;
   relationLabels: string[];
   reverseName: string;
@@ -117,31 +117,31 @@ type TRelationFieldDefinition = {
   bind_fields_to_related: [];
 };
 
-type TEnumFieldDefinition = {
+export type TEnumFieldDefinition = {
   metatype: "EnumField";
   enumValues: (number | string)[];
 };
 
-type TListFieldDefinition = {
+export type TListFieldDefinition = {
   metatype: "ListField";
   validators: TValidators;
   internalTypeValidators: TValidators;
   type: TLiteralFieldTypes;
 };
 
-type TMultiKeyFieldDefinition = {
+export type TMultiKeyFieldDefinition = {
   metatype: "MultiKeyField";
   types: TMultikeyFieldKeys;
 };
 
-type TMultikeyFieldKeys = {
+export type TMultikeyFieldKeys = {
   [key: Exclude<string, "metatype">]: {
     type: TLiteralFieldTypes;
     validators?: TValidators;
   };
 };
 
-type TEmbeddedFieldDefinition = {
+export type TEmbeddedFieldDefinition = {
   metatype: "EmbeddedField";
   types: BaseNodeTypes[];
 };
@@ -199,38 +199,40 @@ type TRelationDefinition =
   | IRelationToTypeVar;
 
 {% for k, v in model_definitions.items() %}
-const {{k}}: TBaseNode<"{{k}}"> = {{v}};
+const {{k}}Base: TBaseNode<"{{k}}"> = {{v}};
 {% endfor %}
 
-export const ModelDefinitionMap = {
-  {% for k, v in model_definitions.items() %}{{k}}: {{k}},
+export type TModelDefinitionMap = { [key in BaseNodeTypes]: TBaseNode<key> };
+
+export const ModelDefinitionMap: TModelDefinitionMap = {
+  {% for k, v in model_definitions.items() %}{{k}}: {{k}}Base,
   {% endfor %}
 }
 
 {% for k, v in reified_relation_definitions.items() %}
-const {{k}}: TReifiedRelation<"{{k}}"> = {{v}};
+const {{k}}Definition: TReifiedRelation<"{{k}}"> = {{v}};
 {% endfor %}
 
 export const ReifiedRelationsDefinitionMap = {
-  {% for k, v in reified_relation_definitions.items() %}{{k}}: {{k}},
+  {% for k, v in reified_relation_definitions.items() %}{{k}}: {{k}}Definition,
   {% endfor %}
 }
 
 {% for k, v in semantic_space_definitions.items() %}
-const {{k}}: TSemanticSpace<"{{k}}"> = {{v}};
+const {{k}}Definition: TSemanticSpace<"{{k}}"> = {{v}};
 {% endfor %}
 
 export const SemanticSpaceDefinitionMap = {
-  {% for k, v in semantic_space_definitions.items() %}{{k}}: {{k}},
+  {% for k, v in semantic_space_definitions.items() %}{{k}}: {{k}}Definition,
   {% endfor %}
 }
 
 {% for k, v in edge_model_definitions.items() %}
-const {{k}}: TEdgeModel<"{{k}}"> = {{v}};
+const {{k}}Definition: TEdgeModel<"{{k}}"> = {{v}};
 {% endfor %}
 
 export const EdgeModelDefinitionMap = {
-  {% for k, v in edge_model_definitions.items() %}{{k}}: {{k}},
+  {% for k, v in edge_model_definitions.items() %}{{k}}: {{k}}Definition,
   {% endfor %}
 }
 

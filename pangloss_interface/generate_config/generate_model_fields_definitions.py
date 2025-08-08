@@ -668,7 +668,7 @@ def generate_model_fields_definitions(model_config_dir_path: Path):
             "fields": field_def_to_dict(model, model._meta.fields),
             "incomingFields": incoming_fields_to_dict(model),
         }
-        model_definitions[model.__name__] = model_defintion_as_dict
+        model_definitions[model_name] = model_defintion_as_dict
 
     model_definition_json_dict = {
         k: json.dumps(md, indent=2, ensure_ascii=False)

@@ -1,25 +1,35 @@
 import { A } from "@solidjs/router";
-import Counter from "~/components/Counter";
+import ControlBar from "~/components/ControlBar";
 
 export default function Home() {
   return (
-    <main class="text-center mx-auto text-gray-700 p-4">
-      <h1 class="max-6-xs text-6xl text-sky-700 font-thin uppercase my-16">Hello world!</h1>
-      <Counter />
-      <p class="mt-8">
-        Visit{" "}
-        <a href="https://solidjs.com" target="_blank" class="text-sky-600 hover:underline">
-          solidjs.com
-        </a>{" "}
-        to learn how to build Solid apps.
-      </p>
-      <p class="my-4">
-        <span>Home</span>
-        {" - "}
-        <A href="/about" class="text-sky-600 hover:underline">
-          About Page
-        </A>{" "}
-      </p>
-    </main>
+    <>
+      <ControlBar
+        centreContent={
+          <div class="flex items-center h-full">
+            <span class="text-sm uppercase font-semibold bg-slate-800 text-slate-200 px-4 rounded-bl-xs h-full flex items-center">
+              Pangloss ☀️
+            </span>
+            <span class="px-10 font-light  text-xl text-slate-800">
+              Managing Maximilian
+            </span>
+          </div>
+        }
+      ></ControlBar>
+      <main class="pt-30 pl-20 flex justify-center items-center">
+        <div class="prose lg:prose-xl prose-slate">
+          <h2 class="font-light">
+            Welcome to Managing Maximilian, an enormous project that has really
+            put us through the wringer
+          </h2>
+          <p>
+            Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero
+            commodi nihil facilis, vel officiis sed suscipit. Perferendis facere
+            commodi pariatur fugit consequuntur sequi molestiae quibusdam, quia
+            quas recusandae ea dolore.
+          </p>
+        </div>
+      </main>
+    </>
   );
 }
