@@ -28,6 +28,7 @@ import {
 import { apiClient, type APIError, getRequest } from "~/apiClient";
 import ControlBar from "~/components/ControlBar";
 import { LoginOverlay } from "~/components/LogInForm";
+import { Switch, SwitchControl, SwitchThumb } from "~/components/ui/switch";
 import { useTranslation } from "~/contexts/translation";
 import { useUserLogin } from "~/contexts/users";
 import {
@@ -35,6 +36,11 @@ import {
   fetchDataCache,
 } from "~/utils/createRefetchableAsync";
 import { prefetch } from "~/utils/prefetch";
+
+type TSearchParams = {
+  q: string;
+  deepSearch: string;
+};
 
 async function fetchData<K extends BaseNodeTypes>(
   entityType: K,
@@ -81,9 +87,9 @@ export default function EntityList() {
 
   let searchInputRef!: HTMLInputElement;
 
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams<TSearchParams>();
 
-  const updateSearchParams = (value: string) => {
+  const updateSearchString = (value: string) => {
     // If no search param, add search param and add to browser history
     // If already search param, user is typing so replace current history
     // so back button doesn't work through each typed character
@@ -93,6 +99,10 @@ export default function EntityList() {
       // TODO: Some slightly improved logic here to not duplicate identical pages
       setSearchParams({ q: value }, { replace: true });
     }
+  };
+
+  const setDeepSearch = (value: boolean) => {
+    setSearchParams({ deepSearch: value });
   };
 
   onMount(() => {
@@ -107,7 +117,7 @@ export default function EntityList() {
         document.activeElement?.tagName !== "INPUT" &&
         isAlphaRegex.test(event.key)
       ) {
-        updateSearchParams(
+        updateSearchString(
           searchParams.q ? searchParams.q + event.key : event.key,
         );
         searchInputRef.focus();
@@ -119,7 +129,7 @@ export default function EntityList() {
         document.activeElement?.tagName !== "INPUT" &&
         event.key === "Backspace"
       ) {
-        updateSearchParams(
+        updateSearchString(
           searchParams.q ? (searchParams.q.slice(0, -1) as string) : "",
         );
         searchInputRef.focus();
@@ -179,8 +189,9 @@ export default function EntityList() {
               type="text"
               placeholder="Search..."
               value={searchParams.q || ""}
-              oninput={(e) => updateSearchParams(e.currentTarget?.value)}
+              oninput={(e) => updateSearchString(e.currentTarget?.value)}
             />
+
             <div
               class="ml-3 text-xs uppercase h-full w-6 font-semibold select-none "
               classList={{
@@ -211,6 +222,11 @@ export default function EntityList() {
               </div>
             </div>
           </Show>
+          <Switch aria-label="Hello">
+            <SwitchControl>
+              <SwitchThumb />
+            </SwitchControl>
+          </Switch>
           <Show when={data()}>
             {(data) => (
               <>

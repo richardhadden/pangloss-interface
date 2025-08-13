@@ -100,6 +100,7 @@ const BaseForm = (props: TBaseFormProps) => {
     <div class="grid grid-cols-12">
       <FormRow rowLabel={"label"}>
         <TextAreaField
+          maxLen={25}
           value={props.baseFormState["label"]}
           onInput={(value) => setFormValue(value, "label")}
         />

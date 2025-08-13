@@ -1,5 +1,9 @@
+import { Show } from "solid-js";
+
 type TTextFieldProps = {
   value: any;
+  minLen?: number;
+  maxLen?: number;
   onInput: (value: any) => void;
 };
 
@@ -15,17 +19,40 @@ const TextField = (props: TTextFieldProps) => {
   );
 };
 
-const TextAreaField = (props: TTextFieldProps) => {
+const MultiLineTextField = (props: TTextFieldProps) => {
   return (
-    <textarea
-      class="col-span-10  caret-indigo-800 resize-none field-sizing-content outline-0 bg-zinc-200 rounded-sm py-4 px-4 focus:bg-zinc-300 focus:border-slate-200 focus:drop-shadow-xs"
-      rows="1"
-      placeholder="Label..."
-      oninput={(e) => props.onInput(e.currentTarget.value)}
-    >
-      {props.value}
-    </textarea>
+    <div class="col-span-10">
+      <textarea
+        class=" w-full caret-indigo-800 resize-none field-sizing-content outline-0 bg-zinc-200 rounded-sm py-4 px-4 focus:bg-zinc-300 focus:border-slate-200 focus:drop-shadow-xs"
+        rows="1"
+        placeholder="Label..."
+        oninput={(e) => props.onInput(e.currentTarget.value)}
+        onkeypress={(e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+          }
+          if (props.maxLen && e.currentTarget.value.length >= props.maxLen) {
+            e.preventDefault();
+          }
+        }}
+      >
+        {props.value}
+      </textarea>
+      <Show when={props.maxLen}>
+        <div
+          class="text-xs uppercase  w-full flex justify-start"
+          classList={{
+            "text-slate-400 font-normal":
+              props.maxLen && props.value.length < props.maxLen,
+            "text-red-800 font-semibold":
+              props.maxLen && props.value.length === props.maxLen,
+          }}
+        >
+          {props.value.length}/{props.maxLen}
+        </div>
+      </Show>
+    </div>
   );
 };
 
-export { TextField, TextAreaField };
+export { TextField, MultiLineTextField as TextAreaField };
