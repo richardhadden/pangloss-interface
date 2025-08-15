@@ -204,7 +204,7 @@ const {{k}}Base: TBaseNode<"{{k}}"> = {{v}};
 
 export type TModelDefinitionMap = { [key in BaseNodeTypes]: TBaseNode<key> };
 
-export const ModelDefinitionMap: TModelDefinitionMap = {
+export const BaseNodeDefinitionMap: TModelDefinitionMap = {
   {% for k, v in model_definitions.items() %}{{k}}: {{k}}Base,
   {% endfor %}
 }
@@ -236,4 +236,4 @@ export const EdgeModelDefinitionMap = {
   {% endfor %}
 }
 
-export const ModelDefinitions = {...ModelDefinitionMap, ...SemanticSpaceDefinitionMap, ...ReifiedRelationsDefinitionMap, ...EdgeModelDefinitionMap};
+export const ModelDefinitions = {...BaseNodeDefinitionMap, ...SemanticSpaceDefinitionMap, ...ReifiedRelationsDefinitionMap, ...EdgeModelDefinitionMap};

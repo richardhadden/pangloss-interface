@@ -8,7 +8,7 @@ export default function Home() {
         centreContent={
           <div class="flex items-center h-full">
             <span class="text-sm uppercase font-semibold bg-slate-800 text-slate-200 px-4 rounded-bl-xs h-full flex items-center">
-              Pangloss ☀️
+              Pangloss
             </span>
             <span class="px-10 font-light  text-xl text-slate-800">
               Managing Maximilian

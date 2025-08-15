@@ -1,5 +1,5 @@
 import { BaseNodeTypes } from "../../../.model-configs/model-typescript";
-import { useNavigate, useParams } from "@solidjs/router";
+import { useIsRouting, useNavigate, useParams } from "@solidjs/router";
 import { createEffect, createSignal, For, onMount, Show } from "solid-js";
 import { createStore, unwrap } from "solid-js/store";
 import ControlBar from "~/components/ControlBar";
@@ -11,11 +11,12 @@ export default function CreateObject() {
   const params = useParams<{ modelType: BaseNodeTypes }>();
   const [user, { setAccessingAuthorisedRoute, LoggedIn }] = useUserLogin();
   const navigate = useNavigate();
+  const isRouting = useIsRouting();
 
   onMount(() => setAccessingAuthorisedRoute(true));
-
+  const modelType = () => params.modelType;
   const [newFormState, setNewFormState] = createStore(
-    createBlankObject(params.modelType, false),
+    createBlankObject(modelType(), false),
   );
 
   createEffect(() => {
@@ -30,9 +31,10 @@ export default function CreateObject() {
 
   // TODO: this still doesn't work!!
   createEffect(() => {
+    isRouting();
     setNewFormState((prevState: any) => {
-      if (prevState.type !== params.modelType) {
-        return createBlankObject(params.modelType, false);
+      if (prevState.type !== modelType()) {
+        return createBlankObject(modelType(), false);
       } else return prevState;
     });
   });
@@ -47,7 +49,7 @@ export default function CreateObject() {
         }
         modelType={params.modelType}
         modelTypeNumber="singular"
-        //addFunction={() => undefined}
+        saveFunction={() => undefined}
         centreContent={
           <Show when={newFormState.label.length > 0}>
             <div

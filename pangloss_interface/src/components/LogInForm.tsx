@@ -1,3 +1,4 @@
+import { createShortcut } from "@solid-primitives/keyboard";
 import { ImCross } from "solid-icons/im";
 import type { JSX } from "solid-js";
 import { Show, createSignal, onMount } from "solid-js";
@@ -25,6 +26,16 @@ export function LogInForm(props: TLogInFormProps) {
   //const [t] = useTranslation();
 
   const [user, { setLoggedIn }] = useUserLogin();
+
+  createShortcut(
+    ["Escape"],
+    () => {
+      if (props.onCancel) {
+        props.onCancel();
+      }
+    },
+    { preventDefault: true, requireReset: false },
+  );
 
   const handleInput = async (event: SubmitEvent) => {
     event.preventDefault();

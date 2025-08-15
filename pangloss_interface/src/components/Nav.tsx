@@ -19,6 +19,7 @@ import {
 } from "solid-icons/bi";
 import { createEffect, createSignal, For, Show } from "solid-js";
 import { JSX } from "solid-js";
+import colors from "tailwindcss/colors";
 import {
   useTranslation,
   LocaleOptions,
@@ -278,7 +279,7 @@ export default function Nav() {
                     icon={
                       <BiSolidUserX
                         size={26}
-                        color="white"
+                        color={colors.slate[400]}
                         class="relative left-0.5"
                       />
                     }
@@ -307,7 +308,7 @@ export default function Nav() {
                   icon={
                     <BiSolidUser
                       size={26}
-                      color="white"
+                      color={colors.slate[200]}
                       class="relative left-0.5"
                     />
                   }

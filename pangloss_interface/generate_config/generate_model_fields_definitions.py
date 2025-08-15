@@ -97,10 +97,13 @@ def map_types(t, field_name: str) -> dict[typing.Literal["type"], str]:
             return {"type": "date"}
         case prop_types.datetime:
             return {"type": "datetime"}
+        case prop_types.uri:
+            return {"type": "uri"}
         case _ if typing.get_origin(t) is typing.Union:
             options = [map_types(x, field_name) for x in typing.get_args(t)]
             return f"{' | '.join(options)}"
         case _:
+            raise Exception(f"<!!!ERROR - NO TYPE MATCH {t} {type(t)}!!!>")
             # print(typing.get_origin(t), typing.get_args(t), type(t))
             return f"<!!!ERROR - NO TYPE MATCH {t} {type(t)}!!!>"
 
@@ -186,16 +189,18 @@ def relation_to_semantic_space_to_dict(
 
     content_types = set()
     for t in get_concrete_model_types(
-        field_target_def.annotated_type._meta.fields["contents"].field_annotation
+        field_target_def.annotated_type._meta.fields["contents"].field_annotation,
+        include_subclasses=True,
     ):
         content_types.add(t.__name__)
+
+    print(field_target_def.annotated_type, content_types)
 
     content_type_var = str(
         field_target_def.annotated_type.__base__._meta.fields[
             "contents"
         ].field_annotation
     )
-
     for root_type in get_root_semantic_space_subclasses(
         typing.cast(type[SemanticSpace], field_target_def.annotated_type.__base__)
     ):
@@ -211,6 +216,7 @@ def relation_to_semantic_space_to_dict(
             },
         }
         types.append(t)
+    print(types)
 
     return {
         "metatype": "RelationToSemanticSpace",
