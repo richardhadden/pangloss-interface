@@ -23,7 +23,7 @@ const MultiLineTextField = (props: TTextFieldProps) => {
   return (
     <div class="col-span-10">
       <textarea
-        class=" w-full caret-indigo-800 resize-none field-sizing-content outline-0 bg-zinc-200 rounded-xs py-4 px-4 focus:bg-zinc-300 focus:border-slate-200 focus:drop-shadow-xs"
+        class=" w-full caret-indigo-800 resize-none field-sizing-content outline-0 bg-zinc-800/20 rounded-xs py-4 px-4 focus:bg-zinc-900/20 focus:border-slate-200 focus:drop-shadow-xs"
         rows="1"
         placeholder="Label..."
         oninput={(e) => props.onInput(e.currentTarget.value)}

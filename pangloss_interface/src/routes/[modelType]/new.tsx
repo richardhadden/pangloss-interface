@@ -1,7 +1,14 @@
 import { BaseNodeTypes } from "../../../.model-configs/model-typescript";
 import { useIsRouting, useNavigate, useParams } from "@solidjs/router";
-import { createEffect, createSignal, For, onMount, Show } from "solid-js";
-import { createStore, unwrap } from "solid-js/store";
+import {
+  createEffect,
+  createMemo,
+  createSignal,
+  For,
+  onMount,
+  Show,
+} from "solid-js";
+import { createStore, produce, reconcile, unwrap } from "solid-js/store";
 import ControlBar from "~/components/ControlBar";
 import { BaseForm } from "~/components/form/BaseForm";
 import { useUserLogin } from "~/contexts/users";
@@ -14,30 +21,15 @@ export default function CreateObject() {
   const isRouting = useIsRouting();
 
   onMount(() => setAccessingAuthorisedRoute(true));
-  const modelType = () => params.modelType;
+  const modelType = createMemo(() => params.modelType);
   const [newFormState, setNewFormState] = createStore(
-    createBlankObject(modelType(), false),
+    createBlankObject(params.modelType, false),
   );
-
-  createEffect(() => {
-    newFormState;
-    console.log(unwrap(newFormState));
-  });
 
   // Navigating from one `new` page to another directly does not
   // unmount the component, so the default store value is not changed;
   // instead, we create an effect that checks the previous state's `type`
   // to the params.modelType, and create a blank object if different
-
-  // TODO: this still doesn't work!!
-  createEffect(() => {
-    isRouting();
-    setNewFormState((prevState: any) => {
-      if (prevState.type !== modelType()) {
-        return createBlankObject(modelType(), false);
-      } else return prevState;
-    });
-  });
 
   return (
     <LoggedIn onCancel={() => history.back()}>
@@ -71,11 +63,16 @@ export default function CreateObject() {
         }
       />
 
-      <BaseForm
-        formFor={params.modelType}
-        baseFormState={newFormState}
-        setBaseFormState={setNewFormState}
-      />
+      <div class="pl-32 pr-16 py-32">
+        {/* <button onclick={() => console.log(unwrap(newFormState))}>
+          CONSOLE LOG FORM STATE
+        </button> */}
+        <BaseForm
+          formFor={params.modelType}
+          baseFormState={newFormState}
+          setBaseFormState={setNewFormState}
+        />
+      </div>
     </LoggedIn>
   );
 }

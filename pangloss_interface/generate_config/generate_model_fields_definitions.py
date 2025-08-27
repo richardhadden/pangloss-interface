@@ -504,7 +504,7 @@ def field_def_to_dict(
         if field_definition.field_name == "type":
             continue
         fields[camelize(field_definition.field_name)] = field_to_dict(field_definition)
-
+        fields[camelize(field_definition.field_name)]["fieldOnModel"] = model.__name__
     return fields
 
 
@@ -564,6 +564,7 @@ def get_order_fields(model: type[BaseNode]):
 
 def meta_to_dict(model, meta: BaseMeta) -> dict:
     meta_as_dict = copy(meta.__dict__)
+    meta_as_dict["metatype"] = "BaseNode"
     meta_as_dict["base_model"] = meta.base_model.__name__
     meta_as_dict["supertypes"] = [m.__name__ for m in meta.supertypes]
     meta_as_dict["subtypes"] = [m.__name__ for m in get_all_subclasses(model)]
@@ -573,6 +574,11 @@ def meta_to_dict(model, meta: BaseMeta) -> dict:
     meta_as_dict = camelize(meta_as_dict)
     meta_as_dict["subtypeHierarchy"] = build_subclass_hierarchy(model)
     meta_as_dict["orderFields"] = get_order_fields(model)
+    meta_as_dict["colour"] = (
+        getattr(model, "InterfaceMeta").colour
+        if getattr(model, "InterfaceMeta", None)
+        else None
+    )
     return meta_as_dict
 
 
@@ -632,6 +638,7 @@ def build_semantic_space_subtype_hierarchy(model: type["SemanticSpace"]):
 
 def semantic_space_meta_to_dict(model, meta: SemanticSpaceMeta) -> dict:
     meta_as_dict = copy(meta.__dict__)
+    print(model.__name__, getattr(model, "InterfaceMeta", None), model.__dict__)
 
     meta_as_dict["base_model"] = meta.base_model.__name__
     meta_as_dict["metatype"] = "SemanticSpace"
@@ -640,6 +647,11 @@ def semantic_space_meta_to_dict(model, meta: SemanticSpaceMeta) -> dict:
 
     meta_as_dict = camelize(meta_as_dict)
     meta_as_dict["subtypeHierarchy"] = build_semantic_space_subtype_hierarchy(model)
+    meta_as_dict["colour"] = (
+        getattr(model, "InterfaceMeta").colour
+        if getattr(model, "InterfaceMeta", None)
+        else None
+    )
 
     return meta_as_dict
 

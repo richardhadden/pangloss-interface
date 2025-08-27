@@ -25,6 +25,22 @@ function literalFieldDefault(f: TLiteralFieldDefinition) {
 }
 
 function relationFieldDefault(f: TRelationFieldDefinition) {
+  if (f.createInline) {
+    if (f.validators.MinLen && f.validators.MinLen >= 1) {
+      if (f.types.length === 1 && f.types[0].metatype === "RelationToNode") {
+        return [createBlankObject(f.types[0].type, false)];
+      } else {
+        return [{}];
+      }
+    } else if (
+      !f.validators.MinLen ||
+      (f.validators.MinLen && f.validators.MinLen === 0)
+    ) {
+      return [];
+    } else {
+      return [{}];
+    }
+  }
   return [];
 }
 

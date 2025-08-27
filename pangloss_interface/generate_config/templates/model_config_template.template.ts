@@ -5,12 +5,14 @@ import {
   SemanticSpaceTypes,
   TraitTypes,
 } from "./model-typescript";
+import colors from "tailwindcss/colors";
 
 export type TSubtypeHierarchy<Types extends string> = {
   [key in Types]?: TSubtypeHierarchy<Types> | {};
 };
 
 export type TMeta<T extends BaseNodeTypes> = {
+  metatype: "BaseNode";
   baseModel: T;
   supertypes: BaseNodeTypes[];
   traits: TraitTypes[];
@@ -25,6 +27,7 @@ export type TMeta<T extends BaseNodeTypes> = {
   subtypes: BaseNodeTypes[];
   subtypeHierarchy: TSubtypeHierarchy<BaseNodeTypes>;
   orderFields: string[];
+  colour: keyof typeof colors | null;
 };
 
 export type TSemanticSpaceMeta<T extends SemanticSpaceTypes> = {
@@ -37,6 +40,7 @@ export type TSemanticSpaceMeta<T extends SemanticSpaceTypes> = {
 
   subtypes: SemanticSpaceTypes[];
   subtypeHierarchy: TSubtypeHierarchy<SemanticSpaceTypes>;
+  colour: keyof typeof colors | null;
 };
 
 export type TReifiedRelation<T extends ReifiedRelationTypes> = {

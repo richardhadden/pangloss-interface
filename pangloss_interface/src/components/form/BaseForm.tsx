@@ -1,6 +1,7 @@
 import {
   BaseNodeDefinitionMap,
   ModelDefinitions,
+  SemanticSpaceDefinitionMap,
   TRelationFieldDefinition,
 } from "../../../.model-configs/model-definitions";
 import {
@@ -18,15 +19,16 @@ import { useTranslation } from "~/contexts/translation";
 type TFormRowProps = {
   children: JSXElement;
   rowLabel: JSXElement | string;
+  alignLabel: "middle" | "top";
 };
 
 const FormRow = (props: TFormRowProps) => {
   return (
-    <div class="col-span-12 grid grid-cols-12 not-last:border-b not-last:border-b-slate-100 pb-12 pt-12">
-      <div class="col-span-2 text-sm text-slate-700 uppercase font-semibold flex items-center select-none">
+    <div class="col-span-12 grid grid-cols-12 not-last:border-b not-last:border-b-slate-100 pb-12 pt-12 gap-x-6 gap-y-12">
+      <div class="col-span-1 text-sm text-slate-700 uppercase font-semibold flex select-none">
         {props.rowLabel}
       </div>
-      <div class="col-span-10 grid grid-cols-10">{props.children}</div>
+      <div class="col-span-11 grid grid-cols-10">{props.children}</div>
     </div>
   );
 };
@@ -34,12 +36,12 @@ const FormRow = (props: TFormRowProps) => {
 type TFormFieldsProps = {
   fieldNames: string[];
   modelName: keyof typeof ModelDefinitions;
-
   baseFormState: TBaseFormProps["baseFormState"];
   setBaseFormState: (value: any, ...path: (string | number)[]) => void;
+  parentFieldDefinition: any;
 };
 
-const FormFields = (props: TFormFieldsProps) => {
+export const FormFields = (props: TFormFieldsProps) => {
   const [lang, { t }] = useTranslation();
 
   const modelDefinition = ModelDefinitions[props.modelName];
@@ -52,51 +54,88 @@ const FormFields = (props: TFormFieldsProps) => {
   };
 
   return (
-    <For each={props.fieldNames}>
-      {(fieldName) => (
-        <Switch
-          fallback={
-            <FormRow rowLabel={translateFieldName(fieldName)}>
-              No field type yet
-            </FormRow>
-          }
-        >
-          <Match when={fieldDef(fieldName).metatype === "LiteralField"}>
-            <FormRow rowLabel={translateFieldName(fieldName)}>
-              Literal field
-            </FormRow>
-          </Match>
-          <Match when={fieldDef(fieldName).metatype === "EmbeddedField"}>
-            <FormRow rowLabel={translateFieldName(fieldName)}>
-              Embedded field
-            </FormRow>
-          </Match>
-          <Match when={fieldDef(fieldName).metatype === "RelationField"}>
-            <FormRow rowLabel={translateFieldName(fieldName)}>
-              <RelationField
-                fieldDefinition={
-                  modelDefinition.fields[fieldName] as TRelationFieldDefinition
+    <>
+      <Show when={props.baseFormState && "label" in props.baseFormState}>
+        <FormRow rowLabel={"label"}>
+          <TextAreaField
+            value={props.baseFormState["label"]}
+            onInput={(value) => props.setBaseFormState(value, "label")}
+          />
+        </FormRow>
+      </Show>
+      <For each={props.fieldNames}>
+        {(fieldName) => (
+          <Switch
+            fallback={
+              <FormRow rowLabel={translateFieldName(fieldName)}>
+                No field type yet
+              </FormRow>
+            }
+          >
+            <Match when={fieldDef(fieldName).metatype === "LiteralField"}>
+              <FormRow rowLabel={translateFieldName(fieldName)}>
+                Literal field
+              </FormRow>
+            </Match>
+            <Match when={fieldDef(fieldName).metatype === "EmbeddedField"}>
+              <FormRow rowLabel={translateFieldName(fieldName)}>
+                Embedded field
+              </FormRow>
+            </Match>
+            <Match when={fieldDef(fieldName).metatype === "RelationField"}>
+              <Show
+                when={!(props.baseFormState.type in SemanticSpaceDefinitionMap)}
+                fallback={
+                  <>
+                    <RelationField
+                      fieldDefinition={
+                        modelDefinition.fields[
+                          fieldName
+                        ] as TRelationFieldDefinition
+                      }
+                      value={props.baseFormState[fieldName]}
+                      setValue={(value, ...path) => {
+                        props.setBaseFormState(value, fieldName, ...path);
+                      }}
+                      parentFieldDefinition={props.parentFieldDefinition}
+                    />
+                  </>
                 }
-                value={props.baseFormState[fieldName]}
-                setValue={(value, ...path) =>
-                  props.setBaseFormState(value, fieldName, ...path)
-                }
-              />
-            </FormRow>
-          </Match>
-          <Match when={fieldDef(fieldName).metatype === "ListField"}>
-            <FormRow rowLabel={translateFieldName(fieldName)}>
-              List field
-            </FormRow>
-          </Match>
-          <Match when={fieldDef(fieldName).metatype === "EnumField"}>
-            <FormRow rowLabel={translateFieldName(fieldName)}>
-              Enum field
-            </FormRow>
-          </Match>
-        </Switch>
-      )}
-    </For>
+              >
+                <FormRow rowLabel={translateFieldName(fieldName)}>
+                  <RelationField
+                    fieldDefinition={
+                      modelDefinition.fields[
+                        fieldName
+                      ] as TRelationFieldDefinition
+                    }
+                    value={props.baseFormState[fieldName]}
+                    setValue={(value, ...path) => {
+                      props.setBaseFormState(value, fieldName, ...path);
+                    }}
+                    parentFieldDefinition={
+                      modelDefinition.fields[
+                        fieldName
+                      ] as TRelationFieldDefinition
+                    }
+                  />
+                </FormRow>
+              </Show>
+            </Match>
+            <Match when={fieldDef(fieldName).metatype === "ListField"}>
+              <FormRow rowLabel={translateFieldName(fieldName)}>
+                List field
+              </FormRow>
+            </Match>
+            <Match when={fieldDef(fieldName).metatype === "EnumField"}>
+              <FormRow rowLabel={translateFieldName(fieldName)}>
+                Enum field
+              </FormRow>
+            </Match>
+          </Switch>
+        )}
+      </For>
+    </>
   );
 };
 
@@ -108,6 +147,7 @@ type TBaseFormProps = {
 
 const BaseForm = (props: TBaseFormProps) => {
   const setFormValue = (value: any, ...path: (string | number)[]) => {
+    console.log("SETTING", path, value);
     props.setBaseFormState(...(path as []), value);
   };
 
@@ -115,12 +155,6 @@ const BaseForm = (props: TBaseFormProps) => {
 
   return (
     <div class="grid grid-cols-12">
-      <FormRow rowLabel={"label"}>
-        <TextAreaField
-          value={props.baseFormState["label"]}
-          onInput={(value) => setFormValue(value, "label")}
-        />
-      </FormRow>
       <FormFields
         fieldNames={modelDefinition.meta.orderFields}
         modelName={props.formFor}
