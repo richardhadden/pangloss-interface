@@ -1,20 +1,32 @@
 import { Show } from "solid-js";
+import { maxLength } from "valibot";
 
 type TTextFieldProps = {
-  value: any;
+  value: string;
   minLen?: number;
   maxLen?: number;
   onInput: (value: any) => void;
+  placeholder?: string;
+  onFocusIn?: () => void;
+  onFocusOut?: () => void;
+  onKeyPress?: (e: KeyboardEvent) => void;
+  ref: HTMLInputElement;
 };
 
 const TextField = (props: TTextFieldProps) => {
   return (
     <input
-      class="w-full outline-0 bg-slate-200 rounded-xs py-2 px-4 focus:bg-slate-300 focus:border-slate-200 focus:drop-shadow-xs"
+      ref={props.ref}
+      class="w-full outline-0 bg-zinc-800/20 rounded-xs py-4 px-4 focus:bg-zinc-900/20 focus:border-slate-200 focus:drop-shadow-xs"
       type="text"
-      placeholder="Label..."
+      placeholder={props.placeholder || ""}
       value={props.value}
       oninput={(e) => props.onInput(e.currentTarget.value)}
+      aria-placeholder={props.placeholder || ""}
+      maxLength={props.maxLen || undefined}
+      onFocusIn={props.onFocusIn ? props.onFocusIn : () => null}
+      onFocusOut={props.onFocusOut ? props.onFocusOut : () => null}
+      onKeyDown={props.onKeyPress ? props.onKeyPress : (e) => null}
     />
   );
 };
@@ -25,7 +37,7 @@ const MultiLineTextField = (props: TTextFieldProps) => {
       <textarea
         class=" w-full caret-indigo-800 resize-none field-sizing-content outline-0 bg-zinc-800/20 rounded-xs py-4 px-4 focus:bg-zinc-900/20 focus:border-slate-200 focus:drop-shadow-xs"
         rows="1"
-        placeholder="Label..."
+        placeholder={props.placeholder || ""}
         oninput={(e) => props.onInput(e.currentTarget.value)}
         onkeypress={(e) => {
           if (e.key === "Enter") {

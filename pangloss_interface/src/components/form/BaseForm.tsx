@@ -2,6 +2,7 @@ import {
   BaseNodeDefinitionMap,
   ModelDefinitions,
   SemanticSpaceDefinitionMap,
+  TEmbeddedFieldDefinition,
   TRelationFieldDefinition,
 } from "../../../.model-configs/model-definitions";
 import {
@@ -10,6 +11,7 @@ import {
   MultiKeyFieldTypes,
   ReifiedRelationTypes,
 } from "../../../.model-configs/model-typescript";
+import { EmbeddedField } from "./EmbeddedField";
 import { TextField, TextAreaField } from "./LiteralFields";
 import { RelationField } from "./RelationField";
 import { For, JSXElement, Match, Show, Switch } from "solid-js";
@@ -19,13 +21,19 @@ import { useTranslation } from "~/contexts/translation";
 type TFormRowProps = {
   children: JSXElement;
   rowLabel: JSXElement | string;
-  alignLabel: "middle" | "top";
+  alignLabel?: "middle" | "top";
 };
 
 const FormRow = (props: TFormRowProps) => {
   return (
     <div class="col-span-12 grid grid-cols-12 not-last:border-b not-last:border-b-slate-100 pb-12 pt-12 gap-x-6 gap-y-12">
-      <div class="col-span-1 text-sm text-slate-700 uppercase font-semibold flex select-none">
+      <div
+        class="col-span-1 text-sm text-slate-700 uppercase font-semibold flex select-none"
+        classList={{
+          "items-center": !props.alignLabel || props.alignLabel === "middle",
+          "items-start": props.alignLabel === "top",
+        }}
+      >
         {props.rowLabel}
       </div>
       <div class="col-span-11 grid grid-cols-10">{props.children}</div>
@@ -56,10 +64,11 @@ export const FormFields = (props: TFormFieldsProps) => {
   return (
     <>
       <Show when={props.baseFormState && "label" in props.baseFormState}>
-        <FormRow rowLabel={"label"}>
+        <FormRow rowLabel={"label"} alignLabel="middle">
           <TextAreaField
             value={props.baseFormState["label"]}
             onInput={(value) => props.setBaseFormState(value, "label")}
+            placeholder="Label..."
           />
         </FormRow>
       </Show>
@@ -79,7 +88,22 @@ export const FormFields = (props: TFormFieldsProps) => {
             </Match>
             <Match when={fieldDef(fieldName).metatype === "EmbeddedField"}>
               <FormRow rowLabel={translateFieldName(fieldName)}>
-                Embedded field
+                <EmbeddedField
+                  fieldDefinition={
+                    modelDefinition.fields[
+                      fieldName
+                    ] as TEmbeddedFieldDefinition
+                  }
+                  value={props.baseFormState[fieldName]}
+                  setValue={(value, ...path) => {
+                    props.setBaseFormState(value, fieldName, ...path);
+                  }}
+                  parentFieldDefinition={
+                    modelDefinition.fields[
+                      fieldName
+                    ] as TRelationFieldDefinition
+                  }
+                />
               </FormRow>
             </Match>
             <Match when={fieldDef(fieldName).metatype === "RelationField"}>
@@ -102,7 +126,15 @@ export const FormFields = (props: TFormFieldsProps) => {
                   </>
                 }
               >
-                <FormRow rowLabel={translateFieldName(fieldName)}>
+                <FormRow
+                  rowLabel={translateFieldName(fieldName)}
+                  alignLabel={
+                    (fieldDef(fieldName) as TRelationFieldDefinition)
+                      .createInline
+                      ? "top"
+                      : "middle"
+                  }
+                >
                   <RelationField
                     fieldDefinition={
                       modelDefinition.fields[
@@ -164,5 +196,15 @@ const BaseForm = (props: TBaseFormProps) => {
     </div>
   );
 };
+
+export function getOrderFields(item_type: keyof typeof ModelDefinitions) {
+  if (item_type in BaseNodeDefinitionMap) {
+    return ModelDefinitions[item_type as BaseNodeTypes].meta.orderFields;
+  }
+  if (item_type in SemanticSpaceDefinitionMap) {
+    return ["contents"];
+  }
+  return [];
+}
 
 export { BaseForm };

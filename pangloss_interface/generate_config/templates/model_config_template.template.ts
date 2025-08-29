@@ -1,4 +1,5 @@
 import {
+  AllModelTypes,
   BaseNodeTypes,
   EdgeModelTypes,
   ReifiedRelationTypes,
@@ -152,13 +153,14 @@ export type TEmbeddedFieldDefinition = {
 
 //type TMultikeyFieldDefinition = IMultikeyFieldKeys & IMultikeyFieldDef;
 
-type TFieldDefinition =
+type TFieldDefinition = (
   | TListFieldDefinition
   | TEnumFieldDefinition
   | TLiteralFieldDefinition
   | TRelationFieldDefinition
   | TMultiKeyFieldDefinition
-  | TEmbeddedFieldDefinition;
+  | TEmbeddedFieldDefinition
+) & { fieldOnModel: AllModelTypes[number] };
 
 /* Relation Definition Types */
 interface IRelationToNodeDefinition {

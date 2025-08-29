@@ -45,7 +45,10 @@ function relationFieldDefault(f: TRelationFieldDefinition) {
 }
 
 function embeddedFieldDefault(f: TEmbeddedFieldDefinition) {
-  return [];
+  if (f.types.length === 1) {
+    return [createBlankObject(f.types[0], true)];
+  }
+  return [{}];
 }
 
 function createBlankObject(

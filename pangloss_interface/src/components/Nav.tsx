@@ -71,13 +71,13 @@ type ModelMenuItemPropsType = {
 };
 
 const modelMenuItemStyle =
-  "group hover:bg-slate-700 cursor-pointer h-8 bg-slate-600 items-center uppercase text-xs text-slate-200  not-last-of-type:border-b-[0.25px] not-last-of-type:border-slate-500 flex justify-between";
+  "group hover:bg-slate-700 cursor-pointer min-h-8 bg-slate-600 items-center uppercase text-xs text-slate-200  not-last-of-type:border-b-[0.25px] not-last-of-type:border-slate-500 flex justify-between";
 
 const modelMenuButtonStyle =
-  "flex-1 flex justify-start uppercase cursor-pointer h-full items-center group-hover:bg-slate-700 hover:bg-slate-800 active:bg-slate-500 group/mButton";
+  "flex-1 flex justify-start uppercase cursor-pointer h-full min-h-8 items-center group-hover:bg-slate-700 hover:bg-slate-800 active:bg-slate-500 group/mButton";
 
 const modelMenuAddButtonStyle =
-  "aspect-square h-8 bg-green-700/90 flex items-center justify-center hover:bg-green-600/90 group-hover:bg-green-800/90 cursor-pointer active:bg-green-500/90 active:shadow-inner  group/button";
+  "aspect-square min-h-8 bg-green-700/90 flex items-center justify-center hover:bg-green-600/90 group-hover:bg-green-800/90 cursor-pointer active:bg-green-500/90 active:shadow-inner  group/button";
 
 function ModelMenuItem(props: ModelMenuItemPropsType) {
   const [_, { t }] = useTranslation();
@@ -95,7 +95,7 @@ function ModelMenuItem(props: ModelMenuItemPropsType) {
                 style={`padding-left: calc(${(props.indent + 1) * 1}rem + 0.75rem);`}
                 href={`/${modelName}`}
               >
-                <span class="group-active/mButton:scale-95">
+                <span class="group-active/mButton:scale-95 pr-2">
                   {t[modelName as TranslationKey]._model.verboseNamePlural()}
                 </span>
               </A>

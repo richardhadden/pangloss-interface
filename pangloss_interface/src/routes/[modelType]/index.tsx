@@ -19,7 +19,15 @@ import {
 import { useNavigate } from "@solidjs/router";
 import { BiRegularSearch, BiSolidInfoCircle } from "solid-icons/bi";
 import { TbBinaryTree } from "solid-icons/tb";
-import { Suspense, For, onMount, onCleanup, Show } from "solid-js";
+import {
+  Suspense,
+  For,
+  onMount,
+  onCleanup,
+  Show,
+  createMemo,
+  createEffect,
+} from "solid-js";
 import { apiClient, type APIError, getRequest } from "~/apiClient";
 import ControlBar from "~/components/ControlBar";
 import { LoginOverlay } from "~/components/LogInForm";
@@ -209,6 +217,8 @@ export default function EntityList() {
     }
   };
 
+  //console.log(searchRegex());
+
   return (
     <>
       <Suspense>
@@ -304,7 +314,7 @@ export default function EntityList() {
             </div>
           }
         />
-        <section class="pl-16 pr-16 pt-6">
+        <section class="pl-32 pr-32 pt-6 mt-28">
           <Suspense fallback={<h1>Loading!</h1>}>
             <Show
               when={data() && data()?.results.length === 0 && searchParams.q}

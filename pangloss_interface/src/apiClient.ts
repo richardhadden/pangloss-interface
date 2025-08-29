@@ -110,10 +110,27 @@ function createApiClient(BASE_URL: string) {
     return data as HeadViewTypesMap[K] | undefined;
   }
 
+  async function autocomplete(types: string[], q: string | null) {
+    const url = new URL(`${BASE_URL}/autocomplete/`);
+    for (const t of types) {
+      url.searchParams.append("types", t);
+    }
+    if (q && q.length > 0) {
+      url.searchParams.append("q", q);
+    }
+    const data = await getRequest(url);
+    console.log(data);
+    return data;
+  }
+
   return {
     list,
     view,
+    autocomplete,
   };
 }
 
 export const apiClient = createApiClient("http://localhost:8000/api");
+export const interfaceApiClient = createApiClient(
+  "http://localhost:8000/interface",
+);

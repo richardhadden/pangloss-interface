@@ -11,6 +11,7 @@ import {
   SemanticSpaceTypes,
 } from "../../../.model-configs/model-typescript";
 import { BaseForm } from "./BaseForm";
+import { RelationToExistingField } from "./RelationToExistingField";
 import { useFilter } from "@ark-ui/solid/locale";
 import { BiRegularPlus } from "solid-icons/bi";
 import { IoCloseSharp } from "solid-icons/io";
@@ -27,43 +28,33 @@ import {
 } from "solid-js";
 import { unwrap } from "solid-js/store";
 import { Portal } from "solid-js/web";
-import { FormFields } from "~/components/form/BaseForm";
+import { FormFields, getOrderFields } from "~/components/form/BaseForm";
 import { TranslationKey, useTranslation } from "~/contexts/translation";
 import { createBlankObject } from "~/utils/createBlankObject";
 
-function getOrderFields(item_type: keyof typeof ModelDefinitions) {
-  if (item_type in BaseNodeDefinitionMap) {
-    return ModelDefinitions[item_type as BaseNodeTypes].meta.orderFields;
-  }
-  if (item_type in SemanticSpaceDefinitionMap) {
-    return ["contents"];
-  }
-  return [];
-}
-
 const InlineFormColours = {
   slate: {
-    bar: "bg-slate-600",
+    bar: "bg-slate-600 shadow-slate-600/40",
     container: "bg-slate-600/10 border-slate-400/20",
     hover: "hover:bg-slate-700/80",
   },
   zinc: {
-    bar: "bg-zinc-600",
+    bar: "bg-zinc-600 shadow-zinc-600/40",
     container: "bg-zinc-600/10 border-zinc-400/20",
     hover: "hover:bg-zinc-700/80",
   },
   red: {
-    bar: "bg-red-600/90",
-    container: "bg-red-600/10 border-red-400/20",
+    bar: "bg-red-600/90 shadow-red-600/40",
+    container: "bg-red-600/10 border-red-400/20 ",
     hover: "hover:bg-red-700/80",
   },
   amber: {
-    bar: "bg-amber-600",
+    bar: "bg-amber-600 shadow-amber-600/40",
     container: "bg-amber-600/10 border-amber-400/20",
     hover: "hover:bg-amber-700/80",
   },
   green: {
-    bar: "bg-green-600",
+    bar: "bg-green-600 shadow-green-600/40",
     container: "bg-green-600/10 border-green-400/20",
     hover: "hover:bg-green-700/80",
   },
@@ -85,7 +76,7 @@ type TInlineFormFieldWrapperProps = {
   closeFunction?: () => void;
 };
 
-function InlineFormFieldWrapper(props: TInlineFormFieldWrapperProps) {
+export function InlineFormFieldWrapper(props: TInlineFormFieldWrapperProps) {
   const modelMetatype = ModelDefinitions[props.modelType].meta.metatype;
   const padding =
     modelMetatype === "SemanticSpace" ? "px-4 pb-4 pt-3" : "px-10 pb-4 pt-3";
@@ -93,13 +84,13 @@ function InlineFormFieldWrapper(props: TInlineFormFieldWrapperProps) {
   return (
     <section
       class={
-        "col-span-10 shadow-xl rounded-xs not-first:mt-12  " +
+        "col-span-10 shadow-xl  rounded-xs not-first:mt-8 " +
         modelColour.container
       }
     >
       <header
         class={
-          "w-full flex justify-between  h-8 text-slate-100 uppercase font-semibold  text-sm rounded-t-xs select-none " +
+          "w-full flex justify-between  h-8 text-slate-100 uppercase font-semibold  text-sm rounded-t-xs select-none shadow-sm " +
           modelColour.bar
         }
       >
@@ -129,18 +120,15 @@ function getCloseFunction(
   fieldDefinition: TRelationFieldDefinition,
   index: number,
 ): (() => void) | undefined {
-  console.log(">>", value);
   if (
     value.length === 1 &&
     fieldDefinition.validators.MinLen &&
     fieldDefinition.validators.MinLen === 1 &&
     Object.keys(value[0]).length > 0
   ) {
-    console.log("calling first type func");
     return () => setValue([{}]);
   }
   if (value.length > 1) {
-    console.log("generatign second item func");
     return () => {
       setValue(value.filter((item, i) => i !== index));
     };
@@ -221,7 +209,7 @@ function RelationField(props: TRelationFieldProps) {
           <Show when={props.value.every((o) => o.type)}>
             <button
               class={
-                "group cursor-pointer flex justify-start items-center mt-6 col-span-10 w-full  rounded-xs h-8 " +
+                "group cursor-pointer flex justify-start items-center mt-6 col-span-10 w-full shadow-sm rounded-xs h-8 " +
                 modelColour.bar +
                 " " +
                 modelColour.hover
@@ -240,6 +228,9 @@ function RelationField(props: TRelationFieldProps) {
               </span>
             </button>
           </Show>
+        </Match>
+        <Match when={props.value && !props.fieldDefinition.createInline}>
+          <RelationToExistingField />
         </Match>
       </Switch>
     </>
@@ -280,10 +271,10 @@ function RelationFieldTypeSelectorWrapper(props: {
   closeFunction: (() => void) | undefined;
 }) {
   return (
-    <div class="col-span-10  bg-zinc-400/50 rounded-xs  pb-10 not-first:mt-12">
+    <div class="col-span-10  bg-zinc-400/50 rounded-xs  pb-10 not-first:mt-8 shadow-xl">
       <div
         class={
-          "w-full flex justify-between  h-8 text-slate-100 uppercase font-semibold  text-sm rounded-t-xs bg-slate-600"
+          "w-full flex justify-between  h-8 text-slate-100 uppercase font-semibold  text-sm rounded-t-xs bg-slate-600 shadow-lg"
         }
       >
         <div class="flex items-center pl-3 select-none">Select a type</div>
@@ -386,7 +377,6 @@ function RelationFieldTypeSelector(props: TRelationFieldTypeSelectorProps) {
   function RecurseSubtypeHierarchy<T extends BaseNodeTypes>(
     props: TRecursiveSubtypeHierarchyProps<T>,
   ): JSXElement {
-    console.log(props.subtypeHierarchy);
     return (
       <>
         <For each={Object.entries(props.subtypeHierarchy)}>
@@ -476,13 +466,13 @@ function RelationFieldTypeSelector(props: TRelationFieldTypeSelectorProps) {
           <div class=" w-full h-fit flex gap-x-6 mt-10">
             <div
               class={
-                "mx-10 w-full rounded-xs " +
+                "mx-10 w-full rounded-xs overflow-clip " +
                 getColour(semanticSpaceType.baseType).container
               }
             >
               <div
                 class={
-                  "w-full uppercase text-xs text-red-100 py-2 px-3 rounded-t-xs font-semibold select-none " +
+                  "w-full uppercase text-xs text-red-100 py-2 px-3 rounded-t-xs font-semibold select-none shadow-sm " +
                   getColour(semanticSpaceType.baseType).bar
                 }
               >

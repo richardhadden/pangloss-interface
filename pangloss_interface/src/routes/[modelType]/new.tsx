@@ -64,9 +64,9 @@ export default function CreateObject() {
       />
 
       <div class="pl-32 pr-16 py-32">
-        {/* <button onclick={() => console.log(unwrap(newFormState))}>
+        <button onclick={() => console.log(unwrap(newFormState))}>
           CONSOLE LOG FORM STATE
-        </button> */}
+        </button>
         <BaseForm
           formFor={params.modelType}
           baseFormState={newFormState}

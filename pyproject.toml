@@ -8,6 +8,7 @@ authors = [
 ]
 requires-python = ">=3.13"
 dependencies = [
+    "fastapi>=0.115.12",
     "frozendict>=2.4.6",
     "jinja2>=3.1.6",
     "pangloss",

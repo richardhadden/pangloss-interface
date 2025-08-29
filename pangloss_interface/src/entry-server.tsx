@@ -13,6 +13,7 @@ export default createHandler(() => (
         </head>
         <body class="">
           <div id="app">{children}</div>
+
           {scripts}
         </body>
       </html>
