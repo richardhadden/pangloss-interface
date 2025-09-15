@@ -65,7 +65,7 @@ async def search(
     types: Annotated[list[BaseNodeTypes], Query()],
     q: str = "",
     page: int = 1,
-    pageSize: int = 50,
+    pageSize: int = 25,
 ) -> ListResponse[BaseNodeReferenceViewTypes]:
     terms = SPLIT_TERMS_REGEX.split(q)
     search_string = " AND ".join(f"/.*{re.escape(term)}.*/" for term in terms)

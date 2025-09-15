@@ -194,8 +194,6 @@ def relation_to_semantic_space_to_dict(
     ):
         content_types.add(t.__name__)
 
-    print(field_target_def.annotated_type, content_types)
-
     content_type_var = str(
         field_target_def.annotated_type.__base__._meta.fields[
             "contents"
@@ -216,7 +214,6 @@ def relation_to_semantic_space_to_dict(
             },
         }
         types.append(t)
-    print(types)
 
     return {
         "metatype": "RelationToSemanticSpace",
@@ -278,9 +275,22 @@ def field_to_dict(field_definition: FieldDefinition) -> dict[str, typing.Any]:
 def build_default_search_types(field_definition: RelationFieldDefinition):
     """Builds a list of types that should be searchable through autocomplete field"""
 
-    if drf := field_definition.default_reified_type:
+    drf = field_definition.default_reified_type
+
+    if (
+        not drf
+        and len(field_definition.field_type_definitions) == 1
+        and isinstance(
+            field_definition.field_type_definitions[0], RelationToReifiedDefinition
+        )
+    ):
+        drf = field_definition.field_type_definitions[0].origin_type.__name__
+
+    if drf:
+        print("is drf")
         if isinstance(drf, str):
             drf = ModelManager.reified_relation_models[drf]
+        print("drftype", drf)
 
         target_type_param = str(
             typing.cast(
@@ -416,7 +426,19 @@ def relation_field_to_dict(
     relation_field["reverseRelationLabels"] = list(
         camelize(i) for i in field_definition.reverse_relation_labels
     )
-    relation_field["defaultReifiedType"] = field_definition.default_reified_type
+
+    drf = field_definition.default_reified_type
+
+    if (
+        not drf
+        and len(field_definition.field_type_definitions) == 1
+        and isinstance(
+            field_definition.field_type_definitions[0], RelationToReifiedDefinition
+        )
+    ):
+        drf = field_definition.field_type_definitions[0].origin_type.__name__
+
+    relation_field["defaultReifiedType"] = drf
 
     relation_field["defaultSearchType"] = build_default_search_types(field_definition)
     relation_field["defaultTypeOnSelection"] = build_default_type_on_selection(
@@ -638,7 +660,6 @@ def build_semantic_space_subtype_hierarchy(model: type["SemanticSpace"]):
 
 def semantic_space_meta_to_dict(model, meta: SemanticSpaceMeta) -> dict:
     meta_as_dict = copy(meta.__dict__)
-    print(model.__name__, getattr(model, "InterfaceMeta", None), model.__dict__)
 
     meta_as_dict["base_model"] = meta.base_model.__name__
     meta_as_dict["metatype"] = "SemanticSpace"

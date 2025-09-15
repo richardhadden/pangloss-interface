@@ -10,24 +10,10 @@ import {
   BaseNodeTypes,
   SemanticSpaceTypes,
 } from "../../../.model-configs/model-typescript";
-import { BaseForm } from "./BaseForm";
 import { RelationToExistingField } from "./RelationToExistingField";
-import { useFilter } from "@ark-ui/solid/locale";
 import { BiRegularPlus } from "solid-icons/bi";
 import { IoCloseSharp } from "solid-icons/io";
-import {
-  createSignal,
-  ErrorBoundary,
-  For,
-  Index,
-  JSXElement,
-  Match,
-  onMount,
-  Show,
-  Switch,
-} from "solid-js";
-import { unwrap } from "solid-js/store";
-import { Portal } from "solid-js/web";
+import { For, JSXElement, Match, Show, Switch } from "solid-js";
 import { FormFields, getOrderFields } from "~/components/form/BaseForm";
 import { TranslationKey, useTranslation } from "~/contexts/translation";
 import { createBlankObject } from "~/utils/createBlankObject";
@@ -230,7 +216,11 @@ function RelationField(props: TRelationFieldProps) {
           </Show>
         </Match>
         <Match when={props.value && !props.fieldDefinition.createInline}>
-          <RelationToExistingField />
+          <RelationToExistingField
+            fieldDefinition={props.fieldDefinition}
+            value={props.value}
+            setValue={(value) => props.setValue(value)}
+          />
         </Match>
       </Switch>
     </>

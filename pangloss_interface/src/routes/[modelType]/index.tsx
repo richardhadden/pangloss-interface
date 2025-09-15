@@ -351,7 +351,7 @@ export default function EntityList() {
                         <div class="w-full truncate line-clamp-1 text-ellipsis pl-6 pr-6 p-2  text-left text-sm  bg-neutral-300 flex items-center text-pretty font-normal text-neutral-950 rounded-r-xs group-hover:bg-neutral-400 group-focus:bg-zinc-400 group-active:bg-zinc-200 group-active:text-zinc-600">
                           <span class="group-hover:text-black group-active:scale-x-[99.5%] group-active:scale-y-[99.5%] group-active:text-black/80 group-active:block group-active:mt-[1px]">
                             <Show
-                              when={typeof modelDefinition().meta.labelField}
+                              when={modelDefinition().meta.labelField}
                               fallback={item.label}
                             >
                               <div
