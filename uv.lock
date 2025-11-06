@@ -616,6 +616,7 @@ source = { editable = "." }
 dependencies = [
     { name = "fastapi" },
     { name = "frozendict" },
+    { name = "javascripthon" },
     { name = "jinja2" },
     { name = "pangloss" },
     { name = "patchdiff" },
@@ -627,6 +628,7 @@ dependencies = [
 requires-dist = [
     { name = "fastapi", specifier = ">=0.115.12" },
     { name = "frozendict", specifier = ">=2.4.6" },
+    { name = "javascripthon", specifier = ">=0.13" },
     { name = "jinja2", specifier = ">=3.1.6" },
     { name = "pangloss", editable = "../pangloss" },
     { name = "patchdiff", specifier = ">=0.3.4" },

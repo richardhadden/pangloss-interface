@@ -10,14 +10,18 @@ type TTextFieldProps = {
   onFocusIn?: () => void;
   onFocusOut?: () => void;
   onKeyPress?: (e: KeyboardEvent) => void;
-  ref: HTMLInputElement;
+  ref?: HTMLInputElement;
+  class?: string;
 };
 
 const TextField = (props: TTextFieldProps) => {
   return (
     <input
       ref={props.ref}
-      class="w-full outline-0 bg-zinc-800/20 rounded-xs py-4 px-4 focus:bg-zinc-900/20 focus:border-slate-200 focus:drop-shadow-xs"
+      class={
+        "rounded-xs focus:drop-shadow-xs w-full bg-zinc-800/20 px-4 py-4 outline-0 focus:border-slate-200 focus:bg-zinc-900/20 " +
+        props.class
+      }
       type="text"
       placeholder={props.placeholder || ""}
       value={props.value}
@@ -35,7 +39,7 @@ const MultiLineTextField = (props: TTextFieldProps) => {
   return (
     <div class="col-span-10">
       <textarea
-        class=" w-full caret-indigo-800 resize-none field-sizing-content outline-0 bg-zinc-800/20 rounded-xs py-4 px-4 focus:bg-zinc-900/20 focus:border-slate-200 focus:drop-shadow-xs"
+        class="field-sizing-content rounded-xs focus:drop-shadow-xs w-full resize-none bg-zinc-800/20 px-4 py-4 caret-indigo-800 outline-0 focus:border-slate-200 focus:bg-zinc-900/20"
         rows="1"
         placeholder={props.placeholder || ""}
         oninput={(e) => props.onInput(e.currentTarget.value)}
@@ -57,7 +61,7 @@ const MultiLineTextField = (props: TTextFieldProps) => {
       </textarea>
       <Show when={props.maxLen}>
         <div
-          class="text-xs uppercase  w-full flex justify-start mt-1"
+          class="mt-1 flex w-full justify-start text-xs uppercase"
           classList={{
             "text-slate-400 font-normal":
               props.maxLen && props.value.length < props.maxLen,

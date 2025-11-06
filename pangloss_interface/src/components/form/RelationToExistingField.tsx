@@ -1,16 +1,24 @@
 import {
   BaseNodeDefinitionMap,
+  ModelDefinitions,
   ReifiedRelationsDefinitionMap,
+  TRelationDefinition,
   TRelationFieldDefinition,
 } from "../../../.model-configs/model-definitions";
 import {
   BaseNodeTypes,
+  EdgeModelTypes,
   ReifiedRelationTypes,
 } from "../../../.model-configs/model-typescript";
-import { TextField, TextAreaField } from "./LiteralFields";
-import { Button } from "@kobalte/core/button";
-import { DropdownMenuSubTriggerProps } from "@kobalte/core/dropdown-menu";
-import { BiSolidInfoCircle, BiSolidXCircle } from "solid-icons/bi";
+import { FormFields } from "./BaseForm";
+import { TextField } from "./LiteralFields";
+import {
+  BiRegularCollapse,
+  BiRegularExpand,
+  BiRegularPlus,
+  BiSolidInfoCircle,
+  BiSolidXCircle,
+} from "solid-icons/bi";
 import { IoCheckmarkCircleSharp, IoCloseSharp } from "solid-icons/io";
 import {
   createSelector,
@@ -25,7 +33,7 @@ import {
 import { createStore } from "solid-js/store";
 import { Portal } from "solid-js/web";
 import colors from "tailwindcss/colors";
-import { interfaceApiClient, type APIError, getRequest } from "~/apiClient";
+import { interfaceApiClient } from "~/apiClient";
 import { TranslationKey, useTranslation } from "~/contexts/translation";
 import { createBlankObject } from "~/utils/createBlankObject";
 
@@ -44,6 +52,13 @@ type TAutocompleteSelectorProps = {
   selectionTypes: BaseNodeTypes[];
   selectedItems: (BaseNodeTypes | ReifiedRelationTypes)[];
   onSelect: (item: TSelectionOptions["results"][number]) => void;
+  searchBoxVisible?: boolean;
+  size?: "small" | "medium" | "large";
+  shouldHideWhenNotFocused?: boolean;
+  alternativeCreateTypes: ReifiedRelationTypes[];
+  onClickAlternativeCreateType: (
+    type: keyof BaseNodeTypes | keyof ReifiedRelationTypes,
+  ) => void;
 };
 
 function AutocompleteSelector(props: TAutocompleteSelectorProps) {
@@ -62,6 +77,8 @@ function AutocompleteSelector(props: TAutocompleteSelectorProps) {
       [key in BaseNodeTypes]: boolean;
     },
   );
+
+  const searchBoxVisible = props.searchBoxVisible === false ? false : true;
 
   let inputAreaRef!: HTMLDivElement;
   let inputRef!: HTMLInputElement;
@@ -106,7 +123,7 @@ function AutocompleteSelector(props: TAutocompleteSelectorProps) {
       if (el) {
         el.scrollIntoView({
           behavior: "smooth",
-          block: "end",
+          block: "nearest",
           inline: "nearest",
         });
       }
@@ -125,7 +142,7 @@ function AutocompleteSelector(props: TAutocompleteSelectorProps) {
       if (el) {
         el.scrollIntoView({
           behavior: "smooth",
-          block: "end",
+          block: "nearest",
           inline: "nearest",
         });
       }
@@ -165,108 +182,160 @@ function AutocompleteSelector(props: TAutocompleteSelectorProps) {
   }
 
   return (
-    <div ref={inputAreaRef!}>
-      <div class="w-full mb-2 flex" ref={typeSelectContainer}>
-        <Show when={inputIsFocused()}>
-          <span class="uppercase text-xs mr-4 font-semibold flex items-center text-slate-700 select-none">
-            Filter by types
-          </span>
-          <For each={Object.entries(selectionTypes)}>
-            {([type, selected]) => (
-              <button
-                class="uppercase text-xs  font-semibold  rounded-xs flex items-center justify-center mr-2 cursor-pointer group"
-                classList={{
-                  "bg-slate-600 text-slate-100 hover:bg-slate-700 hover:shadow-inner ":
-                    selected,
-                  "bg-slate-500 text-slate-400 opacity-60": !selected,
-                }}
-                onMouseDown={(e) => onSetSelectionTypes(e, type, !selected)}
-              >
-                <span class="group-hover:scale-[98%] py-2 px-3">
-                  {t[type as TranslationKey]._model.verboseName()}
-                </span>
-                <Show
-                  when={selected}
-                  fallback={
-                    <div class=" h-8 w-8 bg-slate-400 flex items-center justify-center rounded-r-xs group-active:scale-95">
-                      <BiSolidXCircle
-                        class=" h-8 block"
-                        color={colors.slate[500]}
+    <Show
+      when={
+        inputIsFocused() ||
+        props.shouldHideWhenNotFocused === undefined ||
+        props.shouldHideWhenNotFocused === true
+      }
+    >
+      <div ref={inputAreaRef!}>
+        <div class="mb-2 flex w-full" ref={typeSelectContainer}>
+          <Show when={inputIsFocused()}>
+            <span class="mr-4 flex select-none items-center text-xs font-semibold uppercase text-slate-700">
+              Filter by types
+            </span>
+            <For each={Object.entries(selectionTypes)}>
+              {([type, selected]) => (
+                <button
+                  class="rounded-xs group mr-2 flex cursor-pointer items-center justify-center text-xs font-semibold uppercase"
+                  classList={{
+                    "bg-slate-600 text-slate-100 hover:bg-slate-700 hover:shadow-inner ":
+                      selected,
+                    "bg-slate-500 text-slate-400 opacity-60": !selected,
+                  }}
+                  onMouseDown={(e) => onSetSelectionTypes(e, type, !selected)}
+                >
+                  <span class="px-3 py-2 group-hover:scale-[98%]">
+                    {t[type as TranslationKey]._model.verboseName()}
+                  </span>
+                  <Show
+                    when={selected}
+                    fallback={
+                      <div class="rounded-r-xs flex h-8 w-8 items-center justify-center bg-slate-400 group-active:scale-95">
+                        <BiSolidXCircle
+                          class="block h-8"
+                          color={colors.slate[500]}
+                        />
+                      </div>
+                    }
+                  >
+                    <div class="rounded-r-xs flex h-8 w-8 items-center justify-center bg-slate-500 group-active:scale-95">
+                      <IoCheckmarkCircleSharp
+                        class="block"
+                        color={colors.slate[100]}
                       />
                     </div>
-                  }
-                >
-                  <div class=" h-8 w-8 bg-slate-500 flex items-center justify-center rounded-r-xs group-active:scale-95">
-                    <IoCheckmarkCircleSharp
-                      class="block"
-                      color={colors.slate[100]}
-                    />
-                  </div>
-                </Show>
-              </button>
-            )}
-          </For>
-        </Show>
-      </div>
-      <TextField
-        ref={inputRef!}
-        value={inputValue()}
-        onInput={(value) => onInputChange(value)}
-        placeholder="Type to search..."
-        onFocusIn={() => onFocus()}
-        onKeyPress={(e) => onInputKeyPress(e, e.key)}
-      />
-      <div ref={portalContainer}></div>
-      <Show when={inputIsFocused() && selectionOptions()}>
-        <Portal mount={portalContainer}>
+                  </Show>
+                </button>
+              )}
+            </For>
+          </Show>
+        </div>
+        <Show when={searchBoxVisible}>
+          <TextField
+            ref={inputRef!}
+            value={inputValue()}
+            onInput={(value) => onInputChange(value)}
+            placeholder="Type to search..."
+            onFocusIn={() => onFocus()}
+            onKeyPress={(e) => onInputKeyPress(e, e.key)}
+            class="bg-red-500"
+          />
+
+          <div ref={portalContainer}></div>
           <Show
-            when={selectionOptions()?.results?.length > 0}
-            fallback={
-              <div class="w-full mt-3 mb-4 h-8 flex rounded-xs group  items-center justify-start ">
-                <div class="bg-amber-600 h-full rounded-l-xs aspect-square flex justify-center items-center shadow-md">
-                  <BiSolidInfoCircle color="white" size={18} />
-                </div>
-                <div class="bg-slate-300 text-slate-600 h-full rounded-r-xs py-2 px-4 text-xs uppercase font-semibold flex items-center shadow-md cursor-default select-none">
-                  No results found
-                </div>
-              </div>
+            when={
+              typeof props.alternativeCreateTypes !== "undefined" &&
+              props.alternativeCreateTypes.length > 0
             }
           >
-            <div
-              id="menu"
-              class="absolute z-50  max-h-1/2  bg-zinc-900/20 backdrop-blur-3xl rounded-xs shadow-2xl shadow-zinc-900/20 p-2 overflow-y-scroll mt-1"
-              style={`top: ${inputLocation().bottom}; left: ${inputLocation().left.toString()}; width: ${inputLocation().width.toString()}px;`}
-            >
-              <For each={selectionOptions()?.results}>
-                {(item, index) => (
-                  <button
-                    data-selected={isSelected(index())}
-                    class="w-full flex  backdrop-blur-none bg-blend-normal not-first:mt-2 cursor-pointer "
-                    classList={{
-                      "bg-zinc-400": isSelected(index()),
-                      "bg-zinc-300": !isSelected(index()),
-                    }}
-                    onmouseenter={() => setSelectedIndex(index())}
-                    onClick={() => props.onSelect(item)}
+            <div class="mt-2 flex w-full flex-wrap items-center">
+              <For each={props.alternativeCreateTypes}>
+                {(altType) => (
+                  <Show
+                    when={
+                      ModelDefinitions[altType]?.meta?.metatype ===
+                        "ReifiedRelation" ||
+                      ModelDefinitions[altType]?.meta?.metatype ===
+                        "ReifiedRelationNode" ||
+                      ModelDefinitions[altType]?.meta?.create
+                    }
                   >
-                    <div
-                      class="uppercase text-xs text-slate-100 font-semibold py-2 px-3 rounded-l-xs flex items-center justify-center border-r-[0.5px] border-right-slate-500 text-nowrap"
-                      classList={{
-                        "bg-slate-700": isSelected(index()),
-                        "bg-slate-600": !isSelected(index()),
-                      }}
+                    <button
+                      class="rounded-xs group mr-2 flex cursor-pointer flex-row items-center bg-slate-500 text-xs font-semibold uppercase text-slate-50 hover:bg-slate-600"
+                      onclick={() =>
+                        props.onClickAlternativeCreateType(
+                          altType as
+                            | keyof ReifiedRelationTypes
+                            | keyof BaseNodeTypes,
+                        )
+                      }
                     >
-                      {t[item.type as TranslationKey]._model.verboseName()}
-                    </div>
-                    <div class="p-2 pl-3 text-sm">{item.label}</div>
-                  </button>
+                      <span class="ml-1 group-active:scale-95">
+                        <BiRegularPlus />
+                      </span>
+                      <span class="p-1 pr-2 group-active:scale-95">
+                        {t[altType as TranslationKey]._model.verboseName}
+                      </span>
+                    </button>
+                  </Show>
                 )}
               </For>
             </div>
           </Show>
-        </Portal>
-      </Show>
-    </div>
+          <Show when={inputIsFocused() && selectionOptions()}>
+            <Portal mount={portalContainer}>
+              <Show
+                when={selectionOptions()?.results?.length > 0}
+                fallback={
+                  <div class="rounded-xs group mb-4 mt-3 flex h-8 w-full items-center justify-start">
+                    <div class="rounded-l-xs flex aspect-square h-full items-center justify-center bg-amber-600 shadow-md">
+                      <BiSolidInfoCircle color="white" size={18} />
+                    </div>
+                    <div class="rounded-r-xs flex h-full cursor-default select-none items-center bg-slate-300 px-4 py-2 text-xs font-semibold uppercase text-slate-600 shadow-md">
+                      No results found
+                    </div>
+                  </div>
+                }
+              >
+                <div
+                  id="menu"
+                  class="max-h-1/2 rounded-xs absolute z-50 mt-1 overflow-y-scroll bg-zinc-900/20 p-2 shadow-2xl shadow-zinc-900/20 backdrop-blur-3xl"
+                  style={`top: ${inputLocation().bottom}; left: ${inputLocation().left.toString()}; width: ${inputLocation().width.toString()}px;`}
+                >
+                  <For each={selectionOptions()?.results}>
+                    {(item, index) => (
+                      <button
+                        data-selected={isSelected(index())}
+                        class="not-first:mt-2 rounded-xs flex w-full cursor-pointer bg-blend-normal backdrop-blur-none"
+                        classList={{
+                          "bg-zinc-400": isSelected(index()),
+                          "bg-zinc-300": !isSelected(index()),
+                        }}
+                        onmouseenter={() => setSelectedIndex(index())}
+                        onClick={() => props.onSelect(item)}
+                      >
+                        <div
+                          class="rounded-l-xs border-right-slate-500 flex items-center justify-center text-nowrap border-r-[0.5px] px-3 py-2 text-xs font-semibold uppercase text-slate-100"
+                          classList={{
+                            "bg-slate-700": isSelected(index()),
+                            "bg-slate-600": !isSelected(index()),
+                          }}
+                        >
+                          {t[item.type as TranslationKey]._model.verboseName()}
+                        </div>
+                        <div class="p-2 pl-3 text-sm">{item.label}</div>
+                      </button>
+                    )}
+                  </For>
+                </div>
+              </Show>
+            </Portal>
+          </Show>
+        </Show>
+      </div>
+    </Show>
   );
 }
 
@@ -275,14 +344,16 @@ type TRenderBaseSelectedItemProps = { item: any; onRemove: () => void };
 export function RenderBaseSelectedItem(props: TRenderBaseSelectedItemProps) {
   const [lang, { t }] = useTranslation();
   return (
-    <div class=" bg-zinc-300 rounded-xs flex flex-start w-fit h-fit relative ">
-      <div class="bg-slate-600 uppercase text-slate-100 font-semibold rounded-l-xs text-xs flex items-center px-3 py-2 select-none text-nowrap">
+    <div class="rounded-xs flex-start flex h-fit w-fit bg-zinc-300 shadow-2xl">
+      <div class="rounded-l-xs flex select-none items-center text-nowrap bg-slate-600 px-3 py-2 text-xs font-semibold uppercase text-slate-100">
         {t[props.item.type as TranslationKey]._model.verboseName()}
       </div>
-      <div class="flex items-center pr-4 pl-4 text-sm">{props.item.label}</div>
+      <div class="flex w-fit flex-nowrap items-center pl-4 pr-4 text-sm">
+        {props.item.label}
+      </div>
       <button
         onClick={props.onRemove}
-        class="group aspect-square  h-10  cursor-pointer bg-orange-500/70 rounded-r-xs flex items-center justify-center hover:bg-orange-500/80 active:bg-orange-500/80 active:shadow-inner active:shadow-slate-600/30"
+        class="rounded-r-xs group flex aspect-square h-10 cursor-pointer items-center justify-center bg-orange-500/70 hover:bg-orange-500/80 active:bg-orange-500/80 active:shadow-inner active:shadow-slate-600/30"
       >
         <IoCloseSharp
           color={colors.slate["100"]}
@@ -294,47 +365,303 @@ export function RenderBaseSelectedItem(props: TRenderBaseSelectedItemProps) {
   );
 }
 
-type TRenderReifiedRelationProps = { item: any; onRemove: () => void };
+type TRenderReifiedRelationProps = {
+  type: ReifiedRelationTypes;
+  item: any;
+  onRemove: () => void;
+  fieldDefinition: TRelationFieldDefinition;
+  setValue: (value: any, ...path: (number | string)[]) => void;
+  typesInContext: TRelationDefinition;
+};
 
 export function RenderReifiedRelation(props: TRenderReifiedRelationProps) {
-  console.log(props.item.target);
+  console.log("FD", props.fieldDefinition);
+  const [lang, { t }] = useTranslation();
+  const [reifiedRelHovered, setReifiedRelHovered] = createSignal(false);
+
+  const shouldCollapseFunc =
+    ModelDefinitions[props.type as ReifiedRelationTypes].meta.shouldCollapse;
+  const [collapse, setCollapse] = createSignal<boolean>(
+    shouldCollapseFunc !== undefined && shouldCollapseFunc(props.item),
+  );
+
+  const relationsToTypeVar = Object.entries(
+    ModelDefinitions[props.item.type as keyof typeof ModelDefinitions].fields,
+  )
+    .filter(
+      ([fieldName, fieldDef]) =>
+        fieldDef.metatype === "RelationField" &&
+        fieldDef.types.some((t) => t.metatype === "RelationToTypeVar"),
+    )
+    .map(([fieldName, fieldDef]) => fieldName);
+
   return (
-    <div class="bg-slate-400/30 rounded-xs shadow-md">
-      <div class="bg-slate-500 text-slate-100 text-xs uppercase font-semibold rounded-t-xs h-fit select-none flex items-center justify-start">
-        {props.item.type} of{" "}
-        <span class="bg-slate-600 p-1 rounded-xs ml-1 py-2 mx-3">
-          {props.item.target[0].type}
-        </span>
-        <span class="grow" />
-        <button
-          onClick={props.onRemove}
-          class="group aspect-square  h-8  cursor-pointer bg-orange-500/70 rounded-r-xs flex items-center justify-center hover:bg-orange-500/80 active:bg-orange-500/80 active:shadow-inner active:shadow-slate-600/30"
+    <Show
+      when={shouldCollapseFunc && shouldCollapseFunc(props.item) && collapse()}
+      fallback={
+        <div
+          class="rounded-xs box-border h-fit bg-slate-500/50 shadow-md"
+          onmouseenter={() => setReifiedRelHovered(true)}
+          onmouseleave={() => setReifiedRelHovered(false)}
         >
-          <IoCloseSharp
-            color={colors.slate["100"]}
-            class="group-active:scale-95"
-            size={18}
-          />
-        </button>
+          <div class="rounded-t-xs flex h-fit select-none items-center justify-start bg-slate-500 text-xs font-semibold uppercase text-slate-100">
+            <Show
+              when={
+                shouldCollapseFunc &&
+                shouldCollapseFunc(props.item) &&
+                !collapse()
+              }
+              fallback={
+                <span class="ml-2 mr-2 text-xs font-semibold uppercase">
+                  {t[
+                    props.item.type as TranslationKey
+                  ]._model.verboseName()}{" "}
+                </span>
+              }
+            >
+              <button
+                class="rounded-tl-xs group flex h-10 cursor-pointer items-center justify-center bg-slate-500 hover:bg-slate-500/60 active:bg-slate-500/60 active:shadow-inner active:shadow-slate-600/30"
+                onclick={() => setCollapse(true)}
+              >
+                <BiRegularCollapse
+                  color={colors.slate["100"]}
+                  class="ml-2 group-active:scale-95"
+                  size={18}
+                />
+                <span class="ml-2 mr-2 text-xs font-semibold uppercase">
+                  {t[props.item.type as TranslationKey]._model.verboseName()}
+                </span>
+              </button>
+            </Show>
+
+            <span class="flex h-10 items-center bg-slate-600 px-2 py-2">
+              <Show
+                when={props.item.target[0]}
+                fallback={props.fieldDefinition.defaultSearchType
+                  .map((dst) => t[dst as TranslationKey]._model.verboseName())
+                  .join(" | ")}
+              >
+                {props.item.target.length > 1
+                  ? t[
+                      props.item.target[0].type as TranslationKey
+                    ]._model.verboseNamePlural()
+                  : t[
+                      props.item.target[0].type as TranslationKey
+                    ]._model.verboseName()}
+              </Show>
+            </span>
+            <span class="grow" />
+            <button
+              onClick={props.onRemove}
+              class="rounded-r-xs group flex aspect-square h-10 cursor-pointer items-center justify-center bg-orange-500/70 hover:bg-orange-500/80 active:bg-orange-500/80 active:shadow-inner active:shadow-slate-600/30"
+            >
+              <IoCloseSharp
+                color={colors.slate["100"]}
+                class="group-active:scale-95"
+                size={18}
+              />
+            </button>
+          </div>
+          <div class="">
+            <For each={relationsToTypeVar}>
+              {(fieldName) => (
+                <div>
+                  <Show when={fieldName !== "target"}>
+                    <div class="flex h-8 select-none items-center bg-slate-500 pl-2 text-xs font-semibold uppercase text-slate-100">
+                      {fieldName}
+                    </div>
+                  </Show>
+                  <div class="px-2 py-2">
+                    <RelationToExistingField
+                      fieldDefinition={
+                        ModelDefinitions[props.item.type].fields[fieldName]
+                      }
+                      value={props.item[fieldName]}
+                      showSearchBox={true}
+                      setValue={(value, ...path) =>
+                        props.setValue(value, fieldName, ...path)
+                      }
+                      typesInContext={
+                        props.typesInContext ||
+                        props.fieldDefinition.types.filter(
+                          (t) => t.type === props.item.type,
+                        )
+                      }
+                    />
+                  </div>
+                </div>
+              )}
+            </For>
+          </div>
+          <div class="rounded-b-xs bg-slate-500/70 px-2">
+            <FormFields
+              fieldNames={Array.from(
+                Object.keys(ModelDefinitions[props.type].fields).filter(
+                  (t) => !relationsToTypeVar.includes(t) && t !== "label",
+                ),
+              )}
+              modelName={props.type}
+              baseFormState={props.item}
+              setBaseFormState={(value, ...path) =>
+                props.setValue(value, ...path)
+              }
+              style="small"
+            />
+          </div>
+          <Show when={props.fieldDefinition.edgeModel}>
+            <div class="rounded-b-xs flex w-full bg-slate-700 px-2">
+              <FormFields
+                fieldNames={Object.keys(
+                  ModelDefinitions[
+                    props.fieldDefinition.edgeModel as EdgeModelTypes
+                  ].fields,
+                )}
+                modelName={props.fieldDefinition.edgeModel}
+                baseFormState={props.item.edgeProperties}
+                style="unstyled"
+                labelStyle="max-w-fit text-slate-50 text-xs uppercase font-semibold flex items-center"
+                fieldContainerStyle=""
+              />
+            </div>
+          </Show>
+        </div>
+      }
+    >
+      <div>
+        <div class="rounded-xs flex h-fit items-center">
+          <button
+            class="rounded-tl-xs group flex cursor-pointer items-center justify-center bg-slate-500 py-3 text-slate-50 hover:bg-slate-500/60"
+            onclick={() => setCollapse(false)}
+          >
+            <BiRegularExpand class="ml-2 group-active:scale-95" />
+            <span class="rounded-l-xs flex h-full items-center px-2 text-xs font-semibold uppercase">
+              {props.item.type}
+            </span>
+          </button>
+
+          <For each={props.item.target}>
+            {(item, index) => (
+              <div class="flex-start rounded-t-xs flex h-fit w-fit bg-zinc-300 shadow-2xl">
+                <div class="flex select-none items-center text-nowrap bg-slate-600 px-3 py-2 text-xs font-semibold uppercase text-slate-100">
+                  {t[item.type as TranslationKey]._model.verboseName()}
+                </div>
+                <div class="flex w-fit flex-nowrap items-center pl-4 pr-4 text-sm">
+                  {item.label}
+                </div>
+                <button
+                  onClick={() =>
+                    props.setValue(
+                      props.item.target.filter((item, idx) => idx !== index()),
+                    )
+                  }
+                  class="rounded-tr-xs group flex aspect-square h-10 cursor-pointer items-center justify-center bg-orange-500/70 hover:bg-orange-500/80 active:bg-orange-500/80 active:shadow-inner active:shadow-slate-600/30"
+                >
+                  <IoCloseSharp
+                    color={colors.slate["100"]}
+                    class="group-active:scale-95"
+                    size={18}
+                  />
+                </button>
+              </div>
+            )}
+          </For>
+        </div>
+        <Show when={props.fieldDefinition.edgeModel}>
+          <div class="rounded-b-xs flex w-full bg-slate-700 px-2">
+            <FormFields
+              fieldNames={Object.keys(
+                ModelDefinitions[
+                  props.fieldDefinition.edgeModel as EdgeModelTypes
+                ].fields,
+              )}
+              modelName={props.fieldDefinition.edgeModel}
+              baseFormState={props.item.edgeProperties}
+              style="unstyled"
+              labelStyle="max-w-fit text-slate-50 text-xs uppercase font-semibold flex items-center"
+              fieldContainerStyle=""
+            />
+          </div>
+        </Show>
       </div>
-      <div>Contents...</div>
-    </div>
+    </Show>
   );
 }
 
 type TRelationToExistingFieldProps = {
   fieldDefinition: TRelationFieldDefinition;
   value: any;
-  setValue: (value: TSelectionOptions["results"][number]) => void;
+  setValue: (
+    value: TSelectionOptions["results"][number],
+    ...path: (string | number)[]
+  ) =>
+    | void
+    | ((value: { type: BaseNodeTypes; id: string; label: string }[]) => void);
+  showSearchBox: boolean;
+  typesInContext?: TRelationDefinition[];
 };
 
 export function RelationToExistingField(props: TRelationToExistingFieldProps) {
-  function onSelect(item) {
-    if (props.fieldDefinition.defaultReifiedType) {
-      const blankObject = createBlankObject(
-        props.fieldDefinition.defaultReifiedType,
-        true,
+  const typeInContextTypeVarName = props.fieldDefinition.types[0].typeVarName;
+
+  function getTypesInContext() {
+    if (props.typesInContext && props.typesInContext.length > 0) {
+      const typesInContext =
+        props.typesInContext[0].typeParamsToTypeMap[typeInContextTypeVarName]
+          .types;
+
+      const relationToNodeTypes = typesInContext.filter(
+        (t) => t.metatype === "RelationToNode",
       );
+
+      if (relationToNodeTypes.length > 0) {
+        const inContextDefautSearchType = relationToNodeTypes.map(
+          (t) => t.type,
+        );
+
+        return [undefined, inContextDefautSearchType, typesInContext];
+      }
+
+      const relationToReifiedTypes = typesInContext.filter(
+        (t) => t.metatype === "RelationToReified",
+      );
+
+      if (relationToReifiedTypes.length > 0) {
+        const inContextDefaultReifiedType = relationToReifiedTypes[0].type;
+
+        const inContextDefautSearchType =
+          relationToReifiedTypes.length > 0
+            ? relationToReifiedTypes[0].typeParamsToTypeMap[
+                Object.keys(relationToReifiedTypes[0].typeParamsToTypeMap)[0]
+              ].types
+                .filter((t) => t.metatype === "RelationToNode")
+                .map((t) => t.type)
+            : undefined;
+
+        return [
+          inContextDefaultReifiedType,
+          inContextDefautSearchType,
+          typesInContext,
+        ];
+      }
+    }
+    return [undefined, undefined, undefined];
+  }
+
+  const [
+    inContextDefaultReifiedType,
+    inContextDefautSearchType,
+    typesInContext,
+  ] = getTypesInContext();
+
+  const defaultReifiedType =
+    inContextDefaultReifiedType || props.fieldDefinition.defaultReifiedType;
+
+  const defaultSearchType =
+    inContextDefautSearchType || props.fieldDefinition.defaultSearchType;
+
+  function onSelect(item) {
+    if (defaultReifiedType) {
+      const blankObject = createBlankObject(defaultReifiedType, true);
       blankObject.target = [item];
       props.setValue([...props.value, blankObject]);
       return;
@@ -344,20 +671,59 @@ export function RelationToExistingField(props: TRelationToExistingFieldProps) {
   }
 
   function onRemove(index: number) {
-    props.setValue(props.value.filter((item, idx: number) => idx !== index));
+    props.setValue(
+      props.value.filter((item: any, idx: number) => idx !== index),
+    );
+  }
+
+  function alternativeCreateTypes() {
+    const fieldDefTypes = props.fieldDefinition.types
+      .filter((t) => t.type !== props.fieldDefinition.defaultReifiedType)
+      .map((t) => t.type)
+      .sort();
+
+    const types = new Set([
+      ...props.fieldDefinition.defaultSearchType.sort(),
+      ...fieldDefTypes,
+    ]);
+    return [...types];
+  }
+
+  function onClickAlterntiveCreateType(
+    type: keyof BaseNodeTypes | keyof ReifiedRelationTypes,
+  ) {
+    if (type in ReifiedRelationsDefinitionMap) {
+      const blankObject = createBlankObject(
+        type as keyof typeof ModelDefinitions,
+        true,
+      );
+      props.setValue([...props.value, blankObject]);
+    }
   }
 
   return (
     <>
       <Show when={props.value.length > 0}>
-        <div class="col-span-10 not-last:mb-5 not-last:pb-6 flex gap-x-2 gap-y-2 flex-wrap not-last:border-b border-b-slate-400/30">
+        <div
+          class="col-span-10 flex flex-row flex-wrap gap-x-2 gap-y-2"
+          classList={{
+            "not-last:border-b border-b-slate-400/30 not-last:mb-5 not-last:pb-6 ":
+              props.showSearchBox,
+          }}
+        >
           <For each={props.value}>
             {(item, index) => (
               <Switch>
                 <Match when={item.type in ReifiedRelationsDefinitionMap}>
                   <RenderReifiedRelation
+                    type={item.type}
                     item={item}
                     onRemove={() => onRemove(index())}
+                    fieldDefinition={props.fieldDefinition}
+                    setValue={(value, ...path) =>
+                      props.setValue(value, index(), ...path)
+                    }
+                    typesInContext={typesInContext}
                   />
                 </Match>
                 <Match when={item.type in BaseNodeDefinitionMap}>
@@ -381,9 +747,12 @@ export function RelationToExistingField(props: TRelationToExistingFieldProps) {
       >
         <div class="col-span-10">
           <AutocompleteSelector
-            selectionTypes={props.fieldDefinition.defaultSearchType}
+            selectionTypes={defaultSearchType as BaseNodeTypes[]}
             onSelect={onSelect}
             selectedItems={props.value}
+            searchBoxVisible={props.showSearchBox}
+            alternativeCreateTypes={alternativeCreateTypes()}
+            onClickAlternativeCreateType={onClickAlterntiveCreateType}
           />
         </div>
       </Show>

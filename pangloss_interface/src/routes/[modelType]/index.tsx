@@ -32,7 +32,7 @@ import { apiClient, type APIError, getRequest } from "~/apiClient";
 import ControlBar from "~/components/ControlBar";
 import { LoginOverlay } from "~/components/LogInForm";
 import { LoadingRings } from "~/components/ui/loadingRings";
-import { useTranslation } from "~/contexts/translation";
+import { TranslationKey, useTranslation } from "~/contexts/translation";
 import { useUserLogin } from "~/contexts/users";
 import {
   createRefetchableAsync,
@@ -222,7 +222,10 @@ export default function EntityList() {
   return (
     <>
       <Suspense>
-        <Title>{params.modelType} | Pangloss</Title>
+        <Title>
+          {t[params.modelType as TranslationKey]._model.verboseNamePlural()} |
+          Pangloss
+        </Title>
         <ControlBar
           modelType={params.modelType as BaseNodeTypes}
           modelTypeNumber="plural"
@@ -232,11 +235,11 @@ export default function EntityList() {
               : null
           }
           centreContent={
-            <div class="mx-10 flex justify-center items-center pt-3">
+            <div class="mx-10 flex items-center justify-center pt-3">
               <input
                 disabled={deepSearchOn() && isRouting()}
                 ref={searchInputRef}
-                class="h-10  min-w-3/6 block px-2 rounded-l-sm focus:outline-none bg-slate-100 hover:bg-slate-200 focus:bg-slate-200 disabled:bg-slate-300"
+                class="min-w-3/6 block h-10 rounded-l-sm bg-slate-100 px-2 hover:bg-slate-200 focus:bg-slate-200 focus:outline-none disabled:bg-slate-300"
                 classList={{
                   "bg-slate-100/50": searchParams.q === undefined,
                   "bg-slate-200/50": searchParams.q !== undefined,
@@ -249,14 +252,14 @@ export default function EntityList() {
               />
               <Show when={deepSearchOn()}>
                 <button
-                  class="h-10 aspect-square flex justify-center items-center px-2 hover:bg-slate-400/60 bg-slate-400/40 cursor-pointer group"
+                  class="group flex aspect-square h-10 cursor-pointer items-center justify-center bg-slate-400/40 px-2 hover:bg-slate-400/60"
                   onclick={startDeepSearch}
                   disabled={isRouting()}
                 >
                   <Show
                     when={isRouting()}
                     fallback={
-                      <BiRegularSearch class="group-active:scale-90 relative top-[1px]" />
+                      <BiRegularSearch class="relative top-[1px] group-active:scale-90" />
                     }
                   >
                     <LoadingRings
@@ -273,7 +276,7 @@ export default function EntityList() {
                   "bg-slate-400/90  drop-shadow-xs": deepSearchOn(),
                 }}
                 onClick={() => toggleDeepSearch()}
-                class="flex h-10 w-fit items-center justify-center pr-4 pl-3 rounded-r-sm cursor-pointer hover:bg-slate-400/80 group mr-2"
+                class="group mr-2 flex h-10 w-fit cursor-pointer items-center justify-center rounded-r-sm pl-3 pr-4 hover:bg-slate-400/80"
               >
                 <TbBinaryTree
                   class="mr-2 group-active:scale-90"
@@ -284,7 +287,7 @@ export default function EntityList() {
                   }
                 />
                 <span
-                  class="text-xs text-wrap uppercase group-active:scale-95"
+                  class="text-wrap text-xs uppercase group-active:scale-95"
                   classList={{
                     "font-semibold text-slate-500 group-hover:text-slate-600":
                       !deepSearchOn(),
@@ -299,7 +302,7 @@ export default function EntityList() {
               </button>
 
               <div
-                class="ml-3 text-xs uppercase h-full w-6 font-semibold select-none "
+                class="ml-3 h-full w-6 select-none text-xs font-semibold uppercase"
                 classList={{
                   "text-slate-500":
                     (data()?.count as number) > 0 ||
@@ -314,18 +317,18 @@ export default function EntityList() {
             </div>
           }
         />
-        <section class="pl-32 pr-32 pt-6 mt-28">
+        <section class="mt-28 pl-32 pr-32 pt-6">
           <Suspense fallback={<h1>Loading!</h1>}>
             <Show
               when={data() && data()?.results.length === 0 && searchParams.q}
             >
-              <div class="w-full m-2 mb-4 h-12 flex rounded-xs group cursor-pointer items-center justify-center ">
-                <div class="bg-amber-600 h-full rounded-l-xs aspect-square flex justify-center items-center shadow-md">
+              <div class="rounded-xs group m-2 mb-4 flex h-12 w-full cursor-pointer items-center justify-center">
+                <div class="rounded-l-xs flex aspect-square h-full items-center justify-center bg-amber-600 shadow-md">
                   <BiSolidInfoCircle color="white" size={18} />
                 </div>
-                <div class="bg-slate-300 text-slate-600 h-full rounded-r-xs py-2 px-4 text-sm uppercase font-semibold flex items-center shadow-md">
+                <div class="rounded-r-xs flex h-full items-center bg-slate-300 px-4 py-2 text-sm font-semibold uppercase text-slate-600 shadow-md">
                   No results matching &ldquo;
-                  <span class="normal-case font-normal">{searchParams.q}</span>
+                  <span class="font-normal normal-case">{searchParams.q}</span>
                   &rdquo;
                 </div>
               </div>
@@ -341,15 +344,15 @@ export default function EntityList() {
                         use:prefetch={1000}
                         href={`/${item.type}/${item.id}`}
                         onMouseLeave={(e) => e.currentTarget.blur()}
-                        class=" truncate line-clamp-1 text-ellipsis w-full m-2 mb-4 h-10 flex rounded-xs group cursor-pointer  outline-none transition-none duration-75 hover:shadow-xs active:shadow-inner"
+                        class="rounded-xs hover:shadow-xs group m-2 mb-4 line-clamp-1 flex h-10 w-full cursor-pointer truncate text-ellipsis outline-none transition-none duration-75 active:shadow-inner"
                       >
-                        <div class="bg-slate-600 rounded-l-xs border-r-white border-r-[0.5px] uppercase font-semibold text-slate-50 text-xs flex flex-col justify-center items-start p-3 group-hover:bg-slate-700 group-focus:bg-slate-700 group-active:bg-slate-500 select-none">
-                          <span class=" group-active:scale-x-[99%] group-active:scale-y-[99.5%]  group-active:block group-active:mt-[1px]">
+                        <div class="rounded-l-xs flex select-none flex-col items-start justify-center border-r-[0.5px] border-r-white bg-slate-600 p-3 text-xs font-semibold uppercase text-slate-50 group-hover:bg-slate-700 group-focus:bg-slate-700 group-active:bg-slate-500">
+                          <span class="group-active:mt-[1px] group-active:block group-active:scale-x-[99%] group-active:scale-y-[99.5%]">
                             {t[item.type as BaseNodeTypes]._model.verboseName()}
                           </span>
                         </div>
-                        <div class="w-full truncate line-clamp-1 text-ellipsis pl-6 pr-6 p-2  text-left text-sm  bg-neutral-300 flex items-center text-pretty font-normal text-neutral-950 rounded-r-xs group-hover:bg-neutral-400 group-focus:bg-zinc-400 group-active:bg-zinc-200 group-active:text-zinc-600">
-                          <span class="group-hover:text-black group-active:scale-x-[99.5%] group-active:scale-y-[99.5%] group-active:text-black/80 group-active:block group-active:mt-[1px]">
+                        <div class="rounded-r-xs line-clamp-1 flex w-full items-center truncate text-ellipsis text-pretty bg-neutral-300 p-2 pl-6 pr-6 text-left text-sm font-normal text-neutral-950 group-hover:bg-neutral-400 group-focus:bg-zinc-400 group-active:bg-zinc-200 group-active:text-zinc-600">
+                          <span class="group-hover:text-black group-active:mt-[1px] group-active:block group-active:scale-x-[99.5%] group-active:scale-y-[99.5%] group-active:text-black/80">
                             <Show
                               when={modelDefinition().meta.labelField}
                               fallback={item.label}
@@ -370,11 +373,11 @@ export default function EntityList() {
                   </For>
                   <div id="endOfList" />
                   <Show when={data().nextUrl}>
-                    <div class="flex justify-center mt-12 mb-6">
+                    <div class="mb-6 mt-12 flex justify-center">
                       <button
                         onMouseLeave={(e) => e.currentTarget.blur()}
                         onClick={getNextPage}
-                        class="inline w-fit px-6 py-4 text-md uppercase font-semibold text-white bg-green-700 rounded-xs hover:bg-green-800 active:bg-green-600 cursor-pointer transition-all hover:shadow-2xl hover:shadow-green-900/50 outline-none focus:shadow-green-900/50"
+                        class="text-md rounded-xs inline w-fit cursor-pointer bg-green-700 px-6 py-4 font-semibold uppercase text-white outline-none transition-all hover:bg-green-800 hover:shadow-2xl hover:shadow-green-900/50 focus:shadow-green-900/50 active:bg-green-600"
                       >
                         {"t(interface.getMoreResults)"}
                       </button>

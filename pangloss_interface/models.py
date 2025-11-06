@@ -1,5 +1,5 @@
 import dataclasses
-from typing import ClassVar, Literal
+from typing import Callable, ClassVar, Literal
 
 from pangloss.model_config.models_base import AbstractBaseMeta
 from pangloss.models import BaseNode, SemanticSpace
@@ -33,6 +33,7 @@ class InterfaceBaseMeta(AbstractBaseMeta):
         | Literal["stone"]
         | None
     ) = dataclasses.field(default="amber")
+    should_collapse: Callable[[type[BaseNode]], bool] | None = None
 
 
 BaseNode.__annotations__["InterfaceMeta"] = ClassVar[type[InterfaceBaseMeta]]

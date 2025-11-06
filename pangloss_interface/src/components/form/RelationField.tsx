@@ -70,22 +70,22 @@ export function InlineFormFieldWrapper(props: TInlineFormFieldWrapperProps) {
   return (
     <section
       class={
-        "col-span-10 shadow-xl  rounded-xs not-first:mt-8 " +
+        "rounded-xs not-first:mt-8 col-span-10 shadow-xl " +
         modelColour.container
       }
     >
       <header
         class={
-          "w-full flex justify-between  h-8 text-slate-100 uppercase font-semibold  text-sm rounded-t-xs select-none shadow-sm " +
+          "rounded-t-xs flex h-8 w-full select-none justify-between text-sm font-semibold uppercase text-slate-100 shadow-sm " +
           modelColour.bar
         }
       >
         <div class="flex items-center pl-3">{props.modelLabel}</div>
-        <div class=" grow"></div>
+        <div class="grow"></div>
         <Show when={props.closeFunction}>
           <div>
             <button
-              class="h-full aspect-square rounded-tr-xs bg-slate-300/50 flex justify-center items-center cursor-pointer hover:bg-slate-400/50 active:shadow-inner active:shadow-slate-500/40 group"
+              class="rounded-tr-xs group flex aspect-square h-full cursor-pointer items-center justify-center bg-slate-300/50 hover:bg-slate-400/50 active:shadow-inner active:shadow-slate-500/40"
               onClick={props.closeFunction}
             >
               <div class="group-active:scale-85">
@@ -195,21 +195,21 @@ function RelationField(props: TRelationFieldProps) {
           <Show when={props.value.every((o) => o.type)}>
             <button
               class={
-                "group cursor-pointer flex justify-start items-center mt-6 col-span-10 w-full shadow-sm rounded-xs h-8 " +
+                "rounded-xs group col-span-10 mt-6 flex h-8 w-full cursor-pointer items-center justify-start shadow-sm " +
                 modelColour.bar +
                 " " +
                 modelColour.hover
               }
               onClick={() => props.setValue([...props.value, {}])}
             >
-              <div class="h-8 rounded-l-xs bg-slate-800/40 shadow-sm aspect-square flex items-center justify-center">
+              <div class="rounded-l-xs flex aspect-square h-8 items-center justify-center bg-slate-800/40 shadow-sm">
                 <BiRegularPlus
                   color="white"
                   size="16"
-                  class="inline group-active:scale-80"
+                  class="group-active:scale-80 inline"
                 />{" "}
               </div>
-              <span class="ml-4 uppercase text-xs font-semibold text-slate-100 group-active:scale-95">
+              <span class="ml-4 text-xs font-semibold uppercase text-slate-100 group-active:scale-95">
                 Add New
               </span>
             </button>
@@ -219,7 +219,8 @@ function RelationField(props: TRelationFieldProps) {
           <RelationToExistingField
             fieldDefinition={props.fieldDefinition}
             value={props.value}
-            setValue={(value) => props.setValue(value)}
+            setValue={(value, ...path) => props.setValue(value, ...path)}
+            showSearchBox={true}
           />
         </Match>
       </Switch>
@@ -261,18 +262,18 @@ function RelationFieldTypeSelectorWrapper(props: {
   closeFunction: (() => void) | undefined;
 }) {
   return (
-    <div class="col-span-10  bg-zinc-400/50 rounded-xs  pb-10 not-first:mt-8 shadow-xl">
+    <div class="rounded-xs not-first:mt-8 col-span-10 bg-zinc-400/50 pb-10 shadow-xl">
       <div
         class={
-          "w-full flex justify-between  h-8 text-slate-100 uppercase font-semibold  text-sm rounded-t-xs bg-slate-600 shadow-lg"
+          "rounded-t-xs flex h-8 w-full justify-between bg-slate-600 text-sm font-semibold uppercase text-slate-100 shadow-lg"
         }
       >
-        <div class="flex items-center pl-3 select-none">Select a type</div>
-        <div class=" grow"></div>
+        <div class="flex select-none items-center pl-3">Select a type</div>
+        <div class="grow"></div>
         <Show when={props.closeFunction}>
           <div>
             <button
-              class="h-full aspect-square rounded-tr-xs bg-slate-300/50 flex justify-center items-center cursor-pointer hover:bg-slate-400/50 active:shadow-inner active:shadow-slate-600/50 group"
+              class="rounded-tr-xs group flex aspect-square h-full cursor-pointer items-center justify-center bg-slate-300/50 hover:bg-slate-400/50 active:shadow-inner active:shadow-slate-600/50"
               onclick={props.closeFunction}
             >
               <div class="group-active:scale-85">
@@ -380,7 +381,7 @@ function RelationFieldTypeSelector(props: TRelationFieldTypeSelectorProps) {
               }
             >
               <button
-                class="bg-slate-600 disabled:bg-slate-600/70 disabled:text-slate-100/70 disabled:cursor-auto disabled:hover:bg-slate-600/70 disabled:active:shadow-none flex justify-start last:rounded-b-xs py-2 px-3 box-content font-semibold uppercase text-slate-200 text-xs not-last:border-b-[0.5px] not-last:border-slate-400 select-none cursor-pointer hover:bg-slate-700 group active:shadow-inner active:shadow-slate-700 active:bg-slate-600"
+                class="last:rounded-b-xs not-last:border-b-[0.5px] not-last:border-slate-400 group box-content flex cursor-pointer select-none justify-start bg-slate-600 px-3 py-2 text-xs font-semibold uppercase text-slate-200 hover:bg-slate-700 active:bg-slate-600 active:shadow-inner active:shadow-slate-700 disabled:cursor-auto disabled:bg-slate-600/70 disabled:text-slate-100/70 disabled:hover:bg-slate-600/70 disabled:active:shadow-none"
                 style={`margin-left: ${props.n + 1}rem`}
                 onClick={() => selectBaseNodeType(subtype as BaseNodeTypes)}
                 disabled={shouldDisable(subtype as BaseNodeTypes)}
@@ -412,7 +413,7 @@ function RelationFieldTypeSelector(props: TRelationFieldTypeSelectorProps) {
     <>
       <Show when={topLevelBaseNodeTypes.length > 0}>
         <div
-          class="w-full h-fit flex gap-x-6"
+          class="flex h-fit w-full gap-x-6"
           classList={{
             "p-10":
               props.fieldDefinitionTypes[0].metatype !== "RelationToTypeVar",
@@ -424,7 +425,7 @@ function RelationFieldTypeSelector(props: TRelationFieldTypeSelectorProps) {
             {(topLevelType, index) => (
               <div class="flex flex-col">
                 <button
-                  class="bg-slate-600 disabled:bg-slate-600/70 disabled:text-slate-100/70 disabled:cursor-auto disabled:hover:bg-slate-600/70 disabled:active:shadow-none flex justify-start rounded-t-xs rounded-bl-xs py-2 px-3 box-content font-semibold uppercase text-slate-200 text-xs not-last:border-b-[0.5px] not-last:border-slate-400 select-none cursor-pointer hover:bg-slate-700 group active:shadow-inner active:shadow-slate-700 active:bg-slate-600"
+                  class="rounded-t-xs rounded-bl-xs not-last:border-b-[0.5px] not-last:border-slate-400 group box-content flex cursor-pointer select-none justify-start bg-slate-600 px-3 py-2 text-xs font-semibold uppercase text-slate-200 hover:bg-slate-700 active:bg-slate-600 active:shadow-inner active:shadow-slate-700 disabled:cursor-auto disabled:bg-slate-600/70 disabled:text-slate-100/70 disabled:hover:bg-slate-600/70 disabled:active:shadow-none"
                   onClick={() => selectBaseNodeType(topLevelType)}
                   disabled={shouldDisable(topLevelType)}
                 >
@@ -453,16 +454,16 @@ function RelationFieldTypeSelector(props: TRelationFieldTypeSelectorProps) {
       </Show>
       <For each={ss}>
         {(semanticSpaceType) => (
-          <div class=" w-full h-fit flex gap-x-6 mt-10">
+          <div class="mt-10 flex h-fit w-full gap-x-6">
             <div
               class={
-                "mx-10 w-full rounded-xs overflow-clip " +
+                "rounded-xs mx-10 w-full overflow-clip " +
                 getColour(semanticSpaceType.baseType).container
               }
             >
               <div
                 class={
-                  "w-full uppercase text-xs text-red-100 py-2 px-3 rounded-t-xs font-semibold select-none shadow-sm " +
+                  "rounded-t-xs w-full select-none px-3 py-2 text-xs font-semibold uppercase text-red-100 shadow-sm " +
                   getColour(semanticSpaceType.baseType).bar
                 }
               >

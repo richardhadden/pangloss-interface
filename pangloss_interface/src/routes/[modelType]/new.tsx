@@ -35,7 +35,7 @@ export default function CreateObject() {
     <LoggedIn onCancel={() => history.back()}>
       <ControlBar
         statusContent={
-          <div class=" h-full px-4 uppercase text-sm font-semibold text-slate-800 flex justify-center items-center select-none">
+          <div class="flex h-full select-none items-center justify-center px-4 text-sm font-semibold uppercase text-slate-800">
             New
           </div>
         }
@@ -45,7 +45,7 @@ export default function CreateObject() {
         centreContent={
           <Show when={newFormState.label.length > 0}>
             <div
-              class="h-full line-clamp-2 rounded-r-sm pl-6 pr-6 w-fit align-middle flex grow-0 shrink-1 items-center bg-zinc-300 text-black  shadow-2xl shadow-neutral-300/50 border-r-[0.25px] border-r-neutral-400/20"
+              class="shrink-1 line-clamp-2 flex h-full w-fit grow-0 items-center rounded-r-sm border-r-[0.25px] border-r-neutral-400/20 bg-zinc-300 pl-6 pr-6 align-middle text-black shadow-2xl shadow-neutral-300/50"
               classList={{
                 "text-sm":
                   newFormState.label.length > 100 &&
@@ -63,7 +63,7 @@ export default function CreateObject() {
         }
       />
 
-      <div class="pl-32 pr-16 py-32">
+      <div class="py-32 pl-32 pr-16">
         <button onclick={() => console.log(unwrap(newFormState))}>
           CONSOLE LOG FORM STATE
         </button>

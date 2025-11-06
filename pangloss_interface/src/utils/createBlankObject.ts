@@ -1,6 +1,7 @@
 import {
   BaseNodeDefinitionMap,
   ModelDefinitions,
+  ReifiedRelationsDefinitionMap,
   TEmbeddedFieldDefinition,
   TLiteralFieldDefinition,
   TRelationFieldDefinition,
@@ -61,28 +62,33 @@ function createBlankObject(
 
   if (modelType in BaseNodeDefinitionMap && !embedded) {
     baseBlankObject = { type: modelType, label: "" };
+  } else if (modelType in ReifiedRelationsDefinitionMap) {
+    console.log("creating blank model for", modelType);
+    baseBlankObject = { type: modelType };
   } else {
     baseBlankObject = { type: modelType };
   }
 
-  const mappedFields = Object.entries(modelDef.fields).map(
-    ([fieldName, fieldDef]) => {
-      if (fieldDef.metatype === "LiteralField") {
-        return [fieldName, literalFieldDefault(fieldDef)];
-      } else if (fieldDef.metatype === "RelationField") {
-        return [fieldName, relationFieldDefault(fieldDef)];
-      } else if (fieldDef.metatype === "EmbeddedField") {
-        return [fieldName, embeddedFieldDefault(fieldDef)];
-      } else if (fieldDef.metatype === "ListField") {
-        return [fieldName, []];
-      } else if (fieldDef.metatype === "EnumField") {
-        return [fieldName, fieldDef.enumValues[0]];
-      } else if (fieldDef.metatype === "MultiKeyField") {
-        return [fieldName, {}];
-      }
-      return [fieldName, null];
-    },
-  );
+  const mappedFields: (
+    | (string | number | boolean | Date | null | undefined)[]
+    | (string | {}[])[]
+    | {}[]
+  )[] = Object.entries(modelDef.fields).map(([fieldName, fieldDef]) => {
+    if (fieldDef.metatype === "LiteralField") {
+      return [fieldName, literalFieldDefault(fieldDef)];
+    } else if (fieldDef.metatype === "RelationField") {
+      return [fieldName, relationFieldDefault(fieldDef)];
+    } else if (fieldDef.metatype === "EmbeddedField") {
+      return [fieldName, embeddedFieldDefault(fieldDef)];
+    } else if (fieldDef.metatype === "ListField") {
+      return [fieldName, []];
+    } else if (fieldDef.metatype === "EnumField") {
+      return [fieldName, fieldDef.enumValues[0]];
+    } else if (fieldDef.metatype === "MultiKeyField") {
+      return [fieldName, {}];
+    }
+    return [fieldName, null];
+  });
   const blankObject = {
     ...baseBlankObject,
     ...Object.fromEntries(mappedFields),

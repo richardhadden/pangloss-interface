@@ -2,6 +2,7 @@ import datetime
 import inspect
 import json
 import os
+import re
 import types
 import typing
 from collections.abc import Iterable
@@ -16,6 +17,7 @@ from annotated_types import BaseMetadata
 from frozendict import deepfreeze
 from humps import camelize
 from jinja2 import Environment, PackageLoader
+from metapensiero.pj.__main__ import transform_string
 from pangloss.model_config.field_definitions import (
     EmbeddedFieldDefinition,
     EnumFieldDefinition,
@@ -287,10 +289,8 @@ def build_default_search_types(field_definition: RelationFieldDefinition):
         drf = field_definition.field_type_definitions[0].origin_type.__name__
 
     if drf:
-        print("is drf")
         if isinstance(drf, str):
             drf = ModelManager.reified_relation_models[drf]
-        print("drftype", drf)
 
         target_type_param = str(
             typing.cast(
@@ -584,6 +584,30 @@ def get_order_fields(model: type[BaseNode]):
     return [camelize(f) for f in order_fields]
 
 
+def should_collapse_to_js(func: typing.Callable):
+    arg_name = func.__code__.co_varnames[1]
+
+    source_string = inspect.getsource(func)
+    transformed = transform_string(source_string)
+
+    regex = arg_name + r"\.([\w\_]+)[\s\,\.]"
+    matches = re.findall(regex, transformed)
+
+    for match in matches:
+        search = f"{arg_name}.{match}"
+        replacement = f"{arg_name}.{camelize(match)}"
+        transformed = re.sub(search, replacement, transformed)
+
+    out = f"""
+    function ({arg_name}) {{
+        {transformed}
+        return should_collapse({arg_name});
+    }};
+    """
+
+    return out
+
+
 def meta_to_dict(model, meta: BaseMeta) -> dict:
     meta_as_dict = copy(meta.__dict__)
     meta_as_dict["metatype"] = "BaseNode"
@@ -601,6 +625,7 @@ def meta_to_dict(model, meta: BaseMeta) -> dict:
         if getattr(model, "InterfaceMeta", None)
         else None
     )
+
     return meta_as_dict
 
 
@@ -751,12 +776,29 @@ def generate_model_fields_definitions(model_config_dir_path: Path):
         for k, md in edge_model_definitions.items()
     }
 
+    meta_functions = {}
+    for model_name, model in ModelManager.reified_relation_models.items():
+        if (
+            hasattr(model, "InterfaceMeta")
+            and hasattr(getattr(model, "InterfaceMeta"), "should_collapse")
+            and callable(
+                getattr(getattr(model, "InterfaceMeta"), "should_collapse", None)
+            )
+        ):
+            meta_functions[model_name] = {
+                "func": should_collapse_to_js(
+                    getattr(getattr(model, "InterfaceMeta"), "should_collapse")
+                ),
+                "type": "shouldCollapse",
+            }
+
     model_definitions_file_path.write_text(
         template.render(
             model_definitions=model_definition_json_dict,
             reified_relation_definitions=reified_relation_definitions_json_dict,
             semantic_space_definitions=semantic_space_definitions_json_dict,
             edge_model_definitions=edge_model_definitions_json_dict,
+            meta_functions=meta_functions,
         ),
         encoding="utf-8",
     )

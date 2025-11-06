@@ -29,6 +29,7 @@ export type TMeta<T extends BaseNodeTypes> = {
   subtypeHierarchy: TSubtypeHierarchy<BaseNodeTypes>;
   orderFields: string[];
   colour: keyof typeof colors | null;
+  shouldCollapse?: (item: any) => boolean;
 };
 
 export type TSemanticSpaceMeta<T extends SemanticSpaceTypes> = {
@@ -52,6 +53,7 @@ export type TReifiedRelation<T extends ReifiedRelationTypes> = {
 export type TReifiedRelationMeta<T extends ReifiedRelationTypes> = {
   metatype: "ReifiedRelation" | "ReifiedRelationNode";
   baseModel: T;
+  shouldCollapse?: (item: any) => boolean;
 };
 
 export type TEdgeModelMeta<T extends EdgeModelTypes> = {
@@ -198,7 +200,7 @@ interface IRelationToSemanticSpace {
   types: ISemanticSpaceTypes[];
 }
 
-type TRelationDefinition =
+export type TRelationDefinition =
   | IRelationToNodeDefinition
   | IRelationToReified
   | IRelationToSemanticSpace
@@ -241,5 +243,9 @@ export const EdgeModelDefinitionMap = {
   {% for k, v in edge_model_definitions.items() %}{{k}}: {{k}}Definition,
   {% endfor %}
 }
+
+{% for k, v in meta_functions.items() %}
+{{k}}Definition.meta.{{v.type}} = {{v.func}}
+{% endfor %}
 
 export const ModelDefinitions = {...BaseNodeDefinitionMap, ...SemanticSpaceDefinitionMap, ...ReifiedRelationsDefinitionMap, ...EdgeModelDefinitionMap};
