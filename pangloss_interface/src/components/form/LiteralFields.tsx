@@ -76,4 +76,17 @@ const MultiLineTextField = (props: TTextFieldProps) => {
   );
 };
 
-export { TextField, MultiLineTextField as TextAreaField };
+type TNumberFieldProps = { value: number; onInput: (value: number) => void };
+
+const NumberField = (props: TNumberFieldProps) => {
+  return (
+    <input
+      type="number"
+      class="max-w-12 rounded-sm bg-zinc-200/20 p-2 outline-0 focus:bg-zinc-200/20"
+      value={props.value}
+      oninput={(e) => props.onInput(Number(e.currentTarget.value))}
+    />
+  );
+};
+
+export { TextField, NumberField, MultiLineTextField as TextAreaField };

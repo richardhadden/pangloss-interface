@@ -2,7 +2,6 @@ import datetime
 import inspect
 import json
 import os
-import re
 import types
 import typing
 from collections.abc import Iterable
@@ -476,6 +475,7 @@ def multikey_field_to_dict(field_definition: MultiKeyFieldDefinition):
         multikey_field["types"][field_def.field_name] = {
             **map_types(field_def.field_annotation, field_def.field_name),
             "validators": validators_to_dict(field_def.validators),
+            "defaultValue": field_def.default_value,
         }
 
     return multikey_field
@@ -500,6 +500,7 @@ def property_field_to_dict(field: PropertyFieldDefinition):
         "metatype": "LiteralField",
         **map_types(field.field_annotation, field.field_name),
         "validators": validators_to_dict(field.validators),
+        "defaultValue": field.default_value,
     }
 
 
@@ -588,24 +589,15 @@ def should_collapse_to_js(func: typing.Callable):
     arg_name = func.__code__.co_varnames[1]
 
     source_string = inspect.getsource(func)
+
     transformed = transform_string(source_string)
 
-    regex = arg_name + r"\.([\w\_]+)[\s\,\.]"
-    matches = re.findall(regex, transformed)
-
-    for match in matches:
-        search = f"{arg_name}.{match}"
-        replacement = f"{arg_name}.{camelize(match)}"
-        transformed = re.sub(search, replacement, transformed)
-
-    out = f"""
+    return f"""
     function ({arg_name}) {{
         {transformed}
-        return should_collapse({arg_name});
+        return shouldCollapse({arg_name});
     }};
     """
-
-    return out
 
 
 def meta_to_dict(model, meta: BaseMeta) -> dict:

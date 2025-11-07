@@ -31,7 +31,7 @@ import {
 import { apiClient, type APIError, getRequest } from "~/apiClient";
 import ControlBar from "~/components/ControlBar";
 import { LoginOverlay } from "~/components/LogInForm";
-import { LoadingRings } from "~/components/ui/loadingRings";
+
 import { TranslationKey, useTranslation } from "~/contexts/translation";
 import { useUserLogin } from "~/contexts/users";
 import {
@@ -262,11 +262,7 @@ export default function EntityList() {
                       <BiRegularSearch class="relative top-[1px] group-active:scale-90" />
                     }
                   >
-                    <LoadingRings
-                      class="text-slate-800"
-                      height={45}
-                      width={45}
-                    />
+                    Loading...
                   </Show>
                 </button>
               </Show>

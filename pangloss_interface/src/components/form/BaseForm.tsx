@@ -14,7 +14,7 @@ import {
   ReifiedRelationTypes,
 } from "../../../.model-configs/model-typescript";
 import { EmbeddedField } from "./EmbeddedField";
-import { TextField, TextAreaField } from "./LiteralFields";
+import { TextField, TextAreaField, NumberField } from "./LiteralFields";
 import { RelationField } from "./RelationField";
 import { RenderReifiedRelation } from "./RelationToExistingField";
 import { Component, For, JSX, JSXElement, Match, Show, Switch } from "solid-js";
@@ -136,6 +136,25 @@ export const FormFields = (props: TFormFieldsProps) => {
                   value={props.baseFormState[fieldName]}
                   onInput={(value) => props.setBaseFormState(value, fieldName)}
                   class="w-full"
+                />
+              </FormRow>
+            </Match>
+            <Match
+              when={
+                fieldDef(fieldName).metatype === "LiteralField" &&
+                (fieldDef(fieldName) as TLiteralFieldDefinition).type ===
+                  "float"
+              }
+            >
+              <FormRow
+                rowLabel={translateFieldName(fieldName)}
+                style={props.style}
+                labelStyle={props.labelStyle}
+                fieldContainerStyle={props.fieldContainerStyle}
+              >
+                <NumberField
+                  value={props.baseFormState[fieldName]}
+                  onInput={(value) => props.setBaseFormState(value, fieldName)}
                 />
               </FormRow>
             </Match>

@@ -539,6 +539,14 @@ wheels = [
 ]
 
 [[package]]
+name = "metapensiero-pj"
+version = "0.1.0"
+source = { git = "https://github.com/richardhadden/metapensiero.pj.git#d5ad3cfeae1bd8d5d0c33d3337314d53c9c5b823" }
+dependencies = [
+    { name = "pyhumps" },
+]
+
+[[package]]
 name = "neo4j"
 version = "5.28.1"
 source = { registry = "https://pypi.org/simple" }
@@ -616,8 +624,8 @@ source = { editable = "." }
 dependencies = [
     { name = "fastapi" },
     { name = "frozendict" },
-    { name = "javascripthon" },
     { name = "jinja2" },
+    { name = "metapensiero-pj" },
     { name = "pangloss" },
     { name = "patchdiff" },
     { name = "pluralizer" },
@@ -628,8 +636,8 @@ dependencies = [
 requires-dist = [
     { name = "fastapi", specifier = ">=0.115.12" },
     { name = "frozendict", specifier = ">=2.4.6" },
-    { name = "javascripthon", specifier = ">=0.13" },
     { name = "jinja2", specifier = ">=3.1.6" },
+    { name = "metapensiero-pj", git = "https://github.com/richardhadden/metapensiero.pj.git" },
     { name = "pangloss", editable = "../pangloss" },
     { name = "patchdiff", specifier = ">=0.3.4" },
     { name = "pluralizer", specifier = ">=2.0.0" },

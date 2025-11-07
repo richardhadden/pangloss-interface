@@ -6,20 +6,21 @@ import {
   TLiteralFieldDefinition,
   TRelationFieldDefinition,
 } from "../../.model-configs/model-definitions";
+import { EdgeModelTypes } from "../../.model-configs/model-typescript";
 
 function literalFieldDefault(f: TLiteralFieldDefinition) {
   if (f.type === "boolean") {
-    return false;
+    return f.defaultValue || false;
   } else if (f.type === "string") {
-    return "";
+    return f.defaultValue || "";
   } else if (f.type === "int") {
-    return 0;
+    return f.defaultValue || 0;
   } else if (f.type === "float") {
-    return 0;
+    return f.defaultValue || 0;
   } else if (f.type === "date") {
-    return new Date();
+    return f.defaultValue || new Date();
   } else if (f.type === "datetime") {
-    return new Date();
+    return f.defaultValue || new Date();
   } else if (f.type === "null") {
     return null;
   }
@@ -55,6 +56,7 @@ function embeddedFieldDefault(f: TEmbeddedFieldDefinition) {
 function createBlankObject(
   modelType: keyof typeof ModelDefinitions,
   embedded: boolean,
+  edgeModelType?: EdgeModelTypes | null,
 ) {
   const modelDef = ModelDefinitions[modelType];
 
@@ -67,6 +69,10 @@ function createBlankObject(
     baseBlankObject = { type: modelType };
   } else {
     baseBlankObject = { type: modelType };
+  }
+
+  if (edgeModelType) {
+    baseBlankObject["edgeProperties"] = createBlankObject(edgeModelType, false);
   }
 
   const mappedFields: (
@@ -93,6 +99,7 @@ function createBlankObject(
     ...baseBlankObject,
     ...Object.fromEntries(mappedFields),
   };
+  console.log("BLANKOBJECT", blankObject);
   return blankObject;
 }
 

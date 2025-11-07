@@ -365,6 +365,55 @@ export function RenderBaseSelectedItem(props: TRenderBaseSelectedItemProps) {
   );
 }
 
+type TRenderBaseSelectedItemWithEdgeModelProps = {
+  item: any;
+  onRemove: () => void;
+  edgeModelType: EdgeModelTypes;
+  setValue: (value: any, ...path: (string | number)[]) => void;
+};
+
+export function RenderBaseSelectedItemWithEdgeModel(
+  props: TRenderBaseSelectedItemWithEdgeModelProps,
+) {
+  const [lang, { t }] = useTranslation();
+  return (
+    <div class="">
+      <div class="rounded-t-xs flex-start flex h-fit w-full bg-zinc-300 shadow-2xl">
+        <div class="rounded-tl-xs flex select-none items-center text-nowrap bg-slate-600 px-3 py-2 text-xs font-semibold uppercase text-slate-100">
+          {t[props.item.type as TranslationKey]._model.verboseName()}
+        </div>
+        <div class="flex w-fit flex-nowrap items-center pl-4 pr-4 text-sm">
+          {props.item.label}
+        </div>
+        <div class="grow" />
+        <button
+          onClick={props.onRemove}
+          class="rounded-tr-xs group flex aspect-square h-10 cursor-pointer items-center justify-center bg-orange-500/70 hover:bg-orange-500/80 active:bg-orange-500/80 active:shadow-inner active:shadow-slate-600/30"
+        >
+          <IoCloseSharp
+            color={colors.slate["100"]}
+            class="group-active:scale-95"
+            size={18}
+          />
+        </button>
+      </div>
+      <div class="rounded-b-xs flex h-fit w-full bg-slate-700 px-2 py-1">
+        <FormFields
+          fieldNames={Object.keys(ModelDefinitions[props.edgeModelType].fields)}
+          modelName={props.edgeModelType}
+          baseFormState={props.item.edgeProperties}
+          setBaseFormState={(value, ...path) =>
+            props.setValue(value, "edgeProperties", ...path)
+          }
+          style="unstyled"
+          labelStyle="max-w-fit text-slate-300 text-xs uppercase font-semibold flex items-center"
+          fieldContainerStyle=""
+        />
+      </div>
+    </div>
+  );
+}
+
 type TRenderReifiedRelationProps = {
   type: ReifiedRelationTypes;
   item: any;
@@ -400,11 +449,11 @@ export function RenderReifiedRelation(props: TRenderReifiedRelationProps) {
       when={shouldCollapseFunc && shouldCollapseFunc(props.item) && collapse()}
       fallback={
         <div
-          class="rounded-xs box-border h-fit bg-slate-500/50 shadow-md"
+          class="rounded-xs shadow-slate- box-border h-fit bg-slate-300/50 shadow-xl shadow-slate-700/30"
           onmouseenter={() => setReifiedRelHovered(true)}
           onmouseleave={() => setReifiedRelHovered(false)}
         >
-          <div class="rounded-t-xs flex h-fit select-none items-center justify-start bg-slate-500 text-xs font-semibold uppercase text-slate-100">
+          <div class="rounded-t-xs flex h-fit select-none items-center justify-start text-xs font-semibold uppercase text-slate-100">
             <Show
               when={
                 shouldCollapseFunc &&
@@ -412,7 +461,7 @@ export function RenderReifiedRelation(props: TRenderReifiedRelationProps) {
                 !collapse()
               }
               fallback={
-                <span class="ml-2 mr-2 text-xs font-semibold uppercase">
+                <span class="rounded-tl-xs flex h-10 items-center bg-slate-500 px-2 text-xs font-semibold uppercase">
                   {t[
                     props.item.type as TranslationKey
                   ]._model.verboseName()}{" "}
@@ -420,7 +469,7 @@ export function RenderReifiedRelation(props: TRenderReifiedRelationProps) {
               }
             >
               <button
-                class="rounded-tl-xs group flex h-10 cursor-pointer items-center justify-center bg-slate-500 hover:bg-slate-500/60 active:bg-slate-500/60 active:shadow-inner active:shadow-slate-600/30"
+                class="rounded-tl-xs group flex h-10 cursor-pointer items-center justify-center bg-slate-500 hover:bg-slate-500/90 active:bg-slate-500/90 active:shadow-inner active:shadow-slate-600/30"
                 onclick={() => setCollapse(true)}
               >
                 <BiRegularCollapse
@@ -450,10 +499,10 @@ export function RenderReifiedRelation(props: TRenderReifiedRelationProps) {
                     ]._model.verboseName()}
               </Show>
             </span>
-            <span class="grow" />
+            <div class="h-10 grow bg-slate-500" />
             <button
               onClick={props.onRemove}
-              class="rounded-r-xs group flex aspect-square h-10 cursor-pointer items-center justify-center bg-orange-500/70 hover:bg-orange-500/80 active:bg-orange-500/80 active:shadow-inner active:shadow-slate-600/30"
+              class="rounded-tr-xs group flex aspect-square h-10 cursor-pointer items-center justify-center bg-orange-500/70 hover:bg-orange-500/80 active:bg-orange-500/80 active:shadow-inner active:shadow-slate-600/30"
             >
               <IoCloseSharp
                 color={colors.slate["100"]}
@@ -462,7 +511,7 @@ export function RenderReifiedRelation(props: TRenderReifiedRelationProps) {
               />
             </button>
           </div>
-          <div class="">
+          <div class="mt-2">
             <For each={relationsToTypeVar}>
               {(fieldName) => (
                 <div>
@@ -518,6 +567,9 @@ export function RenderReifiedRelation(props: TRenderReifiedRelationProps) {
                 )}
                 modelName={props.fieldDefinition.edgeModel}
                 baseFormState={props.item.edgeProperties}
+                setBaseFormState={(value, ...path) =>
+                  props.setValue(value, "edgeProperties", ...path)
+                }
                 style="unstyled"
                 labelStyle="max-w-fit text-slate-50 text-xs uppercase font-semibold flex items-center"
                 fieldContainerStyle=""
@@ -530,7 +582,7 @@ export function RenderReifiedRelation(props: TRenderReifiedRelationProps) {
       <div>
         <div class="rounded-xs flex h-fit items-center">
           <button
-            class="rounded-tl-xs group flex cursor-pointer items-center justify-center bg-slate-500 py-3 text-slate-50 hover:bg-slate-500/60"
+            class="rounded-tl-xs group flex cursor-pointer items-center justify-center bg-slate-500 py-3 text-slate-50 hover:bg-slate-500/90"
             onclick={() => setCollapse(false)}
           >
             <BiRegularExpand class="ml-2 group-active:scale-95" />
@@ -541,13 +593,14 @@ export function RenderReifiedRelation(props: TRenderReifiedRelationProps) {
 
           <For each={props.item.target}>
             {(item, index) => (
-              <div class="flex-start rounded-t-xs flex h-fit w-fit bg-zinc-300 shadow-2xl">
-                <div class="flex select-none items-center text-nowrap bg-slate-600 px-3 py-2 text-xs font-semibold uppercase text-slate-100">
+              <div class="flex-start rounded-t-xs flex h-fit w-full bg-zinc-300 shadow-2xl">
+                <div class="flex select-none items-center text-nowrap bg-slate-600 px-2 py-2 text-xs font-semibold uppercase text-slate-100">
                   {t[item.type as TranslationKey]._model.verboseName()}
                 </div>
                 <div class="flex w-fit flex-nowrap items-center pl-4 pr-4 text-sm">
                   {item.label}
                 </div>
+                <div class="grow" />
                 <button
                   onClick={() =>
                     props.setValue(
@@ -567,7 +620,7 @@ export function RenderReifiedRelation(props: TRenderReifiedRelationProps) {
           </For>
         </div>
         <Show when={props.fieldDefinition.edgeModel}>
-          <div class="rounded-b-xs flex w-full bg-slate-700 px-2">
+          <div class="rounded-b-xs flex w-full shrink bg-slate-700 px-2">
             <FormFields
               fieldNames={Object.keys(
                 ModelDefinitions[
@@ -576,8 +629,11 @@ export function RenderReifiedRelation(props: TRenderReifiedRelationProps) {
               )}
               modelName={props.fieldDefinition.edgeModel}
               baseFormState={props.item.edgeProperties}
+              setBaseFormState={(value, ...path) =>
+                props.setValue(value, "edgeProperties", ...path)
+              }
               style="unstyled"
-              labelStyle="max-w-fit text-slate-50 text-xs uppercase font-semibold flex items-center"
+              labelStyle="max-w-fit text-slate-300 text-xs uppercase font-semibold flex items-center"
               fieldContainerStyle=""
             />
           </div>
@@ -661,13 +717,43 @@ export function RelationToExistingField(props: TRelationToExistingFieldProps) {
 
   function onSelect(item) {
     if (defaultReifiedType) {
-      const blankObject = createBlankObject(defaultReifiedType, true);
-      blankObject.target = [item];
+      const blankObject = createBlankObject(
+        defaultReifiedType,
+        true,
+        props.fieldDefinition.edgeModel,
+      );
+
+      const targetEdgeModel =
+        ModelDefinitions[defaultReifiedType as keyof typeof ModelDefinitions]
+          .fields["target"]?.edgeModel;
+
+      if (targetEdgeModel) {
+        blankObject.target = [
+          {
+            ...item,
+            edgeProperties: createBlankObject(targetEdgeModel, false),
+          },
+        ];
+      } else {
+        blankObject.target = [item];
+      }
       props.setValue([...props.value, blankObject]);
       return;
     }
 
-    props.setValue([...props.value, item]);
+    const targetEdgeModel = props.fieldDefinition.edgeModel;
+    if (targetEdgeModel) {
+      props.setValue([
+        ...props.value,
+        {
+          ...item,
+          edgeProperties: createBlankObject(targetEdgeModel, false),
+        },
+      ]);
+      return;
+    } else {
+      blankObject.target = [item];
+    }
   }
 
   function onRemove(index: number) {
@@ -696,6 +782,7 @@ export function RelationToExistingField(props: TRelationToExistingFieldProps) {
       const blankObject = createBlankObject(
         type as keyof typeof ModelDefinitions,
         true,
+        props.fieldDefinition.edgeModel,
       );
       props.setValue([...props.value, blankObject]);
     }
@@ -705,7 +792,7 @@ export function RelationToExistingField(props: TRelationToExistingFieldProps) {
     <>
       <Show when={props.value.length > 0}>
         <div
-          class="col-span-10 flex flex-row flex-wrap gap-x-2 gap-y-2"
+          class="col-span-10 flex flex-row flex-wrap gap-x-4 gap-y-6"
           classList={{
             "not-last:border-b border-b-slate-400/30 not-last:mb-5 not-last:pb-6 ":
               props.showSearchBox,
@@ -724,6 +811,23 @@ export function RelationToExistingField(props: TRelationToExistingFieldProps) {
                       props.setValue(value, index(), ...path)
                     }
                     typesInContext={typesInContext}
+                  />
+                </Match>
+                <Match
+                  when={
+                    item.type in BaseNodeDefinitionMap &&
+                    props.fieldDefinition.edgeModel
+                  }
+                >
+                  <RenderBaseSelectedItemWithEdgeModel
+                    item={item}
+                    edgeModelType={
+                      props.fieldDefinition.edgeModel as EdgeModelTypes
+                    }
+                    setValue={(value, ...path) =>
+                      props.setValue(value, index(), ...path)
+                    }
+                    onRemove={() => onRemove(index())}
                   />
                 </Match>
                 <Match when={item.type in BaseNodeDefinitionMap}>
