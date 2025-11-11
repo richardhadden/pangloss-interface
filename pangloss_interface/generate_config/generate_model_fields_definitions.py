@@ -590,7 +590,7 @@ def should_collapse_to_js(func: typing.Callable):
 
     source_string = inspect.getsource(func)
 
-    transformed = transform_string(source_string)
+    transformed = transform_string(source_string, enable_es6=True)
 
     return f"""
     function ({arg_name}) {{

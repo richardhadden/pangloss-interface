@@ -192,13 +192,13 @@ function AutocompleteSelector(props: TAutocompleteSelectorProps) {
       <div ref={inputAreaRef!}>
         <div class="mb-2 flex w-full" ref={typeSelectContainer}>
           <Show when={inputIsFocused()}>
-            <span class="mr-4 flex select-none items-center text-xs font-semibold uppercase text-slate-700">
+            <span class="mr-4 flex items-center text-xs font-semibold text-slate-700 uppercase select-none">
               Filter by types
             </span>
             <For each={Object.entries(selectionTypes)}>
               {([type, selected]) => (
                 <button
-                  class="rounded-xs group mr-2 flex cursor-pointer items-center justify-center text-xs font-semibold uppercase"
+                  class="group mr-2 flex cursor-pointer items-center justify-center rounded-xs text-xs font-semibold uppercase"
                   classList={{
                     "bg-slate-600 text-slate-100 hover:bg-slate-700 hover:shadow-inner ":
                       selected,
@@ -212,7 +212,7 @@ function AutocompleteSelector(props: TAutocompleteSelectorProps) {
                   <Show
                     when={selected}
                     fallback={
-                      <div class="rounded-r-xs flex h-8 w-8 items-center justify-center bg-slate-400 group-active:scale-95">
+                      <div class="flex h-8 w-8 items-center justify-center rounded-r-xs bg-slate-400 group-active:scale-95">
                         <BiSolidXCircle
                           class="block h-8"
                           color={colors.slate[500]}
@@ -220,7 +220,7 @@ function AutocompleteSelector(props: TAutocompleteSelectorProps) {
                       </div>
                     }
                   >
-                    <div class="rounded-r-xs flex h-8 w-8 items-center justify-center bg-slate-500 group-active:scale-95">
+                    <div class="flex h-8 w-8 items-center justify-center rounded-r-xs bg-slate-500 group-active:scale-95">
                       <IoCheckmarkCircleSharp
                         class="block"
                         color={colors.slate[100]}
@@ -263,7 +263,7 @@ function AutocompleteSelector(props: TAutocompleteSelectorProps) {
                     }
                   >
                     <button
-                      class="rounded-xs group mr-2 flex cursor-pointer flex-row items-center bg-slate-500 text-xs font-semibold uppercase text-slate-50 hover:bg-slate-600"
+                      class="group mr-2 flex cursor-pointer flex-row items-center rounded-xs bg-slate-500 text-xs font-semibold text-slate-50 uppercase hover:bg-slate-600"
                       onclick={() =>
                         props.onClickAlternativeCreateType(
                           altType as
@@ -276,7 +276,7 @@ function AutocompleteSelector(props: TAutocompleteSelectorProps) {
                         <BiRegularPlus />
                       </span>
                       <span class="p-1 pr-2 group-active:scale-95">
-                        {t[altType as TranslationKey]._model.verboseName}
+                        {t[altType as TranslationKey]._model.verboseName()}
                       </span>
                     </button>
                   </Show>
@@ -289,11 +289,11 @@ function AutocompleteSelector(props: TAutocompleteSelectorProps) {
               <Show
                 when={selectionOptions()?.results?.length > 0}
                 fallback={
-                  <div class="rounded-xs group mb-4 mt-3 flex h-8 w-full items-center justify-start">
-                    <div class="rounded-l-xs flex aspect-square h-full items-center justify-center bg-amber-600 shadow-md">
+                  <div class="group mt-3 mb-4 flex h-8 w-full items-center justify-start rounded-xs">
+                    <div class="flex aspect-square h-full items-center justify-center rounded-l-xs bg-amber-600 shadow-md">
                       <BiSolidInfoCircle color="white" size={18} />
                     </div>
-                    <div class="rounded-r-xs flex h-full cursor-default select-none items-center bg-slate-300 px-4 py-2 text-xs font-semibold uppercase text-slate-600 shadow-md">
+                    <div class="flex h-full cursor-default items-center rounded-r-xs bg-slate-300 px-4 py-2 text-xs font-semibold text-slate-600 uppercase shadow-md select-none">
                       No results found
                     </div>
                   </div>
@@ -301,14 +301,14 @@ function AutocompleteSelector(props: TAutocompleteSelectorProps) {
               >
                 <div
                   id="menu"
-                  class="max-h-1/2 rounded-xs absolute z-50 mt-1 overflow-y-scroll bg-zinc-900/20 p-2 shadow-2xl shadow-zinc-900/20 backdrop-blur-3xl"
+                  class="absolute z-50 mt-1 max-h-1/2 overflow-y-scroll rounded-xs bg-zinc-900/20 p-2 shadow-2xl shadow-zinc-900/20 backdrop-blur-3xl"
                   style={`top: ${inputLocation().bottom}; left: ${inputLocation().left.toString()}; width: ${inputLocation().width.toString()}px;`}
                 >
                   <For each={selectionOptions()?.results}>
                     {(item, index) => (
                       <button
                         data-selected={isSelected(index())}
-                        class="not-first:mt-2 rounded-xs flex w-full cursor-pointer bg-blend-normal backdrop-blur-none"
+                        class="flex w-full cursor-pointer rounded-xs bg-blend-normal backdrop-blur-none not-first:mt-2"
                         classList={{
                           "bg-zinc-400": isSelected(index()),
                           "bg-zinc-300": !isSelected(index()),
@@ -317,7 +317,7 @@ function AutocompleteSelector(props: TAutocompleteSelectorProps) {
                         onClick={() => props.onSelect(item)}
                       >
                         <div
-                          class="rounded-l-xs border-right-slate-500 flex items-center justify-center text-nowrap border-r-[0.5px] px-3 py-2 text-xs font-semibold uppercase text-slate-100"
+                          class="border-right-slate-500 flex items-center justify-center rounded-l-xs border-r-[0.5px] px-3 py-2 text-xs font-semibold text-nowrap text-slate-100 uppercase"
                           classList={{
                             "bg-slate-700": isSelected(index()),
                             "bg-slate-600": !isSelected(index()),
@@ -344,16 +344,16 @@ type TRenderBaseSelectedItemProps = { item: any; onRemove: () => void };
 export function RenderBaseSelectedItem(props: TRenderBaseSelectedItemProps) {
   const [lang, { t }] = useTranslation();
   return (
-    <div class="rounded-xs flex-start flex h-fit w-fit bg-zinc-300 shadow-2xl">
-      <div class="rounded-l-xs flex select-none items-center text-nowrap bg-slate-600 px-3 py-2 text-xs font-semibold uppercase text-slate-100">
+    <div class="flex-start flex h-fit w-fit rounded-xs bg-zinc-300 shadow-2xl">
+      <div class="flex items-center rounded-l-xs bg-slate-600 px-3 py-2 text-xs font-semibold text-nowrap text-slate-100 uppercase select-none">
         {t[props.item.type as TranslationKey]._model.verboseName()}
       </div>
-      <div class="flex w-fit flex-nowrap items-center pl-4 pr-4 text-sm">
+      <div class="flex w-fit flex-nowrap items-center pr-4 pl-4 text-sm">
         {props.item.label}
       </div>
       <button
         onClick={props.onRemove}
-        class="rounded-r-xs group flex aspect-square h-10 cursor-pointer items-center justify-center bg-orange-500/70 hover:bg-orange-500/80 active:bg-orange-500/80 active:shadow-inner active:shadow-slate-600/30"
+        class="group flex aspect-square h-10 cursor-pointer items-center justify-center rounded-r-xs bg-orange-500/70 hover:bg-orange-500/80 active:bg-orange-500/80 active:shadow-inner active:shadow-slate-600/30"
       >
         <IoCloseSharp
           color={colors.slate["100"]}
@@ -378,17 +378,17 @@ export function RenderBaseSelectedItemWithEdgeModel(
   const [lang, { t }] = useTranslation();
   return (
     <div class="">
-      <div class="rounded-t-xs flex-start flex h-fit w-full bg-zinc-300 shadow-2xl">
-        <div class="rounded-tl-xs flex select-none items-center text-nowrap bg-slate-600 px-3 py-2 text-xs font-semibold uppercase text-slate-100">
+      <div class="flex-start flex h-fit w-full rounded-t-xs bg-zinc-300 shadow-2xl">
+        <div class="flex items-center rounded-tl-xs bg-slate-600 px-3 py-2 text-xs font-semibold text-nowrap text-slate-100 uppercase select-none">
           {t[props.item.type as TranslationKey]._model.verboseName()}
         </div>
-        <div class="flex w-fit flex-nowrap items-center pl-4 pr-4 text-sm">
+        <div class="flex w-fit flex-nowrap items-center pr-4 pl-4 text-sm">
           {props.item.label}
         </div>
         <div class="grow" />
         <button
           onClick={props.onRemove}
-          class="rounded-tr-xs group flex aspect-square h-10 cursor-pointer items-center justify-center bg-orange-500/70 hover:bg-orange-500/80 active:bg-orange-500/80 active:shadow-inner active:shadow-slate-600/30"
+          class="group flex aspect-square h-10 cursor-pointer items-center justify-center rounded-tr-xs bg-orange-500/70 hover:bg-orange-500/80 active:bg-orange-500/80 active:shadow-inner active:shadow-slate-600/30"
         >
           <IoCloseSharp
             color={colors.slate["100"]}
@@ -397,7 +397,7 @@ export function RenderBaseSelectedItemWithEdgeModel(
           />
         </button>
       </div>
-      <div class="rounded-b-xs flex h-fit w-full bg-slate-700 px-2 py-1">
+      <div class="flex h-fit w-full rounded-b-xs bg-slate-700 px-2 py-1">
         <FormFields
           fieldNames={Object.keys(ModelDefinitions[props.edgeModelType].fields)}
           modelName={props.edgeModelType}
@@ -449,11 +449,11 @@ export function RenderReifiedRelation(props: TRenderReifiedRelationProps) {
       when={shouldCollapseFunc && shouldCollapseFunc(props.item) && collapse()}
       fallback={
         <div
-          class="rounded-xs shadow-slate- box-border h-fit bg-slate-300/50 shadow-xl shadow-slate-700/30"
+          class="shadow-slate- box-border h-fit rounded-xs bg-slate-300/50 shadow-xl shadow-slate-700/30"
           onmouseenter={() => setReifiedRelHovered(true)}
           onmouseleave={() => setReifiedRelHovered(false)}
         >
-          <div class="rounded-t-xs flex h-fit select-none items-center justify-start text-xs font-semibold uppercase text-slate-100">
+          <div class="flex h-fit items-center justify-start rounded-t-xs text-xs font-semibold text-slate-100 uppercase select-none">
             <Show
               when={
                 shouldCollapseFunc &&
@@ -461,7 +461,7 @@ export function RenderReifiedRelation(props: TRenderReifiedRelationProps) {
                 !collapse()
               }
               fallback={
-                <span class="rounded-tl-xs flex h-10 items-center bg-slate-500 px-2 text-xs font-semibold uppercase">
+                <span class="flex h-10 items-center rounded-tl-xs bg-slate-500 px-2 text-xs font-semibold uppercase">
                   {t[
                     props.item.type as TranslationKey
                   ]._model.verboseName()}{" "}
@@ -469,7 +469,7 @@ export function RenderReifiedRelation(props: TRenderReifiedRelationProps) {
               }
             >
               <button
-                class="rounded-tl-xs group flex h-10 cursor-pointer items-center justify-center bg-slate-500 hover:bg-slate-500/90 active:bg-slate-500/90 active:shadow-inner active:shadow-slate-600/30"
+                class="group flex h-10 cursor-pointer items-center justify-center rounded-tl-xs bg-slate-500 hover:bg-slate-500/90 active:bg-slate-500/90 active:shadow-inner active:shadow-slate-600/30"
                 onclick={() => setCollapse(true)}
               >
                 <BiRegularCollapse
@@ -477,7 +477,7 @@ export function RenderReifiedRelation(props: TRenderReifiedRelationProps) {
                   class="ml-2 group-active:scale-95"
                   size={18}
                 />
-                <span class="ml-2 mr-2 text-xs font-semibold uppercase">
+                <span class="mr-2 ml-2 text-xs font-semibold uppercase">
                   {t[props.item.type as TranslationKey]._model.verboseName()}
                 </span>
               </button>
@@ -502,7 +502,7 @@ export function RenderReifiedRelation(props: TRenderReifiedRelationProps) {
             <div class="h-10 grow bg-slate-500" />
             <button
               onClick={props.onRemove}
-              class="rounded-tr-xs group flex aspect-square h-10 cursor-pointer items-center justify-center bg-orange-500/70 hover:bg-orange-500/80 active:bg-orange-500/80 active:shadow-inner active:shadow-slate-600/30"
+              class="group flex aspect-square h-10 cursor-pointer items-center justify-center rounded-tr-xs bg-orange-500/70 hover:bg-orange-500/80 active:bg-orange-500/80 active:shadow-inner active:shadow-slate-600/30"
             >
               <IoCloseSharp
                 color={colors.slate["100"]}
@@ -516,7 +516,7 @@ export function RenderReifiedRelation(props: TRenderReifiedRelationProps) {
               {(fieldName) => (
                 <div>
                   <Show when={fieldName !== "target"}>
-                    <div class="flex h-8 select-none items-center bg-slate-500 pl-2 text-xs font-semibold uppercase text-slate-100">
+                    <div class="mt-6 flex h-8 items-center bg-slate-500 pl-2 text-xs font-semibold text-slate-100 uppercase select-none">
                       {fieldName}
                     </div>
                   </Show>
@@ -542,7 +542,7 @@ export function RenderReifiedRelation(props: TRenderReifiedRelationProps) {
               )}
             </For>
           </div>
-          <div class="rounded-b-xs bg-slate-500/70 px-2">
+          <div class="mt-6 rounded-b-xs bg-slate-500/70 px-2">
             <FormFields
               fieldNames={Array.from(
                 Object.keys(ModelDefinitions[props.type].fields).filter(
@@ -558,7 +558,7 @@ export function RenderReifiedRelation(props: TRenderReifiedRelationProps) {
             />
           </div>
           <Show when={props.fieldDefinition.edgeModel}>
-            <div class="rounded-b-xs flex w-full bg-slate-700 px-2">
+            <div class="flex w-full rounded-b-xs bg-slate-700 px-2">
               <FormFields
                 fieldNames={Object.keys(
                   ModelDefinitions[
@@ -580,34 +580,30 @@ export function RenderReifiedRelation(props: TRenderReifiedRelationProps) {
       }
     >
       <div>
-        <div class="rounded-xs flex h-fit items-center">
+        <div class="flex h-fit items-center rounded-xs">
           <button
-            class="rounded-tl-xs group flex cursor-pointer items-center justify-center bg-slate-500 py-3 text-slate-50 hover:bg-slate-500/90"
+            class="group flex cursor-pointer items-center justify-center rounded-tl-xs bg-slate-500 py-3 text-slate-50 hover:bg-slate-500/90"
             onclick={() => setCollapse(false)}
           >
             <BiRegularExpand class="ml-2 group-active:scale-95" />
-            <span class="rounded-l-xs flex h-full items-center px-2 text-xs font-semibold uppercase">
+            <span class="flex h-full items-center rounded-l-xs px-2 text-xs font-semibold uppercase">
               {props.item.type}
             </span>
           </button>
 
           <For each={props.item.target}>
             {(item, index) => (
-              <div class="flex-start rounded-t-xs flex h-fit w-full bg-zinc-300 shadow-2xl">
-                <div class="flex select-none items-center text-nowrap bg-slate-600 px-2 py-2 text-xs font-semibold uppercase text-slate-100">
+              <div class="flex-start flex h-fit w-full rounded-t-xs bg-zinc-300 shadow-2xl">
+                <div class="flex items-center bg-slate-600 px-2 py-2 text-xs font-semibold text-nowrap text-slate-100 uppercase select-none">
                   {t[item.type as TranslationKey]._model.verboseName()}
                 </div>
-                <div class="flex w-fit flex-nowrap items-center pl-4 pr-4 text-sm">
+                <div class="flex w-fit flex-nowrap items-center pr-4 pl-4 text-sm">
                   {item.label}
                 </div>
                 <div class="grow" />
                 <button
-                  onClick={() =>
-                    props.setValue(
-                      props.item.target.filter((item, idx) => idx !== index()),
-                    )
-                  }
-                  class="rounded-tr-xs group flex aspect-square h-10 cursor-pointer items-center justify-center bg-orange-500/70 hover:bg-orange-500/80 active:bg-orange-500/80 active:shadow-inner active:shadow-slate-600/30"
+                  onClick={props.onRemove}
+                  class="group flex aspect-square h-10 cursor-pointer items-center justify-center rounded-tr-xs bg-orange-500/70 hover:bg-orange-500/80 active:bg-orange-500/80 active:shadow-inner active:shadow-slate-600/30"
                 >
                   <IoCloseSharp
                     color={colors.slate["100"]}
@@ -620,7 +616,7 @@ export function RenderReifiedRelation(props: TRenderReifiedRelationProps) {
           </For>
         </div>
         <Show when={props.fieldDefinition.edgeModel}>
-          <div class="rounded-b-xs flex w-full shrink bg-slate-700 px-2">
+          <div class="flex w-full shrink rounded-b-xs bg-slate-700 px-2">
             <FormFields
               fieldNames={Object.keys(
                 ModelDefinitions[
@@ -752,27 +748,42 @@ export function RelationToExistingField(props: TRelationToExistingFieldProps) {
       ]);
       return;
     } else {
-      blankObject.target = [item];
+      props.setValue([...props.value, item]);
     }
   }
 
   function onRemove(index: number) {
+    console.log("CALLING ONREMOVE");
     props.setValue(
       props.value.filter((item: any, idx: number) => idx !== index),
     );
   }
 
   function alternativeCreateTypes() {
-    const fieldDefTypes = props.fieldDefinition.types
-      .filter((t) => t.type !== props.fieldDefinition.defaultReifiedType)
-      .map((t) => t.type)
-      .sort();
+    if (props.typesInContext) {
+      const typesInContext =
+        props.typesInContext[0].typeParamsToTypeMap[typeInContextTypeVarName]
+          .types;
 
-    const types = new Set([
-      ...props.fieldDefinition.defaultSearchType.sort(),
-      ...fieldDefTypes,
-    ]);
-    return [...types];
+      const fieldDefTypes = typesInContext
+        .filter((t) => t.type !== props.fieldDefinition.defaultReifiedType)
+        .map((t) => t.type)
+        .sort();
+
+      const types = new Set([...fieldDefTypes, ...defaultSearchType]);
+      return [...types];
+    } else {
+      const fieldDefTypes = props.fieldDefinition.types
+        .filter((t) => t.type !== props.fieldDefinition.defaultReifiedType)
+        .map((t) => t.type)
+        .sort();
+
+      const types = new Set([
+        ...props.fieldDefinition.defaultSearchType.sort(),
+        ...fieldDefTypes,
+      ]);
+      return [...types];
+    }
   }
 
   function onClickAlterntiveCreateType(
@@ -795,7 +806,7 @@ export function RelationToExistingField(props: TRelationToExistingFieldProps) {
           class="col-span-10 flex flex-row flex-wrap gap-x-4 gap-y-6"
           classList={{
             "not-last:border-b border-b-slate-400/30 not-last:mb-5 not-last:pb-6 ":
-              props.showSearchBox,
+              props.value.length > 0,
           }}
         >
           <For each={props.value}>
