@@ -7,8 +7,8 @@ import { useUserLogin, logInUser } from "~/contexts/users";
 
 export function LoginOverlay(props: TLogInFormProps) {
   return (
-    <div class="absolute w-screen h-screen bg-slate-400/50 top-0 left-0 z-10 flex justify-center items-center backdrop-blur-sm">
-      <div class="bg-slate-200 rounded-sm shadow-2xl w-4/12">
+    <div class="absolute top-0 left-0 z-10 flex h-screen w-screen items-center justify-center bg-slate-400/50 backdrop-blur-sm">
+      <div class="w-4/12 rounded-sm bg-slate-200 shadow-2xl">
         <LogInForm
           onLoginCallback={props.onLoginCallback}
           onCancel={props.onCancel}
@@ -66,14 +66,14 @@ export function LogInForm(props: TLogInFormProps) {
 
   return (
     <div>
-      <div class=" bg-slate-700 flex h-10 rounded-t-xs shadow-xl mb-6">
-        <div class="w-full uppercase text-sm font-semibold text-slate-50 p-3 rounded-t-sm select-none flex items-center">
+      <div class="mb-6 flex h-10 rounded-t-xs bg-slate-700 shadow-xl">
+        <div class="flex w-full items-center rounded-t-sm p-3 text-sm font-semibold text-slate-50 uppercase select-none">
           {"Log in required"}
         </div>
         <Show when={props.onCancel}>
           <div class="grow" />{" "}
           <button
-            class="h-10 aspect-square shadow-2xl shadow-amber-600/90 bg-amber-700 text-white flex justify-center items-center rounded-tr-xs active:bg-amber-600 active:scale-[92%]"
+            class="flex aspect-square h-10 items-center justify-center rounded-tr-xs bg-amber-700 text-white shadow-2xl shadow-amber-600/90 active:scale-[92%] active:bg-amber-600"
             onClick={props.onCancel}
           >
             <ImCross size={12} />
@@ -82,36 +82,36 @@ export function LogInForm(props: TLogInFormProps) {
       </div>
       <form
         method="post"
-        class="flex flex-col gap-y-12 p-12 items-center"
+        class="flex flex-col items-center gap-y-12 p-12"
         onSubmit={(e) => {
           handleInput(e);
           return false;
         }}
       >
-        <div class="w-full group grid grid-cols-4 space-x-6">
+        <div class="group grid w-full grid-cols-4 space-x-6">
           <label
-            class="font-semibold text-sm text-slate-700 uppercase select-none col-span-1 flex flex-col justify-center"
+            class="col-span-1 flex flex-col justify-center text-sm font-semibold text-slate-700 uppercase select-none"
             for="username"
           >
             Username
           </label>
           <input
             ref={usernameInput}
-            class="col-span-3 font-mono block w-10/12 bg-slate-300 outline-none p-3 rounded-sm border-transparent border transition-all duration-75 focus:border-white  focus:shadow-2xl focus:bg-slate-50 group-hover:scale-y-110 focus:scale-y-110"
+            class="col-span-3 block w-10/12 rounded-sm border border-transparent bg-slate-300 p-3 font-mono transition-all duration-75 outline-none group-hover:scale-y-110 focus:scale-y-110 focus:border-white focus:bg-slate-50 focus:shadow-2xl"
             name="username"
             id="username"
             type="text"
           />
         </div>
-        <div class="w-full group  items-center space-x-6 grid grid-cols-4">
+        <div class="group grid w-full grid-cols-4 items-center space-x-6">
           <label
-            class="col-span-1  font-semibold text-sm text-slate-700 uppercase select-none flex flex-col justify-center"
+            class="col-span-1 flex flex-col justify-center text-sm font-semibold text-slate-700 uppercase select-none"
             for="password"
           >
             Password
           </label>
           <input
-            class="col-span-3 font-mono block w-10/12 bg-slate-300 outline-none p-3 rounded-xs border-transparent border transition-all duration-75 focus:border-white  focus:shadow-2xl focus:bg-slate-50 group-hover:scale-y-110 focus:scale-y-110"
+            class="col-span-3 block w-10/12 rounded-xs border border-transparent bg-slate-300 p-3 font-mono transition-all duration-75 outline-none group-hover:scale-y-110 focus:scale-y-110 focus:border-white focus:bg-slate-50 focus:shadow-2xl"
             name="password"
             id="password"
             type="password"
@@ -119,14 +119,14 @@ export function LogInForm(props: TLogInFormProps) {
         </div>
 
         <input
-          class="inline w-fit px-6 py-4 text-md uppercase font-semibold text-white bg-green-700 rounded-xs hover:bg-green-800 active:bg-green-600 cursor-pointer  hover:shadow-2xl hover:shadow-green-900/50 outline-none  focus:shadow-green-900/50"
+          class="text-md inline w-fit cursor-pointer rounded-xs bg-green-700 px-6 py-4 font-semibold text-white uppercase outline-none hover:bg-green-800 hover:shadow-2xl hover:shadow-green-900/50 focus:shadow-green-900/50 active:bg-green-600"
           type="submit"
           value="Log In"
         />
       </form>
 
       <Show when={loginErrorMessage()}>
-        <div class="bg-red-700 text-red-50 p-3 text-sm uppercase font-semibold rounded-b-xs transition-all select-none">
+        <div class="rounded-b-xs bg-red-700 p-3 text-sm font-semibold text-red-50 uppercase transition-all select-none">
           {loginErrorMessage()}
         </div>
       </Show>

@@ -1,6 +1,7 @@
-import { useUserLogin } from "./contexts/users";
 import { getRequestEvent, isServer } from "solid-js/web";
 import { PrefetchCache } from "~/utils/prefetch";
+import { BaseNodeTypes } from "../.model-configs/model-typescript";
+import { useUserLogin } from "./contexts/users";
 
 const getCookieValue = (
   cookieString: string | undefined | null,
@@ -82,6 +83,29 @@ export async function getRequest(
   }
 }
 
+export async function createRequest(url: URL, createData: any) {
+  const [users, { setAccessingAuthorisedRoute, logOut }] = useUserLogin();
+
+  const response = await fetch(url, {
+    method: "post",
+    credentials: "include",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(createData),
+  });
+  if (response.status === 401) {
+    console.log("Not Authorized");
+    setAccessingAuthorisedRoute(true);
+    logOut();
+    return undefined;
+  }
+
+  const data = await response.json();
+  return data;
+}
+
 export type APIError = {
   error: true;
   message: string;
@@ -123,10 +147,20 @@ function createApiClient(BASE_URL: string) {
     return data;
   }
 
+  async function create<K extends BaseNodeTypes>(
+    entityType: K,
+    data: any,
+  ): Promise<HeadViewTypesMap[K] | undefined> {
+    const url = new URL(`${BASE_URL}/${entityType}/new`);
+    const createdData = await createRequest(url, data);
+    return createdData;
+  }
+
   return {
     list,
     view,
     autocomplete,
+    create,
   };
 }
 

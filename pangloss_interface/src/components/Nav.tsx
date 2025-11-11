@@ -50,7 +50,7 @@ function NavButton(props: NavButtonProps) {
   return (
     <button
       onClick={props.onClick}
-      class={`aspect-square active:shadow-inner box-border  h-12 flex justify-center items-center group ${props.class}`}
+      class={`group box-border flex aspect-square h-12 items-center justify-center active:shadow-inner ${props.class}`}
       disabled={props.deactivate}
     >
       <div
@@ -95,7 +95,7 @@ function ModelMenuItem(props: ModelMenuItemPropsType) {
                 style={`padding-left: calc(${(props.indent + 1) * 1}rem + 0.75rem);`}
                 href={`/${modelName}`}
               >
-                <span class="group-active/mButton:scale-95 pr-2">
+                <span class="pr-2 group-active/mButton:scale-95">
                   {t[modelName as TranslationKey]._model.verboseNamePlural()}
                 </span>
               </A>
@@ -177,11 +177,11 @@ function FlagButton(props: FlagButtonProps) {
   return (
     <NavButton
       onClick={() => setLocale(props.lang)}
-      class="bg-slate-600/90 hover:bg-slate-500/90 active:bg-slate-700/90 not-last:border-r-[0.25px] not-last:border-r-slate-900 active:rounded-sm"
+      class="bg-slate-600/90 not-last:border-r-[0.25px] not-last:border-r-slate-900 hover:bg-slate-500/90 active:rounded-sm active:bg-slate-700/90"
       icon={
         <img
           src={`https://flagsapi.com/${props.flag.toUpperCase()}/flat/64.png`}
-          class="m-2 w-7.5 rounded-xl overflow-hidden group-hover:opacity-100"
+          class="m-2 w-7.5 overflow-hidden rounded-xl group-hover:opacity-100"
         />
       }
     />
@@ -222,7 +222,7 @@ export default function Nav() {
         />
       </Show>
       <nav
-        class="fixed top-0 h-full w-80 text-sm font-semibold transition-all border-l border-slate-800 will-change-transforms"
+        class="will-change-transforms fixed top-0 z-30 h-full w-80 border-l border-slate-800 text-sm font-semibold transition-all"
         classList={{
           "-left-68 shadow-xl shadow-slate-300 bg-slate-400": !navHovered(),
           "left-0 shadow-2xl shadow-slate-800 drop-shadow-2xl bg-slate-400":
@@ -232,14 +232,14 @@ export default function Nav() {
         onMouseLeave={() => setNavHovered(false)}
       >
         <div
-          class=" w-full bg-slate-800 transition-all flex justify-between items-center "
+          class="flex w-full items-center justify-between bg-slate-800 transition-all"
           classList={{
             " h-12": !navHovered(),
             "h-16": navHovered(),
           }}
         >
           <header
-            class="transition-none flex items-center text-slate-100 text-lg tracking-wider font-extralight h-full pl-3 select-none"
+            class="flex h-full items-center pl-3 text-lg font-extralight tracking-wider text-slate-100 transition-none select-none"
             classList={{
               "opacity-0": !navHovered(),
               "opacity-100 w-[calc(100%-48px)] justify-center": navHovered(),
@@ -250,24 +250,24 @@ export default function Nav() {
           <BiRegularMenu
             color="white"
             size={navHovered() ? 36 : 28}
-            class="transition-all mr-2.5"
+            class="mr-2.5 transition-all"
             classList={{
               "rotate-90  mr-2 relative left-[3px]": navHovered(),
             }}
           />
         </div>
 
-        <div class="bg-slate-900  uppercase text-xs text-slate-300 flex justify-between">
+        <div class="flex justify-between bg-slate-900 text-xs text-slate-300 uppercase">
           <Show
             when={user.isLoggedIn}
             fallback={
               <>
-                <div class="p-3 flex items-center select-none">
+                <div class="flex items-center p-3 select-none">
                   <BiSolidUser class="mr-2" /> Not Logged In
                 </div>
                 <div class="flex">
                   <NavButton
-                    class="bg-slate-700/90 hover:bg-slate-600/90 active:bg-slate-800/90 not-last:border-r-[0.25px] not-last:border-r-slate-900"
+                    class="bg-slate-700/90 not-last:border-r-[0.25px] not-last:border-r-slate-900 hover:bg-slate-600/90 active:bg-slate-800/90"
                     icon={<BiSolidLogIn size={28} color="white" />}
                     onClick={() => {
                       setShowLoginOverlay(true);
@@ -289,12 +289,12 @@ export default function Nav() {
             }
           >
             <>
-              <div class="p-3 flex items-center select-none">
+              <div class="flex items-center p-3 select-none">
                 <BiSolidUser class="mr-2" /> {user.loggedInUserName}
               </div>
               <div class="flex">
                 <NavButton
-                  class="bg-slate-700/90 hover:bg-slate-600/90 active:bg-slate-800/90 not-last:border-r-[0.25px] not-last:border-r-slate-900"
+                  class="bg-slate-700/90 not-last:border-r-[0.25px] not-last:border-r-slate-900 hover:bg-slate-600/90 active:bg-slate-800/90"
                   icon={<BiSolidLogOut size={28} color="white" />}
                   onClick={() => {
                     logOut();
@@ -317,8 +317,8 @@ export default function Nav() {
             </>
           </Show>
         </div>
-        <div class="bg-slate-700  uppercase text-xs text-slate-300 flex justify-between h-12">
-          <div class="p-3 flex items-center select-none">Language</div>
+        <div class="flex h-12 justify-between bg-slate-700 text-xs text-slate-300 uppercase">
+          <div class="flex items-center p-3 select-none">Language</div>
           <div class="flex">
             <For
               each={config.langs.filter((l) => l.lang !== currentLanguage())}
@@ -349,7 +349,7 @@ export default function Nav() {
           class="mt-10"
           classList={{ hidden: !navHovered(), block: navHovered() }}
         >
-          <div class="w-full bg-slate-900 flex items-center uppercase text-xs font-semibold text-slate-100 h-12 pl-3">
+          <div class="flex h-12 w-full items-center bg-slate-900 pl-3 text-xs font-semibold text-slate-100 uppercase">
             Models
           </div>
           <ModelMenu />

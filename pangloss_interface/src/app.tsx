@@ -15,10 +15,10 @@ export default function App() {
           <Router
             root={(props) => (
               <>
-                <div class="fixed top-0 w-full flex justify-center">
+                <div class="fixed top-0 flex w-full justify-center">
                   <div
                     id="controlBar"
-                    class="max-w-5/6 min-w-5/6 h-16 bg-slate-400/50 backdrop-blur-2xl rounded-b-sm relative left-6 shadow-md hover:shadow-xl duration-500 empty:-top-16"
+                    class="left-6 h-16 max-w-5/6 min-w-5/6 rounded-b-sm bg-slate-400/50 shadow-md backdrop-blur-2xl duration-500 empty:-top-16 hover:shadow-xl"
                   ></div>
                 </div>
                 <Nav />
