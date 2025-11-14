@@ -445,7 +445,7 @@ export function CreateInlineForm(props: TCreateInlineFormProps) {
             />
           </button>
         </div>
-        <div class="rounded-b-xs bg-slate-50/20 px-4 py-4 backdrop-blur-2xl">
+        <div class="rounded-b-xs bg-white/30 px-4 py-4 backdrop-blur-2xl">
           <BaseForm
             formFor={props.itemType}
             baseFormState={formState}

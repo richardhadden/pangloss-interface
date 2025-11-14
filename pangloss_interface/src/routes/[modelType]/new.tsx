@@ -1,6 +1,6 @@
 import { BaseNodeTypes } from "../../../.model-configs/model-typescript";
 import { useParams } from "@solidjs/router";
-import { Show } from "solid-js";
+import { createEffect, Show } from "solid-js";
 import { createStore, produce, reconcile, unwrap } from "solid-js/store";
 import ControlBar from "~/components/ControlBar";
 import { BaseForm } from "~/components/form/BaseForm";
@@ -23,6 +23,11 @@ export default function CreateObject() {
   // unmount the component, so the default store value is not changed;
   // instead, we create an effect that checks the previous state's `type`
   // to the params.modelType, and create a blank object if different
+  createEffect(() => {
+    if (newFormState.type !== params.modelType) {
+      setNewFormState(reconcile(createBlankObject(params.modelType, false)));
+    }
+  });
 
   return (
     <>
@@ -62,15 +67,18 @@ export default function CreateObject() {
       />
 
       <div class="py-32 pr-16 pl-32">
-        <button onclick={() => console.log(unwrap(newFormState))}>
+        {/*<button onclick={() => console.log(unwrap(newFormState))}>
           CONSOLE LOG FORM STATE
-        </button>
-
-        <BaseForm
-          formFor={params.modelType}
-          baseFormState={newFormState}
-          setBaseFormState={setNewFormState}
-        />
+        </button>*/}
+        <Show when={params.modelType} keyed>
+          {(a) => (
+            <BaseForm
+              formFor={params.modelType}
+              baseFormState={newFormState}
+              setBaseFormState={setNewFormState}
+            />
+          )}
+        </Show>
       </div>
     </>
   );

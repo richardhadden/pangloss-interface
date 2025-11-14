@@ -6,6 +6,7 @@ import {
   createContext,
   createSignal,
   JSXElement,
+  onMount,
   ParentComponent,
   Show,
   Suspense,
@@ -115,6 +116,8 @@ const LoginForm = (props: TLoginFormProps) => {
 
   let formRef!: HTMLFormElement;
   let usernameInputRef!: HTMLInputElement;
+
+  onMount(() => usernameInputRef.focus());
 
   const onSubmitFormHandler = async (e: Event) => {
     e.preventDefault();
