@@ -33,13 +33,14 @@ import ControlBar from "~/components/ControlBar";
 import { LoginOverlay } from "~/components/LogInForm";
 
 import { TranslationKey, useTranslation } from "~/contexts/translation";
-import { useUserLogin } from "~/contexts/users";
+
 import {
   createRefetchableAsync,
   fetchDataCache,
 } from "~/utils/createRefetchableAsync";
 import { prefetch } from "~/utils/prefetch";
-
+import { Spinner, SpinnerType } from "solid-spinner";
+import colors from "tailwindcss/colors";
 type TSearchParams = {
   q: string;
   deepSearch: string;
@@ -63,7 +64,6 @@ export const route = {
 } satisfies RouteDefinition;
 
 export default function EntityList() {
-  const [user, { setAccessingAuthorisedRoute, logOut }] = useUserLogin();
   const params: {
     modelType: keyof { modelType: BaseNodeTypes };
   } = useParams();
@@ -85,10 +85,6 @@ export default function EntityList() {
   }
 
   const keydownList = useKeyDownList();
-
-  onMount(() => {
-    setAccessingAuthorisedRoute(false);
-  });
 
   let searchInputRef!: HTMLInputElement;
 
@@ -200,8 +196,8 @@ export default function EntityList() {
         credentials: "include",
       });
       if (response.status === 401) {
-        setAccessingAuthorisedRoute(true);
-        logOut();
+        //setAccessingAuthorisedRoute(true);
+        //logOut();
         return;
       }
       const newData = await response.json();
@@ -262,7 +258,10 @@ export default function EntityList() {
                       <BiRegularSearch class="relative top-[1px] group-active:scale-90" />
                     }
                   >
-                    Loading...
+                    <Spinner
+                      type={SpinnerType.puff}
+                      color={colors.slate[700]}
+                    />
                   </Show>
                 </button>
               </Show>
@@ -381,9 +380,6 @@ export default function EntityList() {
                   </Show>
                 </>
               )}
-            </Show>
-            <Show when={!user.isLoggedIn && user.accessingAuthorisedRoute}>
-              <LoginOverlay onLoginCallback={doRefetch} />
             </Show>
           </Suspense>
         </section>

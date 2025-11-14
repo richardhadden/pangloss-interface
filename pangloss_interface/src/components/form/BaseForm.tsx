@@ -1,3 +1,4 @@
+import { apiClient } from "~/apiClient";
 import {
   BaseNodeDefinitionMap,
   ModelDefinitions,
@@ -8,6 +9,7 @@ import {
   TRelationFieldDefinition,
 } from "../../../.model-configs/model-definitions";
 import {
+  AllModelTypes,
   AllModelTypesUnion,
   BaseNodeTypes,
   MultiKeyFieldTypes,
@@ -17,9 +19,85 @@ import { EmbeddedField } from "./EmbeddedField";
 import { TextField, TextAreaField, NumberField } from "./LiteralFields";
 import { RelationField } from "./RelationField";
 import { RenderReifiedRelation } from "./RelationToExistingField";
-import { Component, For, JSX, JSXElement, Match, Show, Switch } from "solid-js";
+import {
+  Component,
+  createEffect,
+  createSignal,
+  For,
+  JSX,
+  JSXElement,
+  Match,
+  Show,
+  Switch,
+} from "solid-js";
 import { SetStoreFunction } from "solid-js/store";
 import { useTranslation } from "~/contexts/translation";
+import { ImCross } from "solid-icons/im";
+
+type TExistingSuggestionsProps = {
+  type: keyof typeof ModelDefinitions;
+  label: string | null;
+};
+
+const ExistingSuggestions = (props: TExistingSuggestionsProps) => {
+  const [lang, { t }] = useTranslation();
+  const [existingMatches, setExistingMatches] = createSignal([]);
+  const [ignore, setIgnore] = createSignal(false);
+
+  createEffect(async () => {
+    if (props.label && props.label.length > 5) {
+      const data = await apiClient.list(props.type, { q: props.label });
+      setExistingMatches(data.results);
+    } else if (!props.label || (props.label && props.label.length == 0)) {
+      setIgnore(false);
+    }
+  });
+
+  return (
+    <Show
+      when={
+        props.label &&
+        props.label.length > 5 &&
+        existingMatches() &&
+        existingMatches().length > 0 &&
+        !ignore()
+      }
+    >
+      <div class="col-span-10 flex h-fit w-full items-center rounded-b-xs bg-slate-500/40 p-2">
+        <div class="flex items-center">
+          <span class="relative mr-2 text-xs text-slate-600">
+            Possible duplicate<Show when={existingMatches().length > 1}>s</Show>
+          </span>
+
+          <For each={existingMatches().slice(0, 3)}>
+            {(match) => (
+              <button class="mr-2 flex rounded-xs bg-zinc-400 bg-blend-normal backdrop-blur-none">
+                <div class="border-right-slate-500 flex items-center justify-center rounded-l-xs border-r-[0.5px] bg-slate-600 px-3 py-2 text-xs font-semibold text-nowrap text-slate-100 uppercase">
+                  {t[match.type as TranslationKey]._model.verboseName()}
+                </div>
+                <div class="p-2 pl-3 text-sm">{match.label}</div>
+              </button>
+            )}
+          </For>
+        </div>
+        <div class="grow-1" />
+        <div>
+          <button
+            class="group flex aspect-square h-10 cursor-pointer items-center justify-center rounded-xs bg-red-700/60 text-white shadow-2xl shadow-red-700/70 hover:bg-red-800/60 active:bg-red-700/60 active:shadow-inner active:shadow-red-900/50"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopImmediatePropagation();
+              e.stopPropagation();
+              setIgnore(true);
+            }}
+          >
+            <ImCross size={12} class="group-active:scale-95" />
+          </button>
+        </div>
+      </div>
+    </Show>
+  );
+};
 
 type TFormRowProps = {
   children: JSXElement;
@@ -34,9 +112,9 @@ const FormRow = (props: TFormRowProps) => {
   return (
     <Switch
       fallback={
-        <div class="not-last:border-b not-last:border-b-slate-100 col-span-12 grid grid-cols-12 gap-x-6 gap-y-12 pb-12 pt-12">
+        <div class="col-span-12 grid grid-cols-12 gap-x-6 gap-y-12 pt-12 pb-12 not-last:border-b not-last:border-b-slate-100">
           <div
-            class="col-span-1 flex select-none text-sm font-semibold uppercase text-slate-700"
+            class="col-span-1 flex text-sm font-semibold text-slate-700 uppercase select-none"
             classList={{
               "items-center":
                 !props.alignLabel || props.alignLabel === "middle",
@@ -54,8 +132,8 @@ const FormRow = (props: TFormRowProps) => {
         <div class={props.fieldContainerStyle}>{props.children}</div>
       </Match>
       <Match when={props.style === "small"}>
-        <div class="not-last:border-b not-last:border-b-slate-100 grid grid-cols-6 gap-y-1 pb-2 pt-2">
-          <div class="col-span-6 flex select-none text-xs font-semibold uppercase text-slate-700">
+        <div class="grid grid-cols-6 gap-y-1 pt-2 pb-2 not-last:border-b not-last:border-b-slate-100">
+          <div class="col-span-6 flex text-xs font-semibold text-slate-700 uppercase select-none">
             {props.rowLabel}
           </div>
           <div class="col-span-6">{props.children}</div>
@@ -103,6 +181,17 @@ export const FormFields = (props: TFormFieldsProps) => {
             onInput={(value) => props.setBaseFormState(value, "label")}
             placeholder="Label..."
           />
+          <Show
+            when={
+              ModelDefinitions[props.modelName as keyof typeof ModelDefinitions]
+                .meta.suggestDuplicates
+            }
+          >
+            <ExistingSuggestions
+              label={props.baseFormState["label"]}
+              type={props.modelName}
+            />
+          </Show>
         </FormRow>
       </Show>
       <For each={props.fieldNames}>
@@ -158,6 +247,7 @@ export const FormFields = (props: TFormFieldsProps) => {
                 />
               </FormRow>
             </Match>
+
             <Match when={fieldDef(fieldName).metatype === "EmbeddedField"}>
               <FormRow
                 rowLabel={translateFieldName(fieldName)}

@@ -3,7 +3,6 @@ import { ImCross } from "solid-icons/im";
 import type { JSX } from "solid-js";
 import { Show, createSignal, onMount } from "solid-js";
 import { useTranslation } from "~/contexts/translation";
-import { useUserLogin, logInUser } from "~/contexts/users";
 
 export function LoginOverlay(props: TLogInFormProps) {
   return (
@@ -12,6 +11,7 @@ export function LoginOverlay(props: TLogInFormProps) {
         <LogInForm
           onLoginCallback={props.onLoginCallback}
           onCancel={props.onCancel}
+          onSubmit={props.onSubmit}
         />
       </div>
     </div>
@@ -21,11 +21,10 @@ export function LoginOverlay(props: TLogInFormProps) {
 export type TLogInFormProps = {
   onLoginCallback?: () => void;
   onCancel?: () => void;
+  onSubmit: (form: HTMLFormElement) => void;
 };
 export function LogInForm(props: TLogInFormProps) {
   //const [t] = useTranslation();
-
-  const [user, { setLoggedIn }] = useUserLogin();
 
   createShortcut(
     ["Escape"],
@@ -37,32 +36,12 @@ export function LogInForm(props: TLogInFormProps) {
     { preventDefault: true, requireReset: false },
   );
 
-  const handleInput = async (event: SubmitEvent) => {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget as HTMLFormElement);
-    if (!formData.get("username") || !formData.get("password")) {
-      setLoginErrorMessage("Username or Password Missing");
-      return false;
-    }
-
-    const loginResponse = await logInUser(formData);
-    if (loginResponse === 200) {
-      setLoggedIn();
-      if (props.onLoginCallback) {
-        props.onLoginCallback();
-      }
-    } else if (loginResponse === 401) {
-      setLoginErrorMessage("Incorrect Username or Password");
-    } else {
-      setLoginErrorMessage("Something went wrong");
-    }
-    return false;
-  };
-
   const [loginErrorMessage, setLoginErrorMessage] = createSignal("");
   let usernameInput!: HTMLInputElement;
 
   onMount(() => usernameInput.focus());
+
+  let formRef!: HTMLFormElement;
 
   return (
     <div>
@@ -80,14 +59,8 @@ export function LogInForm(props: TLogInFormProps) {
           </button>
         </Show>
       </div>
-      <form
-        method="post"
-        class="flex flex-col items-center gap-y-12 p-12"
-        onSubmit={(e) => {
-          handleInput(e);
-          return false;
-        }}
-      >
+
+      <form class="flex flex-col items-center gap-y-12 p-12" ref={formRef}>
         <div class="group grid w-full grid-cols-4 space-x-6">
           <label
             class="col-span-1 flex flex-col justify-center text-sm font-semibold text-slate-700 uppercase select-none"
@@ -122,9 +95,9 @@ export function LogInForm(props: TLogInFormProps) {
           class="text-md inline w-fit cursor-pointer rounded-xs bg-green-700 px-6 py-4 font-semibold text-white uppercase outline-none hover:bg-green-800 hover:shadow-2xl hover:shadow-green-900/50 focus:shadow-green-900/50 active:bg-green-600"
           type="submit"
           value="Log In"
+          onclick={() => props.onSubmit(formRef)}
         />
       </form>
-
       <Show when={loginErrorMessage()}>
         <div class="rounded-b-xs bg-red-700 p-3 text-sm font-semibold text-red-50 uppercase transition-all select-none">
           {loginErrorMessage()}

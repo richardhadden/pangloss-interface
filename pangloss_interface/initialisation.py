@@ -3,10 +3,9 @@ from pathlib import Path
 
 from pangloss.cli.main import get_project_path
 from pangloss.exceptions import PanglossConfigError
-from pangloss.initialisation import initialisation_task
 
 
-@initialisation_task(run_in_dev=False)
+# @initialisation_task(run_in_dev=False)
 def start_interface_server():
     print("HEY FROM INTERFACE")
 

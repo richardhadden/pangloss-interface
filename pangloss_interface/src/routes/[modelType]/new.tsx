@@ -1,30 +1,23 @@
 import { BaseNodeTypes } from "../../../.model-configs/model-typescript";
-import { useIsRouting, useNavigate, useParams } from "@solidjs/router";
-import {
-  createEffect,
-  createMemo,
-  createSignal,
-  For,
-  onMount,
-  Show,
-} from "solid-js";
+import { useParams } from "@solidjs/router";
+import { Show } from "solid-js";
 import { createStore, produce, reconcile, unwrap } from "solid-js/store";
 import ControlBar from "~/components/ControlBar";
 import { BaseForm } from "~/components/form/BaseForm";
-import { useUserLogin } from "~/contexts/users";
+
 import { createBlankObject } from "~/utils/createBlankObject";
+import { RequireLogin } from "~/contexts/users";
+import { Title } from "@solidjs/meta";
+import { TranslationKey, useTranslation } from "~/contexts/translation";
 
 export default function CreateObject() {
   const params = useParams<{ modelType: BaseNodeTypes }>();
-  const [user, { setAccessingAuthorisedRoute, LoggedIn }] = useUserLogin();
-  const navigate = useNavigate();
-  const isRouting = useIsRouting();
 
-  onMount(() => setAccessingAuthorisedRoute(true));
-  const modelType = createMemo(() => params.modelType);
   const [newFormState, setNewFormState] = createStore(
     createBlankObject(params.modelType, false),
   );
+
+  const [lang, { t }] = useTranslation();
 
   // Navigating from one `new` page to another directly does not
   // unmount the component, so the default store value is not changed;
@@ -32,10 +25,15 @@ export default function CreateObject() {
   // to the params.modelType, and create a blank object if different
 
   return (
-    <LoggedIn onCancel={() => history.back()}>
+    <>
+      <Title>
+        New {t[params.modelType as TranslationKey]._model.verboseName()} |
+        Pangloss
+      </Title>
+      <RequireLogin />
       <ControlBar
         statusContent={
-          <div class="flex h-full select-none items-center justify-center px-4 text-sm font-semibold uppercase text-slate-800">
+          <div class="flex h-full items-center justify-center px-4 text-sm font-semibold text-slate-800 uppercase select-none">
             New
           </div>
         }
@@ -45,7 +43,7 @@ export default function CreateObject() {
         centreContent={
           <Show when={newFormState.label.length > 0}>
             <div
-              class="shrink-1 line-clamp-2 flex h-full w-fit grow-0 items-center rounded-r-sm border-r-[0.25px] border-r-neutral-400/20 bg-zinc-300 pl-6 pr-6 align-middle text-black shadow-2xl shadow-neutral-300/50"
+              class="line-clamp-2 flex h-full w-fit shrink-1 grow-0 items-center rounded-r-sm border-r-[0.25px] border-r-neutral-400/20 bg-zinc-300 pr-6 pl-6 align-middle text-black shadow-2xl shadow-neutral-300/50"
               classList={{
                 "text-sm":
                   newFormState.label.length > 100 &&
@@ -63,16 +61,17 @@ export default function CreateObject() {
         }
       />
 
-      <div class="py-32 pl-32 pr-16">
+      <div class="py-32 pr-16 pl-32">
         <button onclick={() => console.log(unwrap(newFormState))}>
           CONSOLE LOG FORM STATE
         </button>
+
         <BaseForm
           formFor={params.modelType}
           baseFormState={newFormState}
           setBaseFormState={setNewFormState}
         />
       </div>
-    </LoggedIn>
+    </>
   );
 }

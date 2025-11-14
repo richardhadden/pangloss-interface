@@ -6,7 +6,7 @@ import {
 } from "../../.model-configs/model-definitions";
 import { type BaseNodeTypes } from "../../.model-configs/model-typescript";
 import { config } from "../../.model-configs/project-config";
-import { LoginOverlay } from "./LogInForm";
+
 import { createShortcut } from "@solid-primitives/keyboard";
 import { A, useLocation, useNavigate } from "@solidjs/router";
 import {
@@ -25,7 +25,7 @@ import {
   LocaleOptions,
   TranslationKey,
 } from "~/contexts/translation";
-import { useUserLogin } from "~/contexts/users";
+import { userState, LoginForm } from "~/contexts/users";
 
 function getTopLevelModels(): TModelDefinitionMap {
   const filtered = Object.entries(BaseNodeDefinitionMap).filter(
@@ -81,7 +81,6 @@ const modelMenuAddButtonStyle =
 
 function ModelMenuItem(props: ModelMenuItemPropsType) {
   const [_, { t }] = useTranslation();
-  const [user] = useUserLogin();
 
   return (
     <>
@@ -128,10 +127,9 @@ function ModelMenuItem(props: ModelMenuItemPropsType) {
 }
 
 function ModelMenu() {
-  const [user] = useUserLogin();
   const [lang, { t }] = useTranslation();
   return (
-    <For each={Object.entries(topLevelModels)}>
+    <For each={Object.entries(topLevelModels).sort()}>
       {([modelName, model]) => (
         <>
           <div class={modelMenuItemStyle}>
@@ -189,7 +187,6 @@ function FlagButton(props: FlagButtonProps) {
 }
 
 export default function Nav() {
-  const [user, { logOut }] = useUserLogin();
   const [currentLanguage] = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
@@ -198,6 +195,8 @@ export default function Nav() {
       ? "border-sky-600"
       : "border-transparent hover:border-sky-600";
   const [showLoginOverlay, setShowLoginOverlay] = createSignal(false);
+
+  const user = userState();
 
   createShortcut(
     ["`"],
@@ -209,20 +208,16 @@ export default function Nav() {
     { preventDefault: false, requireReset: true },
   );
 
-  createEffect(() =>
-    console.log("user logged in", user.isLoggedIn, user.loggedInUserName),
-  );
-
   return (
     <>
       <Show when={showLoginOverlay()}>
-        <LoginOverlay
-          onLoginCallback={() => setShowLoginOverlay(false)}
-          onCancel={() => setShowLoginOverlay(false)}
+        <LoginForm
+          onCancelCallback={() => setShowLoginOverlay(false)}
+          onSuccessfulLoginCallback={() => setShowLoginOverlay(false)}
         />
       </Show>
       <nav
-        class="will-change-transforms fixed top-0 z-30 h-full w-80 border-l border-slate-800 text-sm font-semibold transition-all"
+        class="will-change-transforms fixed top-0 z-30 flex h-dvh w-80 flex-col border-l border-slate-800 text-sm font-semibold transition-all"
         classList={{
           "-left-68 shadow-xl shadow-slate-300 bg-slate-400": !navHovered(),
           "left-0 shadow-2xl shadow-slate-800 drop-shadow-2xl bg-slate-400":
@@ -239,10 +234,11 @@ export default function Nav() {
           }}
         >
           <header
-            class="flex h-full items-center pl-3 text-lg font-extralight tracking-wider text-slate-100 transition-none select-none"
+            class="flex items-center pl-3 text-lg font-extralight tracking-wider text-slate-100 transition-all duration-75 select-none"
             classList={{
               "opacity-0": !navHovered(),
-              "opacity-100 w-[calc(100%-48px)] justify-center": navHovered(),
+              "opacity-100 w-[calc(100%-48px)] justify-center h-20":
+                navHovered(),
             }}
           >
             <A href="/">{config.projectName}</A>
@@ -259,7 +255,7 @@ export default function Nav() {
 
         <div class="flex justify-between bg-slate-900 text-xs text-slate-300 uppercase">
           <Show
-            when={user.isLoggedIn}
+            when={user.isLoggedIn()}
             fallback={
               <>
                 <div class="flex items-center p-3 select-none">
@@ -290,17 +286,14 @@ export default function Nav() {
           >
             <>
               <div class="flex items-center p-3 select-none">
-                <BiSolidUser class="mr-2" /> {user.loggedInUserName}
+                <BiSolidUser class="mr-2" /> {user.loggedInUserName()}
               </div>
               <div class="flex">
                 <NavButton
                   class="bg-slate-700/90 not-last:border-r-[0.25px] not-last:border-r-slate-900 hover:bg-slate-600/90 active:bg-slate-800/90"
                   icon={<BiSolidLogOut size={28} color="white" />}
                   onClick={() => {
-                    logOut();
-                    if (user.accessingAuthorisedRoute) {
-                      navigate("/");
-                    }
+                    user.logOutUser();
                   }}
                 />
                 <NavButton
@@ -346,14 +339,20 @@ export default function Nav() {
           </div>
         </div>
         <div
-          class="mt-10"
-          classList={{ hidden: !navHovered(), block: navHovered() }}
+          class="relative mt-10"
+          classList={{
+            hidden: !navHovered(),
+            "block relative overflow-y-scroll scrollbar-none": navHovered(),
+          }}
         >
-          <div class="flex h-12 w-full items-center bg-slate-900 pl-3 text-xs font-semibold text-slate-100 uppercase">
+          <div class="fixed flex h-12 w-full items-center bg-slate-900 pl-3 text-xs font-semibold text-slate-100 uppercase">
             Models
           </div>
-          <ModelMenu />
+          <div class="mt-12">
+            <ModelMenu />
+          </div>
         </div>
+        <div class="h-8" />
       </nav>
     </>
   );

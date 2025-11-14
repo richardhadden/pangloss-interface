@@ -10,12 +10,12 @@ import Nav from "~/components/Nav";
 export default function App() {
   return (
     <MetaProvider>
-      <TranslationProvider>
-        <UserProvider isLoggedIn={false}>
+      <UserProvider>
+        <TranslationProvider>
           <Router
             root={(props) => (
               <>
-                <div class="fixed top-0 flex w-full justify-center">
+                <div class="fixed top-0 flex w-full justify-center pl-12">
                   <div
                     id="controlBar"
                     class="left-6 h-16 max-w-5/6 min-w-5/6 rounded-b-sm bg-slate-400/50 shadow-md backdrop-blur-2xl duration-500 empty:-top-16 hover:shadow-xl"
@@ -30,8 +30,8 @@ export default function App() {
           >
             <FileRoutes />
           </Router>
-        </UserProvider>
-      </TranslationProvider>
+        </TranslationProvider>
+      </UserProvider>
     </MetaProvider>
   );
 }

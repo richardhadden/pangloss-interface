@@ -34,6 +34,7 @@ class InterfaceBaseMeta(AbstractBaseMeta):
         | None
     ) = dataclasses.field(default="amber")
     should_collapse: Callable[[type[BaseNode]], bool] | None = None
+    suggest_duplicates: bool | None = None
 
 
 BaseNode.__annotations__["InterfaceMeta"] = ClassVar[type[InterfaceBaseMeta]]

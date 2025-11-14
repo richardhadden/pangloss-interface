@@ -38,6 +38,7 @@ import { interfaceApiClient } from "~/apiClient";
 import { TranslationKey, useTranslation } from "~/contexts/translation";
 import { createBlankObject } from "~/utils/createBlankObject";
 import { apiClient } from "~/apiClient";
+import { createShortcut } from "@solid-primitives/keyboard";
 
 type TSelectionOptions = {
   results: Array<{ type: BaseNodeTypes; id: string; label: string }>;
@@ -380,14 +381,34 @@ export function CreateInlineForm(props: TCreateInlineFormProps) {
     if (response) {
       props.onSuccessfulCreate(response);
       props.onClose();
-    } else {
-      alert("Something went wrong");
     }
   };
 
+  let boxRef!: HTMLDivElement;
+
+  const handleBackgroundClick = (e: Event) => {
+    if (!boxRef.contains(e.target as HTMLElement)) {
+      props.onClose();
+    }
+  };
+
+  createShortcut(
+    ["Escape"],
+    () => {
+      props.onClose();
+    },
+    { preventDefault: true, requireReset: false },
+  );
+
   return (
-    <div class="fixed top-0 right-0 left-12 z-20 flex h-dvh items-center justify-center bg-slate-500/50 px-20">
-      <div class="min-w-1/2 rounded-xs bg-slate-300/50 shadow-2xl shadow-slate-800/60 backdrop-blur-2xl">
+    <div
+      class="fixed top-0 right-0 left-12 z-20 flex h-dvh items-center justify-center bg-slate-500/50 px-20"
+      onClick={handleBackgroundClick}
+    >
+      <div
+        class="min-w-1/2 rounded-xs bg-slate-300/50 shadow-2xl shadow-slate-900/70 backdrop-blur-2xl"
+        ref={boxRef}
+      >
         <div class="flex h-14 rounded-t-xs shadow-sm shadow-slate-400">
           <div class="flex h-full items-center rounded-tl-xs bg-slate-400/50 px-4 text-sm font-semibold text-slate-800 uppercase select-none">
             New
@@ -424,7 +445,7 @@ export function CreateInlineForm(props: TCreateInlineFormProps) {
             />
           </button>
         </div>
-        <div class="rounded-b-xs bg-slate-50 px-4 py-4">
+        <div class="rounded-b-xs bg-slate-50/20 px-4 py-4 backdrop-blur-2xl">
           <BaseForm
             formFor={props.itemType}
             baseFormState={formState}
@@ -457,7 +478,11 @@ export function RenderBaseSelectedItem(props: TRenderBaseSelectedItemProps) {
         {props.item.label}
       </div>
       <button
-        onClick={props.onRemove}
+        onClick={(e) => {
+          e.stopImmediatePropagation();
+          e.preventDefault();
+          props.onRemove();
+        }}
         class="group flex aspect-square h-10 cursor-pointer items-center justify-center rounded-r-xs bg-orange-500/70 hover:bg-orange-500/80 active:bg-orange-500/80 active:shadow-inner active:shadow-slate-600/30"
       >
         <IoCloseSharp
@@ -492,7 +517,11 @@ export function RenderBaseSelectedItemWithEdgeModel(
         </div>
         <div class="grow" />
         <button
-          onClick={props.onRemove}
+          onClick={(e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            props.onRemove();
+          }}
           class="group flex aspect-square h-10 cursor-pointer items-center justify-center rounded-tr-xs bg-orange-500/70 hover:bg-orange-500/80 active:bg-orange-500/80 active:shadow-inner active:shadow-slate-600/30"
         >
           <IoCloseSharp
@@ -606,7 +635,11 @@ export function RenderReifiedRelation(props: TRenderReifiedRelationProps) {
             </span>
             <div class="h-10 grow bg-slate-500" />
             <button
-              onClick={props.onRemove}
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                props.onRemove();
+              }}
               class="group flex aspect-square h-10 cursor-pointer items-center justify-center rounded-tr-xs bg-orange-500/70 hover:bg-orange-500/80 active:bg-orange-500/80 active:shadow-inner active:shadow-slate-600/30"
             >
               <IoCloseSharp
@@ -707,7 +740,11 @@ export function RenderReifiedRelation(props: TRenderReifiedRelationProps) {
                 </div>
                 <div class="grow" />
                 <button
-                  onClick={props.onRemove}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    props.onRemove();
+                  }}
                   class="group flex aspect-square h-10 cursor-pointer items-center justify-center rounded-tr-xs bg-orange-500/70 hover:bg-orange-500/80 active:bg-orange-500/80 active:shadow-inner active:shadow-slate-600/30"
                 >
                   <IoCloseSharp

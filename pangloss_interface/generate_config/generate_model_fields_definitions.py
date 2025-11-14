@@ -617,6 +617,11 @@ def meta_to_dict(model, meta: BaseMeta) -> dict:
         if getattr(model, "InterfaceMeta", None)
         else None
     )
+    meta_as_dict["suggestDuplicates"] = (
+        getattr(model, "InterfaceMeta").suggest_duplicates
+        if getattr(model, "InterfaceMeta", None)
+        else False
+    )
 
     return meta_as_dict
 

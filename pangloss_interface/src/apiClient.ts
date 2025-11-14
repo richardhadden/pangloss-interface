@@ -1,7 +1,7 @@
 import { getRequestEvent, isServer } from "solid-js/web";
 import { PrefetchCache } from "~/utils/prefetch";
 import { BaseNodeTypes } from "../.model-configs/model-typescript";
-import { useUserLogin } from "./contexts/users";
+import { postLogOut, postRefresh } from "./contexts/users";
 
 const getCookieValue = (
   cookieString: string | undefined | null,
@@ -18,7 +18,7 @@ export async function getRequest(
   url: URL,
   withPrefetchCache?: boolean,
 ): Promise<object | undefined> {
-  const [users, { setAccessingAuthorisedRoute, logOut }] = useUserLogin();
+  //const [users, { setAccessingAuthorisedRoute, logOut }] = useUserLogin();
 
   if (isServer) {
     const requestEvent = getRequestEvent();
@@ -38,8 +38,8 @@ export async function getRequest(
     });
 
     if (response.status === 401) {
-      setAccessingAuthorisedRoute(true);
-      logOut();
+      //setAccessingAuthorisedRoute(true);
+      //logOut();
     }
 
     const data = await response.json();
@@ -63,9 +63,8 @@ export async function getRequest(
 
       if (response.status === 401) {
         console.log("Not Authorized");
-        setAccessingAuthorisedRoute(true);
-        logOut();
-        return undefined;
+        await postRefresh();
+        return await getData();
       }
 
       const data = await response.json();
@@ -83,9 +82,9 @@ export async function getRequest(
   }
 }
 
-export async function createRequest(url: URL, createData: any) {
-  const [users, { setAccessingAuthorisedRoute, logOut }] = useUserLogin();
-
+export async function createRequest(url: URL, createData: any, tries: number) {
+  //const [users, { setAccessingAuthorisedRoute, logOut }] = useUserLogin();
+  //console.log(logOut);
   const response = await fetch(url, {
     method: "post",
     credentials: "include",
@@ -97,9 +96,21 @@ export async function createRequest(url: URL, createData: any) {
   });
   if (response.status === 401) {
     console.log("Not Authorized");
-    setAccessingAuthorisedRoute(true);
-    logOut();
     return undefined;
+  }
+
+  // FASTAPI returns 422 for expired token; in which case, try to post
+  // the Refresh token and repost data
+  if (response.status === 422) {
+    alert("returned 422");
+
+    if (tries >= 3) {
+      await postLogOut();
+      return;
+    }
+
+    await postRefresh();
+    return await createRequest(url, createData, tries + 1);
   }
 
   const data = await response.json();
