@@ -6,466 +6,25 @@ import {
   TRelationFieldDefinition,
 } from "../../../.model-configs/model-definitions";
 import {
-  AllModelTypes,
-  BaseNodeTypes,
-  EdgeModelTypes,
-  ReifiedRelationTypes,
+  type BaseNodeTypes,
+  type EdgeModelTypes,
+  type ReifiedRelationTypes,
 } from "../../../.model-configs/model-typescript";
-import { BaseForm, FormFields } from "./BaseForm";
-import { TextField } from "./LiteralFields";
-import {
-  BiRegularCollapse,
-  BiRegularExpand,
-  BiRegularPlus,
-  BiSolidInfoCircle,
-  BiSolidXCircle,
-} from "solid-icons/bi";
-import { IoCheckmarkCircleSharp, IoCloseSharp } from "solid-icons/io";
-import {
-  createSelector,
-  createSignal,
-  For,
-  Match,
-  onCleanup,
-  onMount,
-  Show,
-  Switch,
-} from "solid-js";
-import { createStore, unwrap } from "solid-js/store";
-import { Portal } from "solid-js/web";
+import { FormFields } from "./BaseForm";
+
+import { BiRegularCollapse, BiRegularExpand } from "solid-icons/bi";
+import { IoCloseSharp } from "solid-icons/io";
+import { createSignal, For, Match, Show, Switch } from "solid-js";
+
 import colors from "tailwindcss/colors";
-import { interfaceApiClient } from "~/apiClient";
+
 import { TranslationKey, useTranslation } from "~/contexts/translation";
 import { createBlankObject } from "~/utils/createBlankObject";
-import { apiClient } from "~/apiClient";
-import { createShortcut } from "@solid-primitives/keyboard";
 
-type TSelectionOptions = {
-  results: Array<{ type: BaseNodeTypes; id: string; label: string }>;
-  page: number;
-  count: number;
-  totalPages: number;
-  nextPage: number | null;
-  previousPage: number | null;
-  nextUrl: string | null;
-  previousUrl: string | null;
-};
-
-type TAutocompleteSelectorProps = {
-  selectionTypes: BaseNodeTypes[];
-  selectedItems: (BaseNodeTypes | ReifiedRelationTypes)[];
-  onSelect: (item: TSelectionOptions["results"][number]) => void;
-  searchBoxVisible?: boolean;
-  size?: "small" | "medium" | "large";
-  shouldHideWhenNotFocused?: boolean;
-  alternativeCreateTypes: ReifiedRelationTypes[];
-  onClickAlternativeCreateType: (
-    type: keyof BaseNodeTypes | keyof ReifiedRelationTypes,
-  ) => void;
-};
-
-function AutocompleteSelector(props: TAutocompleteSelectorProps) {
-  const [lang, { t }] = useTranslation();
-  const [inputValue, setInputValue] = createSignal("");
-  const [creatingNewItemOfType, setCreatingNewItemOfType] =
-    createSignal<BaseNodeTypes | null>(null);
-  const [inputIsFocused, setInputIsFocused] = createSignal(false);
-  const [selectedIndex, setSelectedIndex] = createSignal<number>(0);
-  const [selectionOptions, setSelectionOptions] =
-    createSignal<TSelectionOptions>();
-
-  const isSelected = createSelector(selectedIndex);
-  const [selectionTypes, setSelectionTypes] = createStore<{
-    [key in BaseNodeTypes]: boolean;
-  }>(
-    Object.fromEntries(props.selectionTypes.map((t) => [t, true])) as {
-      [key in BaseNodeTypes]: boolean;
-    },
-  );
-
-  const searchBoxVisible = props.searchBoxVisible === false ? false : true;
-
-  let inputAreaRef!: HTMLDivElement;
-  let inputRef!: HTMLInputElement;
-  let menuPortalContainer!: HTMLDivElement;
-  let typeSelectContainer!: HTMLDivElement;
-  let createPortalContainer!: HTMLDivElement;
-
-  const inputLocation = () => inputRef.getBoundingClientRect();
-
-  const handleClick = (event: MouseEvent) => {
-    if (!inputAreaRef.contains(event.target as Node)) {
-      event.stopPropagation();
-      event.preventDefault();
-      setInputIsFocused(false);
-      return;
-    }
-  };
-
-  onMount(() => {
-    if (selectionOptions() === undefined) {
-      const st = Object.entries(selectionTypes)
-        .filter(([t, v]) => v)
-        .map(([t, v]) => t);
-      const data = interfaceApiClient
-        .autocomplete(st, null)
-        .then(setSelectionOptions);
-    }
-    document.addEventListener("click", handleClick);
-    onCleanup(() => {
-      document.removeEventListener("click", handleClick);
-    });
-  });
-
-  const onFocus = async () => {
-    setInputIsFocused(true);
-  };
-
-  const onInputKeyPress = (e: KeyboardEvent, key: KeyboardEvent["key"]) => {
-    if (key === "ArrowUp" && selectedIndex() > 0) {
-      e.preventDefault();
-      setSelectedIndex(selectedIndex() - 1);
-      const el = document.querySelector("#menu > [data-selected=true]");
-      if (el) {
-        el.scrollIntoView({
-          behavior: "smooth",
-          block: "nearest",
-          inline: "nearest",
-        });
-      }
-    }
-    if (
-      key === "ArrowDown" &&
-      selectionOptions() !== undefined &&
-      (selectionOptions() as TSelectionOptions).results.length > 0 &&
-      selectedIndex() <
-        (selectionOptions() as TSelectionOptions)?.results?.length - 1
-    ) {
-      e.preventDefault();
-      setSelectedIndex(selectedIndex() + 1);
-
-      const el = document.querySelector("#menu > [data-selected=true]");
-      if (el) {
-        el.scrollIntoView({
-          behavior: "smooth",
-          block: "nearest",
-          inline: "nearest",
-        });
-      }
-    }
-    if (key === "Escape") {
-      e.preventDefault();
-      setInputIsFocused(false);
-    } else if (key === "Enter") {
-      e.preventDefault();
-      setInputValue("");
-      setInputIsFocused(false);
-      const item = selectionOptions()!.results![selectedIndex()];
-      props.onSelect(item);
-    } else {
-      setInputIsFocused(true);
-    }
-  };
-
-  async function onInputChange(value: string) {
-    setInputValue(value);
-    const st = Object.entries(selectionTypes)
-      .filter(([t, v]) => v)
-      .map(([t, v]) => t);
-    const data = await interfaceApiClient.autocomplete(st, value);
-    setSelectionOptions(data as TSelectionOptions);
-    setSelectedIndex(0);
-  }
-
-  async function onSetSelectionTypes(e: MouseEvent, type, value) {
-    e.stopPropagation();
-    e.preventDefault();
-    setSelectionTypes(type, value);
-    const st = Object.entries(selectionTypes)
-      .filter(([t, v]) => v)
-      .map(([t, v]) => t);
-    const data = await interfaceApiClient.autocomplete(st, inputValue());
-    setSelectionOptions(data as TSelectionOptions);
-    setSelectedIndex(0);
-  }
-
-  return (
-    <>
-      <div ref={createPortalContainer}></div>
-      <Show
-        when={
-          inputIsFocused() ||
-          props.shouldHideWhenNotFocused === undefined ||
-          props.shouldHideWhenNotFocused === true
-        }
-      >
-        <div ref={inputAreaRef!}>
-          <div class="mb-2 flex w-full" ref={typeSelectContainer}>
-            <Show when={inputIsFocused()}>
-              <span class="mr-4 flex items-center text-xs font-semibold text-slate-700 uppercase select-none">
-                Filter by types
-              </span>
-              <For each={Object.entries(selectionTypes)}>
-                {([type, selected]) => (
-                  <button
-                    class="group mr-2 flex cursor-pointer items-center justify-center rounded-xs text-xs font-semibold uppercase"
-                    classList={{
-                      "bg-slate-600 text-slate-100 hover:bg-slate-700 hover:shadow-inner ":
-                        selected,
-                      "bg-slate-500 text-slate-400 opacity-60": !selected,
-                    }}
-                    onMouseDown={(e) => onSetSelectionTypes(e, type, !selected)}
-                  >
-                    <span class="px-3 py-2 group-hover:scale-[98%]">
-                      {t[type as TranslationKey]._model.verboseName()}
-                    </span>
-                    <Show
-                      when={selected}
-                      fallback={
-                        <div class="flex h-8 w-8 items-center justify-center rounded-r-xs bg-slate-400 group-active:scale-95">
-                          <BiSolidXCircle
-                            class="block h-8"
-                            color={colors.slate[500]}
-                          />
-                        </div>
-                      }
-                    >
-                      <div class="flex h-8 w-8 items-center justify-center rounded-r-xs bg-slate-500 group-active:scale-95">
-                        <IoCheckmarkCircleSharp
-                          class="block"
-                          color={colors.slate[100]}
-                        />
-                      </div>
-                    </Show>
-                  </button>
-                )}
-              </For>
-            </Show>
-          </div>
-          <Show when={searchBoxVisible}>
-            <TextField
-              ref={inputRef!}
-              value={inputValue()}
-              onInput={(value) => onInputChange(value)}
-              placeholder="Type to search..."
-              onFocusIn={() => onFocus()}
-              onKeyPress={(e) => onInputKeyPress(e, e.key)}
-              class="bg-red-500"
-            />
-
-            <div ref={menuPortalContainer}></div>
-
-            <Show
-              when={
-                typeof props.alternativeCreateTypes !== "undefined" &&
-                props.alternativeCreateTypes.length > 0
-              }
-            >
-              <div class="mt-2 flex w-full flex-wrap items-center">
-                <For each={props.alternativeCreateTypes}>
-                  {(altType) => (
-                    <Show
-                      when={
-                        ModelDefinitions[altType]?.meta?.metatype ===
-                          "ReifiedRelation" ||
-                        ModelDefinitions[altType]?.meta?.metatype ===
-                          "ReifiedRelationNode" ||
-                        ModelDefinitions[altType]?.meta?.create
-                      }
-                    >
-                      <button
-                        class="group mr-2 flex cursor-pointer flex-row items-center rounded-xs bg-slate-500 text-xs font-semibold text-slate-50 uppercase hover:bg-slate-600"
-                        onclick={() =>
-                          ModelDefinitions[altType]?.meta?.metatype ===
-                            "ReifiedRelation" ||
-                          ModelDefinitions[altType]?.meta?.metatype ===
-                            "ReifiedRelationNode"
-                            ? props.onClickAlternativeCreateType(
-                                altType as
-                                  | keyof ReifiedRelationTypes
-                                  | keyof BaseNodeTypes,
-                              )
-                            : setCreatingNewItemOfType(altType as BaseNodeTypes)
-                        }
-                      >
-                        <span class="ml-1 group-active:scale-95">
-                          <BiRegularPlus />
-                        </span>
-                        <span class="p-1 pr-2 group-active:scale-95">
-                          {t[altType as TranslationKey]._model.verboseName()}
-                        </span>
-                      </button>
-                    </Show>
-                  )}
-                </For>
-              </div>
-            </Show>
-            <Show when={inputIsFocused() && selectionOptions()}>
-              <Portal mount={menuPortalContainer}>
-                <Show
-                  when={selectionOptions()?.results?.length > 0}
-                  fallback={
-                    <div class="group mt-3 mb-4 flex h-8 w-full items-center justify-start rounded-xs">
-                      <div class="flex aspect-square h-full items-center justify-center rounded-l-xs bg-amber-600 shadow-md">
-                        <BiSolidInfoCircle color="white" size={18} />
-                      </div>
-                      <div class="flex h-full cursor-default items-center rounded-r-xs bg-slate-300 px-4 py-2 text-xs font-semibold text-slate-600 uppercase shadow-md select-none">
-                        No results found
-                      </div>
-                    </div>
-                  }
-                >
-                  <div
-                    id="menu"
-                    class="absolute z-50 mt-1 max-h-1/2 overflow-y-scroll rounded-xs bg-zinc-900/20 p-2 shadow-2xl shadow-zinc-900/20 backdrop-blur-3xl"
-                    style={`top: ${inputLocation().bottom}; left: ${inputLocation().left.toString()}; width: ${inputLocation().width.toString()}px;`}
-                  >
-                    <For each={selectionOptions()?.results}>
-                      {(item, index) => (
-                        <button
-                          data-selected={isSelected(index())}
-                          class="flex w-full cursor-pointer rounded-xs bg-blend-normal backdrop-blur-none not-first:mt-2"
-                          classList={{
-                            "bg-zinc-400": isSelected(index()),
-                            "bg-zinc-300": !isSelected(index()),
-                          }}
-                          onmouseenter={() => setSelectedIndex(index())}
-                          onClick={() => props.onSelect(item)}
-                        >
-                          <div
-                            class="border-right-slate-500 flex items-center justify-center rounded-l-xs border-r-[0.5px] px-3 py-2 text-xs font-semibold text-nowrap text-slate-100 uppercase"
-                            classList={{
-                              "bg-slate-700": isSelected(index()),
-                              "bg-slate-600": !isSelected(index()),
-                            }}
-                          >
-                            {t[
-                              item.type as TranslationKey
-                            ]._model.verboseName()}
-                          </div>
-                          <div class="p-2 pl-3 text-sm">{item.label}</div>
-                        </button>
-                      )}
-                    </For>
-                  </div>
-                </Show>
-              </Portal>
-            </Show>
-          </Show>
-        </div>
-      </Show>
-      <Show when={creatingNewItemOfType()}>
-        <Portal mount={createPortalContainer}>
-          <CreateInlineForm
-            itemType={creatingNewItemOfType()!}
-            onClose={() => setCreatingNewItemOfType(null)}
-            onSuccessfulCreate={props.onSelect}
-          />
-        </Portal>
-      </Show>
-    </>
-  );
-}
-
-type TCreateInlineFormProps = {
-  itemType: BaseNodeTypes;
-  onClose: () => void;
-  onSuccessfulCreate: (item: any) => void;
-};
-
-export function CreateInlineForm(props: TCreateInlineFormProps) {
-  const [formState, setFormState] = createStore(
-    createBlankObject(props.itemType, false),
-  );
-
-  const onSubmit = async () => {
-    const response = await apiClient.create(props.itemType, unwrap(formState));
-    if (response) {
-      props.onSuccessfulCreate(response);
-      props.onClose();
-    }
-  };
-
-  let boxRef!: HTMLDivElement;
-
-  const handleBackgroundClick = (e: Event) => {
-    if (!boxRef.contains(e.target as HTMLElement)) {
-      props.onClose();
-    }
-  };
-
-  createShortcut(
-    ["Escape"],
-    () => {
-      props.onClose();
-    },
-    { preventDefault: true, requireReset: false },
-  );
-
-  return (
-    <div
-      class="fixed top-0 right-0 left-12 z-20 flex h-dvh items-center justify-center bg-slate-500/50 px-20"
-      onClick={handleBackgroundClick}
-    >
-      <div
-        class="min-w-1/2 rounded-xs bg-slate-300/50 shadow-2xl shadow-slate-900/70 backdrop-blur-2xl"
-        ref={boxRef}
-      >
-        <div class="flex h-14 rounded-t-xs shadow-sm shadow-slate-400">
-          <div class="flex h-full items-center rounded-tl-xs bg-slate-400/50 px-4 text-sm font-semibold text-slate-800 uppercase select-none">
-            New
-          </div>
-          <div class="text-s flex h-full items-center bg-slate-800/80 px-4 text-sm font-semibold text-slate-100 uppercase select-none">
-            {props.itemType}
-          </div>
-          <Show when={formState.label.length > 0}>
-            <div
-              class="line-clamp-2 flex h-full w-fit shrink-1 grow-0 items-center rounded-r-sm border-r-[0.25px] border-r-neutral-400/20 bg-zinc-300 pr-6 pl-6 align-middle text-black shadow-2xl shadow-neutral-300/50"
-              classList={{
-                "text-sm":
-                  formState.label.length > 100 && formState.label.length <= 300,
-                "text-xs": formState.label.length > 300,
-              }}
-            >
-              <span class="line-clamp-2">
-                {formState.label.length > 0
-                  ? formState.label
-                  : `New ${formState.type}`}
-              </span>
-            </div>
-          </Show>
-          <div class="grow" />
-          <button
-            id="controlBarSaveButton"
-            class="group group-hover:shadow-300/40 shadow-g group/button flex aspect-square h-full cursor-pointer items-center justify-center bg-orange-500/70 group-hover:shadow-md last:rounded-tr-xs hover:bg-orange-500/70 hover:shadow-orange-300/40 active:bg-orange-400/70 active:shadow-inner active:shadow-orange-500/30"
-            onclick={props.onClose}
-          >
-            <IoCloseSharp
-              color={colors.slate["100"]}
-              class="group-active:scale-95"
-              size={20}
-            />
-          </button>
-        </div>
-        <div class="rounded-b-xs bg-white/30 px-4 py-4 backdrop-blur-2xl">
-          <BaseForm
-            formFor={props.itemType}
-            baseFormState={formState}
-            setBaseFormState={setFormState}
-          />
-        </div>
-        <div class="flex w-full justify-center py-3">
-          <button
-            class="cursor-pointer rounded-xs bg-green-700 px-3 py-2 font-semibold text-white uppercase outline-none hover:bg-green-800 hover:shadow-2xl hover:shadow-green-900/50 focus:shadow-green-900/50 active:bg-green-600"
-            onclick={onSubmit}
-          >
-            Create
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
+import {
+  AutocompleteSelector,
+  TSelectionOptions,
+} from "./AutocompleteSelector";
 
 type TRenderBaseSelectedItemProps = { item: any; onRemove: () => void };
 
@@ -560,9 +119,7 @@ type TRenderReifiedRelationProps = {
 };
 
 export function RenderReifiedRelation(props: TRenderReifiedRelationProps) {
-  console.log("FD", props.fieldDefinition);
   const [lang, { t }] = useTranslation();
-  const [reifiedRelHovered, setReifiedRelHovered] = createSignal(false);
 
   const shouldCollapseFunc =
     ModelDefinitions[props.type as ReifiedRelationTypes].meta.shouldCollapse;
@@ -584,12 +141,9 @@ export function RenderReifiedRelation(props: TRenderReifiedRelationProps) {
     <Show
       when={shouldCollapseFunc && shouldCollapseFunc(props.item) && collapse()}
       fallback={
-        <div
-          class="shadow-slate- box-border h-fit rounded-xs bg-slate-300/50 shadow-xl shadow-slate-700/30"
-          onmouseenter={() => setReifiedRelHovered(true)}
-          onmouseleave={() => setReifiedRelHovered(false)}
-        >
-          <div class="flex h-fit items-center justify-start rounded-xs text-xs font-semibold text-slate-100 uppercase select-none">
+        <div class="box-border h-fit overflow-clip rounded-xs bg-slate-300/50 shadow-xl shadow-slate-700/30">
+          {/** This is the fully-expanded version */}
+          <div class="flex h-fit items-center justify-start text-xs font-semibold text-slate-100 uppercase select-none">
             <Show
               when={
                 shouldCollapseFunc &&
@@ -682,7 +236,7 @@ export function RenderReifiedRelation(props: TRenderReifiedRelationProps) {
               )}
             </For>
           </div>
-          <div class="mt-6 rounded-b-xs bg-slate-500/70 px-2">
+          <div class="mt-6 bg-slate-500/70 px-2">
             <FormFields
               fieldNames={Array.from(
                 Object.keys(ModelDefinitions[props.type].fields).filter(
@@ -720,7 +274,7 @@ export function RenderReifiedRelation(props: TRenderReifiedRelationProps) {
       }
     >
       <div>
-        <div class="flex h-fit items-center rounded-xs">
+        <div class="flex h-fit items-center overflow-clip rounded-xs">
           <button
             class="group flex cursor-pointer items-center justify-center rounded-tl-xs bg-slate-500 py-3 text-slate-50 hover:bg-slate-500/90"
             onclick={() => setCollapse(false)}
@@ -733,7 +287,7 @@ export function RenderReifiedRelation(props: TRenderReifiedRelationProps) {
 
           <For each={props.item.target}>
             {(item, index) => (
-              <div class="flex-start flex h-fit w-full rounded-t-xs bg-zinc-300 shadow-2xl">
+              <div class="flex-start flex h-fit w-full bg-zinc-300 shadow-2xl">
                 <div class="flex items-center bg-slate-600 px-2 py-2 text-xs font-semibold text-nowrap text-slate-100 uppercase select-none">
                   {t[item.type as TranslationKey]._model.verboseName()}
                 </div>

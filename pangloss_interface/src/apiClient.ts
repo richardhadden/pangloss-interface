@@ -102,13 +102,10 @@ export async function createRequest(url: URL, createData: any, tries: number) {
   // FASTAPI returns 422 for expired token; in which case, try to post
   // the Refresh token and repost data
   if (response.status === 422) {
-    alert("returned 422");
-
     if (tries >= 3) {
       await postLogOut();
       return;
     }
-
     await postRefresh();
     return await createRequest(url, createData, tries + 1);
   }

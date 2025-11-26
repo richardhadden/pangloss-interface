@@ -112,9 +112,9 @@ export default function CreateObject() {
       />
 
       <div class="py-32 pr-16 pl-32">
-        <button onclick={() => console.log(unwrap(newFormState))}>
+        {/*<button onclick={() => console.log(unwrap(newFormState))}>
           CONSOLE LOG FORM STATE
-        </button>
+        </button>*/}
         <Show when={params.modelType} keyed>
           {/* Use this callback form to ensure form is rerendered when 
               route changes
