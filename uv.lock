@@ -39,7 +39,7 @@ wheels = [
 
 [[package]]
 name = "authx"
-version = "1.4.1"
+version = "1.4.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "fastapi" },
@@ -51,9 +51,9 @@ dependencies = [
     { name = "python-jose" },
     { name = "pytz" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/df/f9/9ccf53c2f31222e2caf67f1e4504a9b3d8c3a84fdf098b56031a4b127219/authx-1.4.1.tar.gz", hash = "sha256:06ddad3f80ebe32ce7d97adc8915c1f64b389298849f0058a713f3b0c2c1e64a", size = 58825, upload-time = "2024-12-25T23:23:18.51Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/42/2b/80d4dbff18ada2428c23b41f13f698ce772774ceef41a482c7fa87f9d0d4/authx-1.4.3.tar.gz", hash = "sha256:39b39986233b4ae2359c5eb923202933a99842a6f218d911c5c3bf84be098d16", size = 60361, upload-time = "2025-05-31T14:53:57.113Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/f3/42/ef4220b13ca3d6b7fe6c0c46cbda0923d06274b822e807a2c740be49fef3/authx-1.4.1-py3-none-any.whl", hash = "sha256:4d42082230125e446fd5240b9531af7726d7d69370bfc5aedd6fafeb9df6ffc9", size = 28277, upload-time = "2024-12-25T23:23:15.582Z" },
+    { url = "https://files.pythonhosted.org/packages/07/a7/c2e0679597c8458e148f80e2b3c4ba0d4c2f2e47177cec8be7dfc085c304/authx-1.4.3-py3-none-any.whl", hash = "sha256:e77d728f9b2e0062fa6f0d4950cd89d36e24a078d08993cf0755ab66b308ee05", size = 28516, upload-time = "2025-05-31T14:53:55.359Z" },
 ]
 
 [[package]]
@@ -586,7 +586,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "anyio", specifier = ">=4.8.0" },
-    { name = "authx", specifier = ">=1.4.1" },
+    { name = "authx", specifier = ">=1.4.3" },
     { name = "authx-extra", specifier = ">=1.2.0" },
     { name = "bcrypt", specifier = ">=4.3.0" },
     { name = "cookiecutter", specifier = ">=2.6.0" },

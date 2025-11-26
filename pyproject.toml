@@ -23,5 +23,5 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.uv.sources]
-pangloss = { path = "../pangloss", editable = true }
 metapensiero-pj = { git = "https://github.com/richardhadden/metapensiero.pj.git" }
+pangloss = { path = "../pangloss", editable = true }

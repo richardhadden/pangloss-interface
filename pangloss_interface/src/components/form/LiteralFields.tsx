@@ -56,9 +56,8 @@ const MultiLineTextField = (props: TTextFieldProps) => {
             e.preventDefault();
           }
         }}
-      >
-        {props.value}
-      </textarea>
+        value={props.value}
+      ></textarea>
       <Show when={props.maxLen}>
         <div
           class="mt-1 flex w-full justify-start text-xs uppercase"

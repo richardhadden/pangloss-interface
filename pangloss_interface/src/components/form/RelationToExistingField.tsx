@@ -158,6 +158,8 @@ function AutocompleteSelector(props: TAutocompleteSelectorProps) {
       setInputIsFocused(false);
     } else if (key === "Enter") {
       e.preventDefault();
+      setInputValue("");
+      setInputIsFocused(false);
       const item = selectionOptions()!.results![selectedIndex()];
       props.onSelect(item);
     } else {
@@ -587,7 +589,7 @@ export function RenderReifiedRelation(props: TRenderReifiedRelationProps) {
           onmouseenter={() => setReifiedRelHovered(true)}
           onmouseleave={() => setReifiedRelHovered(false)}
         >
-          <div class="flex h-fit items-center justify-start rounded-t-xs text-xs font-semibold text-slate-100 uppercase select-none">
+          <div class="flex h-fit items-center justify-start rounded-xs text-xs font-semibold text-slate-100 uppercase select-none">
             <Show
               when={
                 shouldCollapseFunc &&
@@ -603,7 +605,7 @@ export function RenderReifiedRelation(props: TRenderReifiedRelationProps) {
               }
             >
               <button
-                class="group flex h-10 cursor-pointer items-center justify-center rounded-tl-xs bg-slate-500 hover:bg-slate-500/90 active:bg-slate-500/90 active:shadow-inner active:shadow-slate-600/30"
+                class="group flex h-10 cursor-pointer items-center justify-center rounded-l-xs bg-slate-500 hover:bg-slate-500/90 active:bg-slate-500/90 active:shadow-inner active:shadow-slate-600/30"
                 onclick={() => setCollapse(true)}
               >
                 <BiRegularCollapse
@@ -640,7 +642,7 @@ export function RenderReifiedRelation(props: TRenderReifiedRelationProps) {
                 e.preventDefault();
                 props.onRemove();
               }}
-              class="group flex aspect-square h-10 cursor-pointer items-center justify-center rounded-tr-xs bg-orange-500/70 hover:bg-orange-500/80 active:bg-orange-500/80 active:shadow-inner active:shadow-slate-600/30"
+              class="group flex aspect-square h-10 cursor-pointer items-center justify-center rounded-tr-xs bg-slate-500/70 hover:bg-slate-500/80 active:bg-slate-500/80 active:shadow-inner active:shadow-slate-600/30"
             >
               <IoCloseSharp
                 color={colors.slate["100"]}
@@ -658,7 +660,7 @@ export function RenderReifiedRelation(props: TRenderReifiedRelationProps) {
                       {fieldName}
                     </div>
                   </Show>
-                  <div class="px-2 py-2">
+                  <div class="mt-2 px-2 pt-2 pb-2">
                     <RelationToExistingField
                       fieldDefinition={
                         ModelDefinitions[props.item.type].fields[fieldName]

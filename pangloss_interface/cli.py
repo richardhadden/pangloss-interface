@@ -8,12 +8,20 @@ from rich import print
 from rich.panel import Panel
 from typer import Typer
 
+from pangloss_interface.generate_config.gather_custom_components import (
+    gather_custom_components,
+)
 from pangloss_interface.generate_config.generate_config import generate_config_files
 from pangloss_interface.generate_config.generate_translation import (
     generate_translation_files,
 )
 
 cli = Typer(name="interface")
+
+
+@cli.command("gather-custom-components")
+def gathercustomcomponents():
+    gather_custom_components()
 
 
 @cli.command("generate-translation-files")

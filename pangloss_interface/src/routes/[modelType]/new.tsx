@@ -1,6 +1,6 @@
 import { BaseNodeTypes } from "../../../.model-configs/model-typescript";
 import { useParams } from "@solidjs/router";
-import { createEffect, onCleanup, onMount, Show } from "solid-js";
+import { createEffect, createSignal, onCleanup, onMount, Show } from "solid-js";
 import { createStore, produce, reconcile, unwrap } from "solid-js/store";
 import ControlBar from "~/components/ControlBar";
 import { BaseForm } from "~/components/form/BaseForm";
@@ -19,7 +19,7 @@ export default function CreateObject() {
   const params = useParams<{ modelType: BaseNodeTypes }>();
 
   const [newFormState, setNewFormState] = createStore(
-    createBlankObject(params.modelType, false)
+    createBlankObject(params.modelType, false),
   );
 
   const history = createUndoHistory(() => {
@@ -112,14 +112,14 @@ export default function CreateObject() {
       />
 
       <div class="py-32 pr-16 pl-32">
-        {/*<button onclick={() => console.log(unwrap(newFormState))}>
+        <button onclick={() => console.log(unwrap(newFormState))}>
           CONSOLE LOG FORM STATE
-        </button>*/}
-        <Show when={params.modelType}>
+        </button>
+        <Show when={params.modelType} keyed>
           {/* Use this callback form to ensure form is rerendered when 
               route changes
           */}
-          {(_) => (
+          {(a) => (
             <BaseForm
               formFor={params.modelType}
               baseFormState={newFormState}
