@@ -7,6 +7,7 @@
         "@ark-ui/solid": "^5.18.3",
         "@kobalte/core": "^0.13.11",
         "@rwh/keystrokes": "^1.5.6",
+        "@solid-primitives/clipboard": "^1.6.2",
         "@solid-primitives/cookies": "^0.0.3",
         "@solid-primitives/history": "^0.2.2",
         "@solid-primitives/i18n": "^2.2.1",
@@ -22,6 +23,7 @@
         "solid-icons": "^1.1.0",
         "solid-js": "^1.9.5",
         "solid-spinner": "^0.2.0",
+        "solidjs-use": "^2.3.0",
         "tailwind": "^4.0.0",
         "tailwind-merge": "^3.3.1",
         "tailwind-scrollbar": "^4.0.2",
@@ -319,6 +321,8 @@
 
     "@sindresorhus/merge-streams": ["@sindresorhus/merge-streams@2.3.0", "", {}, "sha512-LtoMMhxAlorcGhmFYI+LhPgbPZCkgP6ra1YL604EeF6U98pLlQ3iWIGMdWSC+vWmPBWBNgmDBAhnAobLROJmwg=="],
 
+    "@solid-primitives/clipboard": ["@solid-primitives/clipboard@1.6.2", "", { "dependencies": { "@solid-primitives/utils": "^6.3.2" }, "peerDependencies": { "solid-js": "^1.6.12" } }, "sha512-lJHjyjjOFNcPFmLanY9+dShS1OwJUVuaJneSQNEm4yDrJ1t6eY8JKEslSVcTQDoNzVvNPDLHHm3/q4uGXsB14A=="],
+
     "@solid-primitives/cookies": ["@solid-primitives/cookies@0.0.3", "", { "peerDependencies": { "solid-js": "^1.8.18" } }, "sha512-SU8MDM2zckbNxItASjjJsfWUa7Su7/ldEfkOBQzjht0jMuNztXxRGqq/FyqnDfrOJ7/hAXRJJ5Qv7zeck9d5fQ=="],
 
     "@solid-primitives/event-listener": ["@solid-primitives/event-listener@2.4.3", "", { "dependencies": { "@solid-primitives/utils": "^6.3.2" }, "peerDependencies": { "solid-js": "^1.6.12" } }, "sha512-h4VqkYFv6Gf+L7SQj+Y6puigL/5DIi7x5q07VZET7AWcS+9/G3WfIE9WheniHWJs51OEkRB43w6lDys5YeFceg=="],
@@ -352,6 +356,10 @@
     "@solid-primitives/trigger": ["@solid-primitives/trigger@1.2.2", "", { "dependencies": { "@solid-primitives/utils": "^6.3.2" }, "peerDependencies": { "solid-js": "^1.6.12" } }, "sha512-IWoptVc0SWYgmpBPpCMehS5b07+tpFcvw15tOQ3QbXedSYn6KP8zCjPkHNzMxcOvOicTneleeZDP7lqmz+PQ6g=="],
 
     "@solid-primitives/utils": ["@solid-primitives/utils@6.3.2", "", { "peerDependencies": { "solid-js": "^1.6.12" } }, "sha512-hZ/M/qr25QOCcwDPOHtGjxTD8w2mNyVAYvcfgwzBHq2RwNqHNdDNsMZYap20+ruRwW4A3Cdkczyoz0TSxLCAPQ=="],
+
+    "@solidjs-use/shared": ["@solidjs-use/shared@2.3.0", "", { "dependencies": { "@solidjs-use/solid-to-vue": "2.3.0" } }, "sha512-xuPNzZ9fwigkmYXTO+a8kaT45XQCPt6jVlyiDDYCD9NRZheRJOZWiUcVjYHzjececbWTctcY8NFdsXVyxARHKg=="],
+
+    "@solidjs-use/solid-to-vue": ["@solidjs-use/solid-to-vue@2.3.0", "", {}, "sha512-I2onRwzdYl2eq20M3hcTkVIeYq4hNoBpHvRJB9yzoyXRDSyp7R2glIbvdBzpsXqnTvX7HJhB2KePfxYXFvyJxw=="],
 
     "@solidjs/meta": ["@solidjs/meta@0.29.4", "", { "peerDependencies": { "solid-js": ">=1.8.4" } }, "sha512-zdIWBGpR9zGx1p1bzIPqF5Gs+Ks/BH8R6fWhmUa/dcK1L2rUC8BAcZJzNRYBQv74kScf1TSOs0EY//Vd/I0V8g=="],
 
@@ -430,6 +438,8 @@
     "@types/triple-beam": ["@types/triple-beam@1.3.5", "", {}, "sha512-6WaYesThRMCl19iryMYP7/x2OVgCtbIVflDGFpWnb9irXI3UjYE4AzmYuiUKY1AJstGijoY+MgUszMgRxIYTYw=="],
 
     "@types/unist": ["@types/unist@3.0.3", "", {}, "sha512-ko/gIFJRv177XgZsZcBwnqJN5x/Gien8qNOn0D5bQU/zAzVf9Zt3BlcUiLqhV9y4ARk0GbT3tnUiPNgnTXzc/Q=="],
+
+    "@types/web-bluetooth": ["@types/web-bluetooth@0.0.16", "", {}, "sha512-oh8q2Zc32S6gd/j50GowEjKLoOVOwHP/bWVjKJInBwQqdOYMdPrf1oVlelTlyfFK3CKxL1uahMDAr+vy8T7yMQ=="],
 
     "@types/yauzl": ["@types/yauzl@2.10.3", "", { "dependencies": { "@types/node": "*" } }, "sha512-oJoftv0LSuaDZE3Le4DbKX+KS9G36NzOeSap90UIK0yMA/NhKJhqlSGtNDORNRaIbQfzjXDrQa0ytJ6mNRGz/Q=="],
 
@@ -1712,6 +1722,8 @@
     "solid-spinner": ["solid-spinner@0.2.0", "", { "peerDependencies": { "solid-js": "*" } }, "sha512-xLTYFljnvtp8evg9H1Cs4UlIwFelO9HYmRF/bfByhlrcilHJwyQgSus9ICbu8Gt/CUubpT4LsADWxJ9rYg8VHA=="],
 
     "solid-use": ["solid-use@0.9.1", "", { "peerDependencies": { "solid-js": "^1.7" } }, "sha512-UwvXDVPlrrbj/9ewG9ys5uL2IO4jSiwys2KPzK4zsnAcmEl7iDafZWW1Mo4BSEWOmQCGK6IvpmGHo1aou8iOFw=="],
+
+    "solidjs-use": ["solidjs-use@2.3.0", "", { "dependencies": { "@solidjs-use/shared": "2.3.0", "@types/web-bluetooth": "^0.0.16" } }, "sha512-ZyH2jiUSQU+5S5vd8zyvqz9X2ikhMjJhDeh/TjRzjLDJlZ1RuZaMxdM+jGsrJxo3X/xBW9kDpYNONXs6wYrQCQ=="],
 
     "source-map": ["source-map@0.7.4", "", {}, "sha512-l3BikUxvPOcn5E74dZiq5BGsTb5yEwhaTSzccU6t4sDOH8NWJCstKO5QT2CvtFoK6F0saL7p9xHAqHOlCPJygA=="],
 

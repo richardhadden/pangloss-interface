@@ -13,37 +13,24 @@ export default function App() {
     <MetaProvider>
       <UserProvider>
         <TranslationProvider>
-          <ErrorBoundary
-            fallback={(e) => (
-              <Show when={e.message === "UnknownModelType"}>
-                <>
-                  <h1 class="mt-20 flex w-full justify-center text-lg">
-                    This route is not valid
-                  </h1>
-                  <HttpStatusCode code={404} />
-                </>
-              </Show>
+          <Router
+            root={(props) => (
+              <>
+                <div class="fixed top-0 flex w-full justify-center pl-12">
+                  <div
+                    id="controlBar"
+                    class="left-6 h-16 max-w-5/6 min-w-5/6 rounded-b-sm bg-slate-400/50 shadow-md backdrop-blur-2xl duration-500 empty:-top-16 hover:shadow-xl"
+                  ></div>
+                </div>
+                <Nav />
+                <div>
+                  <Suspense>{props.children}</Suspense>
+                </div>
+              </>
             )}
           >
-            <Router
-              root={(props) => (
-                <>
-                  <div class="fixed top-0 flex w-full justify-center pl-12">
-                    <div
-                      id="controlBar"
-                      class="left-6 h-16 max-w-5/6 min-w-5/6 rounded-b-sm bg-slate-400/50 shadow-md backdrop-blur-2xl duration-500 empty:-top-16 hover:shadow-xl"
-                    ></div>
-                  </div>
-                  <Nav />
-                  <div>
-                    <Suspense>{props.children}</Suspense>
-                  </div>
-                </>
-              )}
-            >
-              <FileRoutes />
-            </Router>
-          </ErrorBoundary>
+            <FileRoutes />
+          </Router>
         </TranslationProvider>
       </UserProvider>
     </MetaProvider>

@@ -262,10 +262,10 @@ function RelationFieldTypeSelectorWrapper(props: {
   closeFunction: (() => void) | undefined;
 }) {
   return (
-    <div class="col-span-10 rounded-xs bg-zinc-400/50 pb-10 shadow-xl not-first:mt-8">
+    <div class="col-span-10 rounded-xs bg-zinc-400/40 pb-10 shadow-xl not-first:mt-8">
       <div
         class={
-          "flex h-8 w-full justify-between rounded-t-xs bg-slate-600 text-sm font-semibold text-slate-100 uppercase shadow-lg"
+          "flex h-8 w-full justify-between rounded-t-xs bg-zinc-500/60 text-sm font-semibold text-slate-100 uppercase shadow-lg"
         }
       >
         <div class="flex items-center pl-3 select-none">Select a type</div>

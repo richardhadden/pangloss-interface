@@ -27,12 +27,15 @@ import {
   JSX,
   JSXElement,
   Match,
+  onMount,
   Show,
   Switch,
 } from "solid-js";
 import { SetStoreFunction } from "solid-js/store";
 import { useTranslation } from "~/contexts/translation";
 import { ImCross } from "solid-icons/im";
+
+import { ClipboardView, readDefaultClipboardOnLoad } from "./Clipboard";
 
 type TExistingSuggestionsProps = {
   type: keyof typeof ModelDefinitions;
@@ -369,14 +372,17 @@ const BaseForm = (props: TBaseFormProps) => {
   const modelDefinition = ModelDefinitions[props.formFor];
 
   return (
-    <div class="grid grid-cols-12">
-      <FormFields
-        fieldNames={modelDefinition.meta.orderFields}
-        modelName={props.formFor}
-        baseFormState={props.baseFormState}
-        setBaseFormState={setFormValue}
-      />
-    </div>
+    <>
+      <ClipboardView />
+      <div class="grid grid-cols-12">
+        <FormFields
+          fieldNames={modelDefinition.meta.orderFields}
+          modelName={props.formFor}
+          baseFormState={props.baseFormState}
+          setBaseFormState={setFormValue}
+        />
+      </div>
+    </>
   );
 };
 

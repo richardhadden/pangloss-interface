@@ -12,9 +12,15 @@ import {
 } from "../../../.model-configs/model-typescript";
 import { FormFields } from "./BaseForm";
 
-import { BiRegularCollapse, BiRegularExpand } from "solid-icons/bi";
+import {
+  BiRegularCollapse,
+  BiRegularExpand,
+  BiRegularCut,
+  BiRegularCopy,
+  BiRegularPaste,
+} from "solid-icons/bi";
 import { IoCloseSharp } from "solid-icons/io";
-import { createSignal, For, Match, Show, Switch } from "solid-js";
+import { createEffect, createSignal, For, Match, Show, Switch } from "solid-js";
 
 import colors from "tailwindcss/colors";
 
@@ -25,6 +31,8 @@ import {
   AutocompleteSelector,
   TSelectionOptions,
 } from "./AutocompleteSelector";
+
+import { clipboard } from "./Clipboard";
 
 type TRenderBaseSelectedItemProps = { item: any; onRemove: () => void };
 
@@ -38,6 +46,26 @@ export function RenderBaseSelectedItem(props: TRenderBaseSelectedItemProps) {
       <div class="flex w-fit flex-nowrap items-center pr-4 pl-4 text-sm">
         {props.item.label}
       </div>
+      <button
+        onclick={(e) => clipboard.cut(props.item, props.onRemove)}
+        class="group flex aspect-square h-10 cursor-pointer items-center justify-center bg-slate-500/70 hover:bg-slate-500/80 active:bg-slate-500/80 active:shadow-inner active:shadow-slate-600/30"
+      >
+        <BiRegularCut
+          color={colors.slate["100"]}
+          class="group-active:scale-95"
+          size={14}
+        />
+      </button>
+      <button
+        onclick={(e) => clipboard.copy(props.item)}
+        class="group flex aspect-square h-10 cursor-pointer items-center justify-center bg-slate-500/70 hover:bg-slate-500/80 active:bg-slate-500/80 active:shadow-inner active:shadow-slate-600/30"
+      >
+        <BiRegularCopy
+          color={colors.slate["100"]}
+          class="group-active:scale-95"
+          size={14}
+        />
+      </button>
       <button
         onClick={(e) => {
           e.stopImmediatePropagation();
@@ -77,6 +105,26 @@ export function RenderBaseSelectedItemWithEdgeModel(
           {props.item.label}
         </div>
         <div class="grow" />
+        <button
+          onclick={(e) => clipboard.cut(props.item, props.onRemove)}
+          class="group flex aspect-square h-10 cursor-pointer items-center justify-center bg-slate-500/70 hover:bg-slate-500/80 active:bg-slate-500/80 active:shadow-inner active:shadow-slate-600/30"
+        >
+          <BiRegularCut
+            color={colors.slate["100"]}
+            class="group-active:scale-95"
+            size={14}
+          />
+        </button>
+        <button
+          onclick={(e) => clipboard.copy(props.item)}
+          class="group flex aspect-square h-10 cursor-pointer items-center justify-center bg-slate-500/70 hover:bg-slate-500/80 active:bg-slate-500/80 active:shadow-inner active:shadow-slate-600/30"
+        >
+          <BiRegularCopy
+            color={colors.slate["100"]}
+            class="group-active:scale-95"
+            size={14}
+          />
+        </button>
         <button
           onClick={(e) => {
             e.stopPropagation();
@@ -159,7 +207,7 @@ export function RenderReifiedRelation(props: TRenderReifiedRelationProps) {
               }
             >
               <button
-                class="group flex h-10 cursor-pointer items-center justify-center rounded-l-xs bg-slate-500 hover:bg-slate-500/90 active:bg-slate-500/90 active:shadow-inner active:shadow-slate-600/30"
+                class="group flex h-10 cursor-pointer items-center justify-center rounded-tl-xs bg-slate-500 hover:bg-slate-500/90 active:bg-slate-500/90 active:shadow-inner active:shadow-slate-600/30"
                 onclick={() => setCollapse(true)}
               >
                 <BiRegularCollapse
@@ -274,7 +322,7 @@ export function RenderReifiedRelation(props: TRenderReifiedRelationProps) {
       }
     >
       <div>
-        <div class="flex h-fit items-center overflow-clip rounded-xs">
+        <div class="flex h-fit items-center overflow-clip rounded-t-xs">
           <button
             class="group flex cursor-pointer items-center justify-center rounded-tl-xs bg-slate-500 py-3 text-slate-50 hover:bg-slate-500/90"
             onclick={() => setCollapse(false)}
@@ -351,6 +399,7 @@ type TRelationToExistingFieldProps = {
 };
 
 export function RelationToExistingField(props: TRelationToExistingFieldProps) {
+  const [lang, { t }] = useTranslation();
   const typeInContextTypeVarName = props.fieldDefinition.types[0].typeVarName;
 
   function getTypesInContext() {
@@ -462,16 +511,12 @@ export function RelationToExistingField(props: TRelationToExistingFieldProps) {
         props.typesInContext[0].typeParamsToTypeMap[typeInContextTypeVarName]
           .types;
 
-      const fieldDefTypes = typesInContext
-        .filter((t) => t.type !== props.fieldDefinition.defaultReifiedType)
-        .map((t) => t.type)
-        .sort();
+      const fieldDefTypes = typesInContext.map((t) => t.type).sort();
 
       const types = new Set([...fieldDefTypes, ...defaultSearchType]);
       return [...types];
     } else {
       const fieldDefTypes = props.fieldDefinition.types
-        .filter((t) => t.type !== props.fieldDefinition.defaultReifiedType)
         .map((t) => t.type)
         .sort();
 
@@ -496,16 +541,18 @@ export function RelationToExistingField(props: TRelationToExistingFieldProps) {
     }
   }
 
+  const allAllowedTypes = [...defaultSearchType, ...alternativeCreateTypes()];
+
+  function onPaste(item: any) {
+    if (defaultSearchType.includes(item.type)) {
+      onSelect(item);
+    }
+  }
+
   return (
     <>
       <Show when={props.value.length > 0}>
-        <div
-          class="col-span-10 flex flex-row flex-wrap gap-x-4 gap-y-6"
-          classList={{
-            "not-last:border-b border-b-slate-400/30 not-last:mb-5 not-last:pb-6 ":
-              props.value.length > 0,
-          }}
-        >
+        <div class="col-span-10 flex flex-row flex-wrap gap-x-4 gap-y-6">
           <For each={props.value}>
             {(item, index) => (
               <Switch>
@@ -548,6 +595,52 @@ export function RelationToExistingField(props: TRelationToExistingFieldProps) {
             )}
           </For>
         </div>
+      </Show>
+      <Show
+        when={
+          clipboard.item() &&
+          allAllowedTypes.includes(clipboard.item().type) &&
+          !(
+            props.fieldDefinition.validators.MaxLen &&
+            props.value.length === props.fieldDefinition.validators.MaxLen
+          )
+        }
+      >
+        <div class="col-span-10 mt-4">
+          <div class="flex overflow-clip rounded-xs">
+            <div class="flex opacity-60">
+              <div class="flex w-fit flex-row bg-zinc-300 shadow-2xl">
+                <div class="flex items-center bg-slate-600 px-3 py-2 text-xs font-semibold text-nowrap text-slate-100 uppercase select-none">
+                  {t[
+                    clipboard.item().type as TranslationKey
+                  ]._model.verboseName()}
+                </div>
+                <div class="flex w-fit flex-nowrap items-center pr-4 pl-4 text-sm select-none">
+                  {clipboard.item().label}
+                </div>
+              </div>
+            </div>
+            <button
+              class="group flex aspect-square h-10 cursor-pointer items-center justify-center rounded-r-xs bg-green-500/80 hover:bg-green-500/90 active:bg-green-500/80 active:shadow-inner active:shadow-slate-600/30"
+              onclick={() => onPaste(clipboard.item())}
+            >
+              <BiRegularPaste color="white" size={14} />
+            </button>
+          </div>
+        </div>
+      </Show>
+      <Show
+        when={
+          (props.value.length > 0 ||
+            (clipboard.item() &&
+              allAllowedTypes.includes(clipboard.item().type))) &&
+          !(
+            props.fieldDefinition.validators.MaxLen &&
+            props.value.length === props.fieldDefinition.validators.MaxLen
+          )
+        }
+      >
+        <div class="col-span-10 mb-5 border-b border-zinc-600/30 pt-8"></div>
       </Show>
       <Show
         when={
