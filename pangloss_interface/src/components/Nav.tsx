@@ -219,7 +219,7 @@ export default function Nav() {
       <nav
         class="will-change-transforms fixed top-0 z-30 flex h-dvh w-80 flex-col border-l border-slate-800 text-sm font-semibold transition-all"
         classList={{
-          "-left-68 shadow-xl shadow-slate-300 bg-slate-400": !navHovered(),
+          "-left-68 shadow-xl shadow-slate-300 bg-slate-400 ": !navHovered(),
           "left-0 shadow-2xl shadow-slate-800 drop-shadow-2xl bg-slate-400":
             navHovered(),
         }}

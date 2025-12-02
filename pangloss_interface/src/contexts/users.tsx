@@ -149,7 +149,7 @@ const LoginForm = (props: TLoginFormProps) => {
   };
   return (
     <>
-      <div class="fixed top-0 left-0 z-10 flex h-screen w-screen items-center justify-center bg-slate-400/60 backdrop-blur-sm">
+      <div class="fixed top-0 left-0 z-20 flex h-screen w-screen items-center justify-center bg-slate-400/60 backdrop-blur-sm">
         <div class="w-4/12 rounded-sm bg-slate-200/50 shadow-2xl backdrop-blur-2xl">
           <div class="mb-6 flex h-10 rounded-t-xs bg-slate-700 shadow-xl">
             <div class="flex w-full items-center rounded-t-sm p-3 text-sm font-semibold text-slate-50 uppercase select-none">

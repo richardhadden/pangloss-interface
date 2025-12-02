@@ -32,7 +32,7 @@ import {
   TSelectionOptions,
 } from "./AutocompleteSelector";
 
-import { clipboard } from "./Clipboard";
+import { scratchboard } from "./Scratchboard";
 
 type TRenderBaseSelectedItemProps = { item: any; onRemove: () => void };
 
@@ -47,7 +47,7 @@ export function RenderBaseSelectedItem(props: TRenderBaseSelectedItemProps) {
         {props.item.label}
       </div>
       <button
-        onclick={(e) => clipboard.cut(props.item, props.onRemove)}
+        onclick={(e) => scratchboard.cut(props.item, props.onRemove)}
         class="group flex aspect-square h-10 cursor-pointer items-center justify-center bg-slate-500/70 hover:bg-slate-500/80 active:bg-slate-500/80 active:shadow-inner active:shadow-slate-600/30"
       >
         <BiRegularCut
@@ -57,7 +57,7 @@ export function RenderBaseSelectedItem(props: TRenderBaseSelectedItemProps) {
         />
       </button>
       <button
-        onclick={(e) => clipboard.copy(props.item)}
+        onclick={(e) => scratchboard.copy(props.item)}
         class="group flex aspect-square h-10 cursor-pointer items-center justify-center bg-slate-500/70 hover:bg-slate-500/80 active:bg-slate-500/80 active:shadow-inner active:shadow-slate-600/30"
       >
         <BiRegularCopy
@@ -106,7 +106,7 @@ export function RenderBaseSelectedItemWithEdgeModel(
         </div>
         <div class="grow" />
         <button
-          onclick={(e) => clipboard.cut(props.item, props.onRemove)}
+          onclick={(e) => scratchboard.cut(props.item, props.onRemove)}
           class="group flex aspect-square h-10 cursor-pointer items-center justify-center bg-slate-500/70 hover:bg-slate-500/80 active:bg-slate-500/80 active:shadow-inner active:shadow-slate-600/30"
         >
           <BiRegularCut
@@ -116,7 +116,7 @@ export function RenderBaseSelectedItemWithEdgeModel(
           />
         </button>
         <button
-          onclick={(e) => clipboard.copy(props.item)}
+          onclick={(e) => scratchboard.copy(props.item)}
           class="group flex aspect-square h-10 cursor-pointer items-center justify-center bg-slate-500/70 hover:bg-slate-500/80 active:bg-slate-500/80 active:shadow-inner active:shadow-slate-600/30"
         >
           <BiRegularCopy
@@ -239,6 +239,26 @@ export function RenderReifiedRelation(props: TRenderReifiedRelationProps) {
             </span>
             <div class="h-10 grow bg-slate-500" />
             <button
+              onclick={(e) => scratchboard.cut(props.item, props.onRemove)}
+              class="group flex aspect-square h-10 cursor-pointer items-center justify-center bg-slate-500/70 hover:bg-slate-500/80 active:bg-slate-500/80 active:shadow-inner active:shadow-slate-600/30"
+            >
+              <BiRegularCut
+                color={colors.slate["100"]}
+                class="group-active:scale-95"
+                size={14}
+              />
+            </button>
+            <button
+              onclick={(e) => scratchboard.copy(props.item)}
+              class="group flex aspect-square h-10 cursor-pointer items-center justify-center bg-slate-500/70 hover:bg-slate-500/80 active:bg-slate-500/80 active:shadow-inner active:shadow-slate-600/30"
+            >
+              <BiRegularCopy
+                color={colors.slate["100"]}
+                class="group-active:scale-95"
+                size={14}
+              />
+            </button>
+            <button
               onClick={(e) => {
                 e.stopPropagation();
                 e.preventDefault();
@@ -343,6 +363,26 @@ export function RenderReifiedRelation(props: TRenderReifiedRelationProps) {
                   {item.label}
                 </div>
                 <div class="grow" />
+                <button
+                  onclick={(e) => scratchboard.cut(item, props.onRemove)}
+                  class="group flex aspect-square h-10 cursor-pointer items-center justify-center bg-slate-500/70 hover:bg-slate-500/80 active:bg-slate-500/80 active:shadow-inner active:shadow-slate-600/30"
+                >
+                  <BiRegularCut
+                    color={colors.slate["100"]}
+                    class="group-active:scale-95"
+                    size={14}
+                  />
+                </button>
+                <button
+                  onclick={(e) => scratchboard.copy(item)}
+                  class="group flex aspect-square h-10 cursor-pointer items-center justify-center bg-slate-500/70 hover:bg-slate-500/80 active:bg-slate-500/80 active:shadow-inner active:shadow-slate-600/30"
+                >
+                  <BiRegularCopy
+                    color={colors.slate["100"]}
+                    class="group-active:scale-95"
+                    size={14}
+                  />
+                </button>
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
@@ -455,7 +495,7 @@ export function RelationToExistingField(props: TRelationToExistingFieldProps) {
   const defaultReifiedType =
     inContextDefaultReifiedType || props.fieldDefinition.defaultReifiedType;
 
-  const defaultSearchType =
+  const defaultSearchTypes =
     inContextDefautSearchType || props.fieldDefinition.defaultSearchType;
 
   function onSelect(item) {
@@ -513,7 +553,7 @@ export function RelationToExistingField(props: TRelationToExistingFieldProps) {
 
       const fieldDefTypes = typesInContext.map((t) => t.type).sort();
 
-      const types = new Set([...fieldDefTypes, ...defaultSearchType]);
+      const types = new Set([...fieldDefTypes, ...defaultSearchTypes]);
       return [...types];
     } else {
       const fieldDefTypes = props.fieldDefinition.types
@@ -541,10 +581,10 @@ export function RelationToExistingField(props: TRelationToExistingFieldProps) {
     }
   }
 
-  const allAllowedTypes = [...defaultSearchType, ...alternativeCreateTypes()];
+  const allAllowedTypes = [...defaultSearchTypes, ...alternativeCreateTypes()];
 
   function onPaste(item: any) {
-    if (defaultSearchType.includes(item.type)) {
+    if (defaultSearchTypes.includes(item.type)) {
       onSelect(item);
     }
   }
@@ -598,8 +638,8 @@ export function RelationToExistingField(props: TRelationToExistingFieldProps) {
       </Show>
       <Show
         when={
-          clipboard.item() &&
-          allAllowedTypes.includes(clipboard.item().type) &&
+          scratchboard.items() &&
+          scratchboard.items().length > 0 &&
           !(
             props.fieldDefinition.validators.MaxLen &&
             props.value.length === props.fieldDefinition.validators.MaxLen
@@ -607,41 +647,33 @@ export function RelationToExistingField(props: TRelationToExistingFieldProps) {
         }
       >
         <div class="col-span-10 mt-4">
-          <div class="flex overflow-clip rounded-xs">
-            <div class="flex opacity-60">
-              <div class="flex w-fit flex-row bg-zinc-300 shadow-2xl">
-                <div class="flex items-center bg-slate-600 px-3 py-2 text-xs font-semibold text-nowrap text-slate-100 uppercase select-none">
-                  {t[
-                    clipboard.item().type as TranslationKey
-                  ]._model.verboseName()}
+          <For each={scratchboard.items()}>
+            {(item, index) => (
+              <Show when={allAllowedTypes.includes(item.type)}>
+                <div class="mb-2 flex overflow-clip rounded-xs">
+                  <div class="flex">
+                    <div class="flex w-fit flex-row bg-zinc-300/60 shadow-2xl">
+                      <div class="flex items-center bg-slate-600/60 px-3 py-2 text-xs font-semibold text-nowrap text-slate-100 uppercase select-none">
+                        {t[item.type as TranslationKey]._model.verboseName()}
+                      </div>
+                      <div class="flex w-fit flex-nowrap items-center pr-4 pl-4 text-sm text-black/60 select-none">
+                        {item.label}
+                      </div>
+                    </div>
+                  </div>
+                  <button
+                    class="group flex aspect-square h-10 cursor-pointer items-center justify-center rounded-r-xs bg-green-500/80 hover:bg-green-500/90 active:bg-green-500/80 active:shadow-inner active:shadow-slate-600/30"
+                    onclick={() => onPaste(item)}
+                  >
+                    <BiRegularPaste color="white" size={14} />
+                  </button>
                 </div>
-                <div class="flex w-fit flex-nowrap items-center pr-4 pl-4 text-sm select-none">
-                  {clipboard.item().label}
-                </div>
-              </div>
-            </div>
-            <button
-              class="group flex aspect-square h-10 cursor-pointer items-center justify-center rounded-r-xs bg-green-500/80 hover:bg-green-500/90 active:bg-green-500/80 active:shadow-inner active:shadow-slate-600/30"
-              onclick={() => onPaste(clipboard.item())}
-            >
-              <BiRegularPaste color="white" size={14} />
-            </button>
-          </div>
+              </Show>
+            )}
+          </For>
         </div>
       </Show>
-      <Show
-        when={
-          (props.value.length > 0 ||
-            (clipboard.item() &&
-              allAllowedTypes.includes(clipboard.item().type))) &&
-          !(
-            props.fieldDefinition.validators.MaxLen &&
-            props.value.length === props.fieldDefinition.validators.MaxLen
-          )
-        }
-      >
-        <div class="col-span-10 mb-5 border-b border-zinc-600/30 pt-8"></div>
-      </Show>
+
       <Show
         when={
           !(
@@ -652,7 +684,7 @@ export function RelationToExistingField(props: TRelationToExistingFieldProps) {
       >
         <div class="col-span-10">
           <AutocompleteSelector
-            selectionTypes={defaultSearchType as BaseNodeTypes[]}
+            selectionTypes={defaultSearchTypes as BaseNodeTypes[]}
             onSelect={onSelect}
             selectedItems={props.value}
             searchBoxVisible={props.showSearchBox}

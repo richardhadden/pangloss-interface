@@ -19,7 +19,7 @@ export default function App() {
                 <div class="fixed top-0 flex w-full justify-center pl-12">
                   <div
                     id="controlBar"
-                    class="left-6 h-16 max-w-5/6 min-w-5/6 rounded-b-sm bg-slate-400/50 shadow-md backdrop-blur-2xl duration-500 empty:-top-16 hover:shadow-xl"
+                    class="left-6 h-16 max-w-5/6 min-w-5/6 rounded-b-sm bg-slate-400/50 shadow-md backdrop-blur-3xl duration-500 empty:-top-16 hover:shadow-xl"
                   ></div>
                 </div>
                 <Nav />

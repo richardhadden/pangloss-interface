@@ -35,7 +35,7 @@ import { SetStoreFunction } from "solid-js/store";
 import { useTranslation } from "~/contexts/translation";
 import { ImCross } from "solid-icons/im";
 
-import { ClipboardView, readDefaultClipboardOnLoad } from "./Clipboard";
+import { ScratchboardView } from "./Scratchboard";
 
 type TExistingSuggestionsProps = {
   type: keyof typeof ModelDefinitions;
@@ -373,7 +373,6 @@ const BaseForm = (props: TBaseFormProps) => {
 
   return (
     <>
-      <ClipboardView />
       <div class="grid grid-cols-12">
         <FormFields
           fieldNames={modelDefinition.meta.orderFields}

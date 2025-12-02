@@ -14,6 +14,7 @@ import { createUndoHistory } from "@solid-primitives/history";
 import { IoArrowRedoSharp, IoArrowUndoSharp } from "solid-icons/io";
 import colors from "tailwindcss/colors";
 import { bindKeyCombo, unbindKeyCombo } from "@rwh/keystrokes";
+import { ScratchboardView } from "~/components/form/Scratchboard";
 
 export default function CreateObject() {
   const params = useParams<{ modelType: BaseNodeTypes }>();
@@ -110,6 +111,7 @@ export default function CreateObject() {
           </>
         }
       />
+      <ScratchboardView />
 
       <div class="py-32 pr-16 pl-32">
         {/*<button onclick={() => console.log(unwrap(newFormState))}>
