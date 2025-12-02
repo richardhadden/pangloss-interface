@@ -33,6 +33,7 @@ import {
 } from "./AutocompleteSelector";
 
 import { scratchboard } from "./Scratchboard";
+import { unwrap } from "solid-js/store";
 
 type TRenderBaseSelectedItemProps = { item: any; onRemove: () => void };
 
@@ -344,22 +345,22 @@ export function RenderReifiedRelation(props: TRenderReifiedRelationProps) {
       <div>
         <div class="flex h-fit items-center overflow-clip rounded-t-xs">
           <button
-            class="group flex cursor-pointer items-center justify-center rounded-tl-xs bg-slate-500 py-3 text-slate-50 hover:bg-slate-500/90"
+            class="group flex cursor-pointer items-center justify-center rounded-tl-xs bg-slate-500 py-3 font-semibold text-slate-200 hover:bg-slate-500/90"
             onclick={() => setCollapse(false)}
           >
             <BiRegularExpand class="ml-2 group-active:scale-95" />
-            <span class="flex h-full items-center rounded-l-xs px-2 text-xs font-semibold uppercase">
+            <span class="flex h-full items-center rounded-l-xs pr-3 pl-2 text-xs font-medium uppercase">
               {props.item.type}
             </span>
           </button>
 
           <For each={props.item.target}>
             {(item, index) => (
-              <div class="flex-start flex h-fit w-full bg-zinc-300 shadow-2xl">
-                <div class="flex items-center bg-slate-600 px-2 py-2 text-xs font-semibold text-nowrap text-slate-100 uppercase select-none">
+              <div class="flex-start flex h-fit w-full bg-slate-500 shadow-md shadow-slate-400">
+                <div class="flex items-center rounded-l-xs bg-slate-600 px-4 py-2 text-xs font-semibold text-nowrap text-slate-100 uppercase select-none">
                   {t[item.type as TranslationKey]._model.verboseName()}
                 </div>
-                <div class="flex w-fit flex-nowrap items-center pr-4 pl-4 text-sm">
+                <div class="flex w-fit flex-nowrap items-center bg-zinc-300 pr-6 pl-6 text-sm">
                   {item.label}
                 </div>
                 <div class="grow" />
@@ -589,6 +590,22 @@ export function RelationToExistingField(props: TRelationToExistingFieldProps) {
     }
   }
 
+  function selectedIds(
+    values: { id: string; type: string }[],
+  ): { id: string; type: string }[] {
+    const selectedObjectIds = [];
+    for (let obj of unwrap(values)) {
+      console.log(obj.type);
+      if (obj.type in BaseNodeDefinitionMap) {
+        selectedObjectIds.push(obj.id);
+      } else if (obj.type in ReifiedRelationsDefinitionMap) {
+        selectedObjectIds.push(...selectedIds(unwrap(obj.target)));
+      }
+    }
+
+    return selectedObjectIds;
+  }
+
   return (
     <>
       <Show when={props.value.length > 0}>
@@ -649,7 +666,12 @@ export function RelationToExistingField(props: TRelationToExistingFieldProps) {
         <div class="col-span-10 mt-4">
           <For each={scratchboard.items()}>
             {(item, index) => (
-              <Show when={allAllowedTypes.includes(item.type)}>
+              <Show
+                when={
+                  allAllowedTypes.includes(item.type) &&
+                  !selectedIds(props.value).includes(item.id)
+                }
+              >
                 <div class="mb-2 flex overflow-clip rounded-xs">
                   <div class="flex">
                     <div class="flex w-fit flex-row bg-zinc-300/60 shadow-2xl">
@@ -673,7 +695,6 @@ export function RelationToExistingField(props: TRelationToExistingFieldProps) {
           </For>
         </div>
       </Show>
-
       <Show
         when={
           !(
