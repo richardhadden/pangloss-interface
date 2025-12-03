@@ -41,7 +41,6 @@ function _copy(item: object) {
     ? [..._scratchboard(), unwrap(item)]
     : [unwrap(item)];
   _setScratchboard(update);
-  console.log("copied", item);
   localStorage.setItem(LOCALSTORAGE_KEY, JSON.stringify(update));
 }
 
@@ -73,7 +72,7 @@ function generateLabelForReifiedRelation(item) {
   const [lang, { t }] = useTranslation();
 
   return (
-    <div class="flex w-fit">
+    <div class="flex w-fit items-center">
       <For each={item.target}>
         {(target) => (
           <div class="flex flex-row">
@@ -99,18 +98,36 @@ function generateLabelForReifiedRelation(item) {
         )}
       >
         {([fieldName, field]) => (
-          <Show
-            when={fieldName !== "target" && field.metatype === "RelationField"}
-          >
-            <div class="ml-4 flex items-center px-2">
-              <span class="mr-2 text-[10px] font-semibold text-slate-600/70 uppercase">
-                {fieldName}
-              </span>
-              <For each={item[fieldName]}>
-                {(f) => generateLabelForReifiedRelation(f)}
-              </For>
-            </div>
-          </Show>
+          <>
+            <Show
+              when={
+                fieldName !== "target" && field.metatype === "RelationField"
+              }
+            >
+              <div class="ml-4 flex items-center px-2">
+                <span class="mr-2 text-[10px] font-semibold text-slate-600/70 uppercase">
+                  {fieldName}
+                </span>
+                <For each={item[fieldName]}>
+                  {(f) => generateLabelForReifiedRelation(f)}
+                </For>
+              </div>
+            </Show>
+            <Show
+              when={
+                fieldName !== "target" &&
+                field.metatype === "LiteralField" &&
+                item[fieldName]
+              }
+            >
+              <div class="align-center flex w-fit flex-nowrap items-center pr-4 pl-4 text-[10px] font-semibold text-slate-600/70 uppercase">
+                {t[item.type as TranslationKey][fieldName].verboseName}
+              </div>
+              <div class="flex items-center rounded-sm bg-zinc-400/30 p-2">
+                {item[fieldName].toString()}
+              </div>
+            </Show>
+          </>
         )}
       </For>
     </div>

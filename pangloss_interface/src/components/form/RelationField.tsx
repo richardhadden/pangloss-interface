@@ -11,12 +11,13 @@ import {
   SemanticSpaceTypes,
 } from "../../../.model-configs/model-typescript";
 import { RelationToExistingField } from "./RelationToExistingField";
-import { BiRegularPlus } from "solid-icons/bi";
+import { BiRegularCopy, BiRegularCut, BiRegularPlus } from "solid-icons/bi";
 import { IoCloseSharp } from "solid-icons/io";
 import { For, JSXElement, Match, Show, Switch } from "solid-js";
 import { FormFields, getOrderFields } from "~/components/form/BaseForm";
 import { TranslationKey, useTranslation } from "~/contexts/translation";
 import { createBlankObject } from "~/utils/createBlankObject";
+import { scratchboard } from "./Scratchboard";
 
 const InlineFormColours = {
   slate: {
@@ -60,6 +61,7 @@ type TInlineFormFieldWrapperProps = {
   modelLabel: string;
   modelType: keyof typeof ModelDefinitions;
   closeFunction?: () => void;
+  item: any;
 };
 
 export function InlineFormFieldWrapper(props: TInlineFormFieldWrapperProps) {
@@ -82,8 +84,27 @@ export function InlineFormFieldWrapper(props: TInlineFormFieldWrapperProps) {
       >
         <div class="flex items-center pl-3">{props.modelLabel}</div>
         <div class="grow"></div>
+
         <Show when={props.closeFunction}>
-          <div>
+          <div class="flex">
+            <button
+              onClick={() =>
+                scratchboard.cut(props.item, props.closeFunction as () => void)
+              }
+              class="group flex aspect-square h-full cursor-pointer items-center justify-center rounded-tr-xs bg-slate-300/40 hover:bg-slate-400/40 active:shadow-inner active:shadow-slate-500/30"
+            >
+              <div class="group-active:scale-85">
+                <BiRegularCut />
+              </div>
+            </button>
+            <button
+              onClick={() => scratchboard.copy(props.item)}
+              class="group flex aspect-square h-full cursor-pointer items-center justify-center rounded-tr-xs bg-slate-300/40 hover:bg-slate-400/40 active:shadow-inner active:shadow-slate-500/30"
+            >
+              <div class="group-active:scale-85">
+                <BiRegularCopy />
+              </div>
+            </button>
             <button
               class="group flex aspect-square h-full cursor-pointer items-center justify-center rounded-tr-xs bg-slate-300/50 hover:bg-slate-400/50 active:shadow-inner active:shadow-slate-500/40"
               onClick={props.closeFunction}
@@ -178,6 +199,7 @@ function RelationField(props: TRelationFieldProps) {
                     props.fieldDefinition,
                     index(),
                   )}
+                  item={item}
                 >
                   <FormFields
                     modelName={item.type}

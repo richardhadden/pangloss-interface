@@ -451,10 +451,10 @@ function generateLabelForReifiedRelation(item) {
     <div class="flex w-fit">
       <For each={item.target}>
         {(target) => (
-          <div class="flex flex-row">
+          <div class="flex flex-row items-center">
             <Show when={target.type && target.type in BaseNodeDefinitionMap}>
-              <div class="flex-start mr-1 flex h-fit w-fit rounded-xs bg-zinc-400/90 opacity-70 shadow-2xl">
-                <div class="flex items-center rounded-l-xs bg-slate-600 px-3 py-2 text-[10px] font-semibold text-nowrap text-slate-100 uppercase select-none">
+              <div class="flex-start mr-1 flex h-fit w-fit rounded-xs bg-zinc-400/50 shadow-2xl">
+                <div class="flex items-center rounded-l-xs bg-slate-600/50 px-3 py-2 text-[10px] font-semibold text-nowrap text-slate-100/70 uppercase select-none">
                   {t[target.type as TranslationKey]._model.verboseName()}
                 </div>
                 <div class="flex w-fit flex-nowrap items-center pr-4 pl-4 text-[10px]">
@@ -474,18 +474,37 @@ function generateLabelForReifiedRelation(item) {
         )}
       >
         {([fieldName, field]) => (
-          <Show
-            when={fieldName !== "target" && field.metatype === "RelationField"}
-          >
-            <div class="ml-4 flex items-center px-2">
-              <span class="mr-2 text-[10px] font-semibold text-slate-600/70 uppercase">
-                {fieldName}
-              </span>
-              <For each={item[fieldName]}>
-                {(f) => generateLabelForReifiedRelation(f)}
-              </For>
-            </div>
-          </Show>
+          <>
+            <Show
+              when={
+                fieldName !== "target" && field.metatype === "RelationField"
+              }
+            >
+              <div class="ml-4 flex items-center px-2">
+                <span class="mr-2 text-[10px] font-semibold text-slate-600/50 uppercase">
+                  {fieldName}
+                </span>
+                <For each={item[fieldName]}>
+                  {(f) => generateLabelForReifiedRelation(f)}
+                </For>
+              </div>
+            </Show>
+
+            <Show
+              when={
+                fieldName !== "target" &&
+                field.metatype === "LiteralField" &&
+                item[fieldName]
+              }
+            >
+              <div class="align-center flex w-fit flex-nowrap items-center pr-4 pl-4 text-[10px] font-semibold text-slate-600/50 uppercase">
+                {t[item.type as TranslationKey][fieldName].verboseName}
+              </div>
+              <div class="flex items-center rounded-sm bg-zinc-400/30 p-2 text-slate-600/50">
+                {item[fieldName].toString()}
+              </div>
+            </Show>
+          </>
         )}
       </For>
     </div>
