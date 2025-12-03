@@ -6,6 +6,11 @@ import { TranslationKey, useTranslation } from "~/contexts/translation";
 import { isServer } from "solid-js/web";
 import { BiRegularReset } from "solid-icons/bi";
 import colors from "tailwindcss/colors";
+import {
+  BaseNodeDefinitionMap,
+  ModelDefinitions,
+  ReifiedRelationsDefinitionMap,
+} from "../../../.model-configs/model-definitions";
 
 const LOCALSTORAGE_KEY = "Pangloss";
 
@@ -32,6 +37,7 @@ function _copy(item: object) {
     ? [..._scratchboard(), unwrap(item)]
     : [unwrap(item)];
   _setScratchboard(update);
+  console.log("copied", item);
   localStorage.setItem(LOCALSTORAGE_KEY, JSON.stringify(update));
 }
 
@@ -58,6 +64,54 @@ export const scratchboard = {
   reset: _reset,
   remove: _remove,
 };
+
+function generateLabelForReifiedRelation(item) {
+  const [lang, { t }] = useTranslation();
+
+  return (
+    <div class="flex w-fit">
+      <For each={item.target}>
+        {(target) => (
+          <div class="flex flex-row">
+            <Show when={target.type && target.type in BaseNodeDefinitionMap}>
+              <div class="flex-start mr-1 flex h-fit w-fit rounded-xs bg-zinc-400/90 opacity-70 shadow-2xl">
+                <div class="flex items-center rounded-l-xs bg-slate-600 px-3 py-2 text-[10px] font-semibold text-nowrap text-slate-100 uppercase select-none">
+                  {t[target.type as TranslationKey]._model.verboseName()}
+                </div>
+                <div class="flex w-fit flex-nowrap items-center pr-4 pl-4 text-[10px]">
+                  {target.label}
+                </div>
+              </div>
+            </Show>
+            <Show when={target.type in ReifiedRelationsDefinitionMap}>
+              {generateLabelForReifiedRelation(target)}
+            </Show>
+          </div>
+        )}
+      </For>
+      <For
+        each={Object.entries(
+          ModelDefinitions[item.type as keyof typeof ModelDefinitions].fields,
+        )}
+      >
+        {([fieldName, field]) => (
+          <Show
+            when={fieldName !== "target" && field.metatype === "RelationField"}
+          >
+            <div class="ml-4 flex items-center px-2">
+              <span class="mr-2 text-[10px] font-semibold text-slate-600/70 uppercase">
+                {fieldName}
+              </span>
+              <For each={item[fieldName]}>
+                {(f) => generateLabelForReifiedRelation(f)}
+              </For>
+            </div>
+          </Show>
+        )}
+      </For>
+    </div>
+  );
+}
 
 export const ScratchboardView = () => {
   const [expandScratchboard, setExpandScratchboard] = createSignal(true);
@@ -92,7 +146,12 @@ export const ScratchboardView = () => {
                       {t[item.type as TranslationKey]._model.verboseName()}
                     </div>
                     <div class="flex w-fit flex-nowrap items-center pr-4 pl-4 text-xs">
-                      {item.label}
+                      <Show
+                        when={item.type in BaseNodeDefinitionMap}
+                        fallback={generateLabelForReifiedRelation(item)}
+                      >
+                        {item.label}
+                      </Show>
                     </div>
                     <button
                       onclick={() => scratchboard.remove(index())}

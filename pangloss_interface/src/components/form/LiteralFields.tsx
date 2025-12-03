@@ -81,7 +81,7 @@ const NumberField = (props: TNumberFieldProps) => {
   return (
     <input
       type="number"
-      class="max-w-12 rounded-sm bg-zinc-200/20 p-2 outline-0 focus:bg-zinc-200/20"
+      class="max-w-12 rounded-sm bg-zinc-200/20 p-1 outline-0 focus:bg-zinc-200/20"
       value={props.value}
       oninput={(e) => props.onInput(Number(e.currentTarget.value))}
     />

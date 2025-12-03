@@ -2,7 +2,7 @@ import dataclasses
 from typing import Callable, ClassVar, Literal, NotRequired, TypedDict
 
 from pangloss.model_config.models_base import AbstractBaseMeta
-from pangloss.models import BaseNode, SemanticSpace
+from pangloss.models import BaseNode, ReifiedRelation, SemanticSpace
 
 type FieldsToPathMapping = dict[str, str]
 
@@ -48,7 +48,7 @@ class InterfaceBaseMeta(AbstractBaseMeta):
         | Literal["stone"]
         | None
     ) = dataclasses.field(default="amber")
-    should_collapse: Callable[[type[BaseNode]], bool] | None = None
+    should_collapse: Callable[[type[BaseNode | ReifiedRelation]], bool] | None = None
     suggest_duplicates: bool | None = None
 
 

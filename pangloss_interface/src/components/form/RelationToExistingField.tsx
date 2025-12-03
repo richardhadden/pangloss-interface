@@ -141,7 +141,7 @@ export function RenderBaseSelectedItemWithEdgeModel(
           />
         </button>
       </div>
-      <div class="flex h-fit w-full rounded-b-xs bg-slate-700 px-2 py-1">
+      <div class="flex h-fit w-full rounded-b-xs bg-slate-400 px-2 py-2">
         <FormFields
           fieldNames={Object.keys(ModelDefinitions[props.edgeModelType].fields)}
           modelName={props.edgeModelType}
@@ -150,7 +150,7 @@ export function RenderBaseSelectedItemWithEdgeModel(
             props.setValue(value, "edgeProperties", ...path)
           }
           style="unstyled"
-          labelStyle="max-w-fit text-slate-300 text-xs uppercase font-semibold flex items-center"
+          labelStyle="max-w-fit mr-4 text-slate-700 text-xs uppercase font-semibold flex items-center"
           fieldContainerStyle=""
         />
       </div>
@@ -190,9 +190,9 @@ export function RenderReifiedRelation(props: TRenderReifiedRelationProps) {
     <Show
       when={shouldCollapseFunc && shouldCollapseFunc(props.item) && collapse()}
       fallback={
-        <div class="box-border h-fit overflow-clip rounded-xs bg-slate-300/50 shadow-xl shadow-slate-700/30">
+        <div class="box-border h-fit overflow-clip rounded-xs bg-slate-300/50 shadow-slate-700/30">
           {/** This is the fully-expanded version */}
-          <div class="flex h-fit items-center justify-start text-xs font-semibold text-slate-100 uppercase select-none">
+          <div class="flex h-fit items-center justify-start overflow-clip bg-slate-500 text-xs font-semibold text-slate-100 uppercase select-none">
             <Show
               when={
                 shouldCollapseFunc &&
@@ -200,7 +200,7 @@ export function RenderReifiedRelation(props: TRenderReifiedRelationProps) {
                 !collapse()
               }
               fallback={
-                <span class="flex h-10 items-center rounded-tl-xs bg-slate-500 px-2 text-xs font-semibold uppercase">
+                <span class="flex h-10 items-center rounded-tl-xs bg-slate-500 px-3 text-xs font-medium uppercase">
                   {t[
                     props.item.type as TranslationKey
                   ]._model.verboseName()}{" "}
@@ -208,7 +208,7 @@ export function RenderReifiedRelation(props: TRenderReifiedRelationProps) {
               }
             >
               <button
-                class="group flex h-10 cursor-pointer items-center justify-center rounded-tl-xs bg-slate-500 hover:bg-slate-500/90 active:bg-slate-500/90 active:shadow-inner active:shadow-slate-600/30"
+                class="group flex h-10 cursor-pointer items-center justify-center rounded-tl-xs bg-slate-500 py-3 font-semibold text-slate-200 hover:bg-slate-500/90"
                 onclick={() => setCollapse(true)}
               >
                 <BiRegularCollapse
@@ -216,13 +216,13 @@ export function RenderReifiedRelation(props: TRenderReifiedRelationProps) {
                   class="ml-2 group-active:scale-95"
                   size={18}
                 />
-                <span class="mr-2 ml-2 text-xs font-semibold uppercase">
+                <span class="flex h-full items-center rounded-l-xs pr-3 pl-2 text-xs font-medium uppercase">
                   {t[props.item.type as TranslationKey]._model.verboseName()}
                 </span>
               </button>
             </Show>
 
-            <span class="flex h-10 items-center bg-slate-600 px-2 py-2">
+            <span class="flex h-10 items-center rounded-l-xs bg-slate-600 px-4 py-2 text-xs font-semibold text-nowrap text-slate-100 uppercase shadow-md shadow-slate-600 select-none">
               <Show
                 when={props.item.target[0]}
                 fallback={props.fieldDefinition.defaultSearchType
@@ -241,7 +241,7 @@ export function RenderReifiedRelation(props: TRenderReifiedRelationProps) {
             <div class="h-10 grow bg-slate-500" />
             <button
               onclick={(e) => scratchboard.cut(props.item, props.onRemove)}
-              class="group flex aspect-square h-10 cursor-pointer items-center justify-center bg-slate-500/70 hover:bg-slate-500/80 active:bg-slate-500/80 active:shadow-inner active:shadow-slate-600/30"
+              class="group flex aspect-square h-10 cursor-pointer items-center justify-center bg-slate-500/70 hover:bg-slate-600/50 active:bg-slate-500/80 active:shadow-inner active:shadow-slate-600/30"
             >
               <BiRegularCut
                 color={colors.slate["100"]}
@@ -251,7 +251,7 @@ export function RenderReifiedRelation(props: TRenderReifiedRelationProps) {
             </button>
             <button
               onclick={(e) => scratchboard.copy(props.item)}
-              class="group flex aspect-square h-10 cursor-pointer items-center justify-center bg-slate-500/70 hover:bg-slate-500/80 active:bg-slate-500/80 active:shadow-inner active:shadow-slate-600/30"
+              class="group flex aspect-square h-10 cursor-pointer items-center justify-center bg-slate-500/70 hover:bg-slate-600/50 active:bg-slate-500/80 active:shadow-inner active:shadow-slate-600/30"
             >
               <BiRegularCopy
                 color={colors.slate["100"]}
@@ -265,7 +265,7 @@ export function RenderReifiedRelation(props: TRenderReifiedRelationProps) {
                 e.preventDefault();
                 props.onRemove();
               }}
-              class="group flex aspect-square h-10 cursor-pointer items-center justify-center rounded-tr-xs bg-slate-500/70 hover:bg-slate-500/80 active:bg-slate-500/80 active:shadow-inner active:shadow-slate-600/30"
+              class="group flex aspect-square h-10 cursor-pointer items-center justify-center rounded-tr-xs bg-slate-500/70 hover:bg-slate-600/50 active:bg-slate-500/80 active:shadow-inner active:shadow-slate-600/30"
             >
               <IoCloseSharp
                 color={colors.slate["100"]}
@@ -321,7 +321,7 @@ export function RenderReifiedRelation(props: TRenderReifiedRelationProps) {
             />
           </div>
           <Show when={props.fieldDefinition.edgeModel}>
-            <div class="flex w-full rounded-b-xs bg-slate-700 px-2">
+            <div class="flex w-full rounded-b-xs bg-slate-400 px-2 py-2">
               <FormFields
                 fieldNames={Object.keys(
                   ModelDefinitions[
@@ -334,7 +334,7 @@ export function RenderReifiedRelation(props: TRenderReifiedRelationProps) {
                   props.setValue(value, "edgeProperties", ...path)
                 }
                 style="unstyled"
-                labelStyle="max-w-fit text-slate-50 text-xs uppercase font-semibold flex items-center"
+                labelStyle="max-w-fit text-slate-700 text-xs uppercase font-semibold flex items-center"
                 fieldContainerStyle=""
               />
             </div>
@@ -356,7 +356,7 @@ export function RenderReifiedRelation(props: TRenderReifiedRelationProps) {
 
           <For each={props.item.target}>
             {(item, index) => (
-              <div class="flex-start flex h-fit w-full bg-slate-500 shadow-md shadow-slate-400">
+              <div class="flex-start flex h-fit w-full bg-slate-500 shadow-md shadow-slate-600">
                 <div class="flex items-center rounded-l-xs bg-slate-600 px-4 py-2 text-xs font-semibold text-nowrap text-slate-100 uppercase select-none">
                   {t[item.type as TranslationKey]._model.verboseName()}
                 </div>
@@ -366,7 +366,7 @@ export function RenderReifiedRelation(props: TRenderReifiedRelationProps) {
                 <div class="grow" />
                 <button
                   onclick={(e) => scratchboard.cut(item, props.onRemove)}
-                  class="group flex aspect-square h-10 cursor-pointer items-center justify-center bg-slate-500/70 hover:bg-slate-500/80 active:bg-slate-500/80 active:shadow-inner active:shadow-slate-600/30"
+                  class="group flex aspect-square h-10 cursor-pointer items-center justify-center bg-slate-500/70 hover:bg-slate-600/50 active:bg-slate-500/80 active:shadow-inner active:shadow-slate-600/30"
                 >
                   <BiRegularCut
                     color={colors.slate["100"]}
@@ -376,7 +376,7 @@ export function RenderReifiedRelation(props: TRenderReifiedRelationProps) {
                 </button>
                 <button
                   onclick={(e) => scratchboard.copy(item)}
-                  class="group flex aspect-square h-10 cursor-pointer items-center justify-center bg-slate-500/70 hover:bg-slate-500/80 active:bg-slate-500/80 active:shadow-inner active:shadow-slate-600/30"
+                  class="group flex aspect-square h-10 cursor-pointer items-center justify-center bg-slate-500/70 hover:bg-slate-600/50 active:bg-slate-500/80 active:shadow-inner active:shadow-slate-600/30"
                 >
                   <BiRegularCopy
                     color={colors.slate["100"]}
@@ -403,7 +403,7 @@ export function RenderReifiedRelation(props: TRenderReifiedRelationProps) {
           </For>
         </div>
         <Show when={props.fieldDefinition.edgeModel}>
-          <div class="flex w-full shrink rounded-b-xs bg-slate-700 px-2">
+          <div class="flex w-full shrink rounded-b-xs bg-slate-400 px-2 py-2">
             <FormFields
               fieldNames={Object.keys(
                 ModelDefinitions[
@@ -416,13 +416,78 @@ export function RenderReifiedRelation(props: TRenderReifiedRelationProps) {
                 props.setValue(value, "edgeProperties", ...path)
               }
               style="unstyled"
-              labelStyle="max-w-fit text-slate-300 text-xs uppercase font-semibold flex items-center"
+              labelStyle="max-w-fit mr-4 text-slate-700 text-xs uppercase font-semibold flex items-center"
               fieldContainerStyle=""
             />
           </div>
         </Show>
       </div>
     </Show>
+  );
+}
+
+function recursiveGetSelectedIds(
+  values: (
+    | { id: string; type: string }
+    | { id: string; type: string; target: any }
+  )[],
+): string[] {
+  const selectedObjectIds = [];
+  for (let obj of unwrap(values)) {
+    if (obj.type in BaseNodeDefinitionMap) {
+      selectedObjectIds.push(obj.id);
+    } else if (obj.type in ReifiedRelationsDefinitionMap && "target" in obj) {
+      selectedObjectIds.push(...recursiveGetSelectedIds(unwrap(obj.target)));
+    }
+  }
+  return selectedObjectIds;
+}
+
+function generateLabelForReifiedRelation(item) {
+  const [lang, { t }] = useTranslation();
+
+  return (
+    <div class="flex w-fit">
+      <For each={item.target}>
+        {(target) => (
+          <div class="flex flex-row">
+            <Show when={target.type && target.type in BaseNodeDefinitionMap}>
+              <div class="flex-start mr-1 flex h-fit w-fit rounded-xs bg-zinc-400/90 opacity-70 shadow-2xl">
+                <div class="flex items-center rounded-l-xs bg-slate-600 px-3 py-2 text-[10px] font-semibold text-nowrap text-slate-100 uppercase select-none">
+                  {t[target.type as TranslationKey]._model.verboseName()}
+                </div>
+                <div class="flex w-fit flex-nowrap items-center pr-4 pl-4 text-[10px]">
+                  {target.label}
+                </div>
+              </div>
+            </Show>
+            <Show when={target.type in ReifiedRelationsDefinitionMap}>
+              {generateLabelForReifiedRelation(target)}
+            </Show>
+          </div>
+        )}
+      </For>
+      <For
+        each={Object.entries(
+          ModelDefinitions[item.type as keyof typeof ModelDefinitions].fields,
+        )}
+      >
+        {([fieldName, field]) => (
+          <Show
+            when={fieldName !== "target" && field.metatype === "RelationField"}
+          >
+            <div class="ml-4 flex items-center px-2">
+              <span class="mr-2 text-[10px] font-semibold text-slate-600/70 uppercase">
+                {fieldName}
+              </span>
+              <For each={item[fieldName]}>
+                {(f) => generateLabelForReifiedRelation(f)}
+              </For>
+            </div>
+          </Show>
+        )}
+      </For>
+    </div>
   );
 }
 
@@ -445,6 +510,7 @@ export function RelationToExistingField(props: TRelationToExistingFieldProps) {
 
   function getTypesInContext() {
     if (props.typesInContext && props.typesInContext.length > 0) {
+      console.log("props.typesInContext", props.typesInContext);
       const typesInContext =
         props.typesInContext[0].typeParamsToTypeMap[typeInContextTypeVarName]
           .types;
@@ -585,31 +651,22 @@ export function RelationToExistingField(props: TRelationToExistingFieldProps) {
   const allAllowedTypes = [...defaultSearchTypes, ...alternativeCreateTypes()];
 
   function onPaste(item: any) {
+    console.log("pasted", item);
     if (defaultSearchTypes.includes(item.type)) {
       onSelect(item);
+    } else {
+      props.setValue([...props.value, item]);
     }
   }
 
-  function selectedIds(
-    values: { id: string; type: string }[],
-  ): { id: string; type: string }[] {
-    const selectedObjectIds = [];
-    for (let obj of unwrap(values)) {
-      console.log(obj.type);
-      if (obj.type in BaseNodeDefinitionMap) {
-        selectedObjectIds.push(obj.id);
-      } else if (obj.type in ReifiedRelationsDefinitionMap) {
-        selectedObjectIds.push(...selectedIds(unwrap(obj.target)));
-      }
-    }
-
-    return selectedObjectIds;
+  function selectedIds(): Set<string> {
+    return new Set(recursiveGetSelectedIds(props.value));
   }
 
   return (
     <>
       <Show when={props.value.length > 0}>
-        <div class="col-span-10 flex flex-row flex-wrap gap-x-4 gap-y-6">
+        <div class="col-span-10 mb-2 flex flex-row flex-wrap gap-x-4 gap-y-6">
           <For each={props.value}>
             {(item, index) => (
               <Switch>
@@ -669,7 +726,7 @@ export function RelationToExistingField(props: TRelationToExistingFieldProps) {
               <Show
                 when={
                   allAllowedTypes.includes(item.type) &&
-                  !selectedIds(props.value).includes(item.id)
+                  !selectedIds().has(item.id)
                 }
               >
                 <div class="mb-2 flex overflow-clip rounded-xs">
@@ -678,9 +735,19 @@ export function RelationToExistingField(props: TRelationToExistingFieldProps) {
                       <div class="flex items-center bg-slate-600/60 px-3 py-2 text-xs font-semibold text-nowrap text-slate-100 uppercase select-none">
                         {t[item.type as TranslationKey]._model.verboseName()}
                       </div>
-                      <div class="flex w-fit flex-nowrap items-center pr-4 pl-4 text-sm text-black/60 select-none">
-                        {item.label}
-                      </div>
+
+                      <Show
+                        when={item.type in BaseNodeDefinitionMap}
+                        fallback={
+                          <div class="flex w-fit flex-nowrap items-center pr-2 pl-2 text-sm text-black/60 select-none">
+                            {generateLabelForReifiedRelation(item)}
+                          </div>
+                        }
+                      >
+                        <div class="flex w-fit flex-nowrap items-center pr-4 pl-4 text-sm text-black/60 select-none">
+                          {item.label}
+                        </div>
+                      </Show>
                     </div>
                   </div>
                   <button
@@ -703,11 +770,12 @@ export function RelationToExistingField(props: TRelationToExistingFieldProps) {
           )
         }
       >
-        <div class="col-span-10">
+        <div class="col-span-10 mt-2">
           <AutocompleteSelector
             selectionTypes={defaultSearchTypes as BaseNodeTypes[]}
             onSelect={onSelect}
             selectedItems={props.value}
+            selectedIds={selectedIds()}
             searchBoxVisible={props.showSearchBox}
             alternativeCreateTypes={alternativeCreateTypes()}
             onClickAlternativeCreateType={onClickAlterntiveCreateType}

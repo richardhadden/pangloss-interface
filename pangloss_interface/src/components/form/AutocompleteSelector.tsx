@@ -39,6 +39,7 @@ type TSelectionOptions = {
 type TAutocompleteSelectorProps = {
   selectionTypes: BaseNodeTypes[];
   selectedItems: (BaseNodeTypes | ReifiedRelationTypes)[];
+  selectedIds: Set<string>;
   onSelect: (item: TSelectionOptions["results"][number]) => void;
   searchBoxVisible?: boolean;
   size?: "small" | "medium" | "large";
@@ -288,7 +289,11 @@ function AutocompleteSelector(props: TAutocompleteSelectorProps) {
             <Show when={inputIsFocused() && selectionOptions()}>
               <Portal mount={menuPortalContainer}>
                 <Show
-                  when={selectionOptions()?.results?.length > 0}
+                  when={
+                    selectionOptions()?.results?.filter(
+                      (item) => !props.selectedIds.has(item.id),
+                    ).length > 0
+                  }
                   fallback={
                     <div class="group mt-3 mb-4 flex h-8 w-full items-center justify-start rounded-xs">
                       <div class="flex aspect-square h-full items-center justify-center rounded-l-xs bg-amber-600 shadow-md">
@@ -307,29 +312,31 @@ function AutocompleteSelector(props: TAutocompleteSelectorProps) {
                   >
                     <For each={selectionOptions()?.results}>
                       {(item, index) => (
-                        <button
-                          data-selected={isSelected(index())}
-                          class="flex w-full cursor-pointer rounded-xs bg-blend-normal backdrop-blur-none not-first:mt-2"
-                          classList={{
-                            "bg-zinc-400": isSelected(index()),
-                            "bg-zinc-300": !isSelected(index()),
-                          }}
-                          onmouseenter={() => setSelectedIndex(index())}
-                          onClick={() => props.onSelect(item)}
-                        >
-                          <div
-                            class="border-right-slate-500 flex items-center justify-center rounded-l-xs border-r-[0.5px] px-3 py-2 text-xs font-semibold text-nowrap text-slate-100 uppercase"
+                        <Show when={!props.selectedIds.has(item.id)}>
+                          <button
+                            data-selected={isSelected(index())}
+                            class="flex w-full cursor-pointer rounded-xs bg-blend-normal backdrop-blur-none not-first:mt-2"
                             classList={{
-                              "bg-slate-700": isSelected(index()),
-                              "bg-slate-600": !isSelected(index()),
+                              "bg-zinc-400": isSelected(index()),
+                              "bg-zinc-300": !isSelected(index()),
                             }}
+                            onmouseenter={() => setSelectedIndex(index())}
+                            onClick={() => props.onSelect(item)}
                           >
-                            {t[
-                              item.type as TranslationKey
-                            ]._model.verboseName()}
-                          </div>
-                          <div class="p-2 pl-3 text-sm">{item.label}</div>
-                        </button>
+                            <div
+                              class="border-right-slate-500 flex items-center justify-center rounded-l-xs border-r-[0.5px] px-3 py-2 text-xs font-semibold text-nowrap text-slate-100 uppercase"
+                              classList={{
+                                "bg-slate-700": isSelected(index()),
+                                "bg-slate-600": !isSelected(index()),
+                              }}
+                            >
+                              {t[
+                                item.type as TranslationKey
+                              ]._model.verboseName()}
+                            </div>
+                            <div class="p-2 pl-3 text-sm">{item.label}</div>
+                          </button>
+                        </Show>
                       )}
                     </For>
                   </div>
