@@ -11,6 +11,7 @@ import {
   ModelDefinitions,
   ReifiedRelationsDefinitionMap,
 } from "../../../.model-configs/model-definitions";
+import { deepEqual } from "~/utils/deepEquals";
 
 const LOCALSTORAGE_KEY = "Pangloss";
 
@@ -29,7 +30,10 @@ function _copy(item: object) {
   // Check item not already in scratchboard
   if (
     _scratchboard() &&
-    _scratchboard().some((i) => "id" in i && "id" in item && i.id === item.id)
+    (_scratchboard().some(
+      (i) => "id" in i && "id" in item && i.id === item.id,
+    ) ||
+      _scratchboard().some((i) => deepEqual(i, item)))
   ) {
     return;
   }
@@ -79,7 +83,7 @@ function generateLabelForReifiedRelation(item) {
                   {t[target.type as TranslationKey]._model.verboseName()}
                 </div>
                 <div class="flex w-fit flex-nowrap items-center pr-4 pl-4 text-[10px]">
-                  {target.label}
+                  {trimLabel(target.label)}
                 </div>
               </div>
             </Show>
@@ -111,6 +115,13 @@ function generateLabelForReifiedRelation(item) {
       </For>
     </div>
   );
+}
+
+function trimLabel(label: string) {
+  if (label.length > 15) {
+    return `${label.substring(0, 15)}...`;
+  }
+  return label;
 }
 
 export const ScratchboardView = () => {
@@ -145,14 +156,20 @@ export const ScratchboardView = () => {
                     <div class="flex items-center rounded-l-xs bg-slate-600/80 px-3 py-2 text-[10px] font-semibold text-nowrap text-slate-100 uppercase select-none">
                       {t[item.type as TranslationKey]._model.verboseName()}
                     </div>
-                    <div class="flex w-fit flex-nowrap items-center pr-4 pl-4 text-xs">
-                      <Show
-                        when={item.type in BaseNodeDefinitionMap}
-                        fallback={generateLabelForReifiedRelation(item)}
-                      >
-                        {item.label}
-                      </Show>
-                    </div>
+
+                    <Show
+                      when={item.type in BaseNodeDefinitionMap}
+                      fallback={
+                        <div class="flex w-fit flex-nowrap items-center pr-1 pl-2 text-xs">
+                          {generateLabelForReifiedRelation(item)}
+                        </div>
+                      }
+                    >
+                      <div class="flex w-fit flex-nowrap items-center pr-4 pl-4 text-xs">
+                        {trimLabel(item.label)}
+                      </div>
+                    </Show>
+
                     <button
                       onclick={() => scratchboard.remove(index())}
                       class="group flex aspect-square h-8 cursor-pointer items-center justify-center rounded-r-xs bg-orange-500/70 hover:bg-orange-500/80 active:bg-orange-500/80 active:shadow-inner active:shadow-slate-600/30"

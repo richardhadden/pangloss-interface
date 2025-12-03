@@ -34,6 +34,7 @@ import {
 
 import { scratchboard } from "./Scratchboard";
 import { unwrap } from "solid-js/store";
+import { deepEqual } from "~/utils/deepEquals";
 
 type TRenderBaseSelectedItemProps = { item: any; onRemove: () => void };
 
@@ -726,7 +727,8 @@ export function RelationToExistingField(props: TRelationToExistingFieldProps) {
               <Show
                 when={
                   allAllowedTypes.includes(item.type) &&
-                  !selectedIds().has(item.id)
+                  ((item.id && !selectedIds().has(item.id)) ||
+                    !props.value.some((i) => deepEqual(i, item)))
                 }
               >
                 <div class="mb-2 flex overflow-clip rounded-xs">

@@ -38,6 +38,7 @@
     "@tailwindcss/typography": "^0.5.16",
     "@tailwindcss/vite": "^4.0.7",
     "@trivago/prettier-plugin-sort-imports": "^5.2.2",
+    "@types/deep-equal": "^1.0.4",
     "prettier": "^3.6.2",
     "tailwindcss": "^4.0.7"
   },
