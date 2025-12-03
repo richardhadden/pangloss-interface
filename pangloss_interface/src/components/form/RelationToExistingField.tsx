@@ -745,9 +745,10 @@ export function RelationToExistingField(props: TRelationToExistingFieldProps) {
             {(item, index) => (
               <Show
                 when={
-                  allAllowedTypes.includes(item.type) &&
                   ((item.id && !selectedIds().has(item.id)) ||
-                    !props.value.some((i) => deepEqual(i, item)))
+                    (!item.id &&
+                      !props.value.some((i) => deepEqual(i, item)))) &&
+                  allAllowedTypes.includes(item.type)
                 }
               >
                 <div class="mb-2 flex overflow-clip rounded-xs">
