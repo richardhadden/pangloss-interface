@@ -497,7 +497,7 @@ function generateLabelForReifiedRelation(item) {
                 item[fieldName]
               }
             >
-              <div class="align-center flex w-fit flex-nowrap items-center pr-4 pl-4 text-[10px] font-semibold text-slate-600/50 uppercase">
+              <div class="align-center flex w-fit flex-nowrap items-center pr-2 pl-4 text-[10px] font-semibold text-slate-600/50 uppercase">
                 {t[item.type as TranslationKey][fieldName].verboseName}
               </div>
               <div class="flex items-center rounded-sm bg-zinc-400/30 p-2 text-slate-600/50">
